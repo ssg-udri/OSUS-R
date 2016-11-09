@@ -1,0 +1,124 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<project name="mil.dod.th.core.lexicon" default="build">
+    
+    <import file="../cnf/build.xml" />
+    
+    <target name="clean" depends="template.clean,clean-gen-jaxb">
+        <delete failonerror="false" includeemptydirs="true">
+            <fileset dir="proto/gen" includes="**/*" />
+        </delete>
+    </target>
+    
+    <target name="compile" depends="gen-jaxb">
+        <antcall target="template.compile" inheritall="no" />
+    </target>
+    
+    <target name="build" depends="init,template.build">
+        <zip destfile="${target-dir}/mil.dod.th.core.schema.zip">
+            <zipfileset file="${bp.license.file}" fullpath="LICENSE"/>
+            <zipfileset dir="schemas" includes="**/*.xsd"/>  
+        </zip>
+    </target>
+
+    <target name="javadoc" depends="init,build,gen-lexicon-doc" if="srcjavafiles.present">
+        <javadoc
+            sourcepath="${src}"
+            destdir="${target}/javadoc"
+            maxmemory="256M"
+            classpath="${project.buildpath}"
+            bootclasspath="${project.bootclasspath}"
+            access="private"
+            version="true"
+            use="true"
+            author="true"
+            splitindex="true"
+            windowtitle="${project.name}"
+            doctitle="${project.name}"
+            nodeprecated="false"
+            nodeprecatedlist="false"
+            notree="false"
+            noindex="false"
+            nohelp="false"
+            nonavbar="false"
+            source="${javac.source}"
+            additionalparam="-Xdoclint:none"> <!-- Disable doclint for Java 8, JAXB classes not generated with all tags -->
+            <link offline="true" packagelistloc="${javadoc.package.list.dir}/java8" href="http://docs.oracle.com/javase/8/docs/api/" />
+            <link offline="true" packagelistloc="${javadoc.package.list.dir}/osgi4-core" href="https://osgi.org/javadoc/r4v43/core/" />
+            <link offline="true" packagelistloc="${javadoc.package.list.dir}/osgi4-residential" href="https://osgi.org/javadoc/r4v43/residential/" />
+            <link offline="true" packagelistloc="${javadoc.package.list.dir}/osgi4-cmpn" href="https://osgi.org/javadoc/r4v43/cmpn/" />
+        </javadoc>
+    </target>
+    
+    <!-- override so the lexicon.api bundle is not deployed to system, bundle is for building only, core.api.runtime JAR
+        must contain lexicon classes, see bnd file for more info -->
+    <target name="deploy-component" depends="deploy-component-check">
+        <copy todir="${bp.bundle.deploy.dir}">
+            <fileset dir="${target-dir}">
+                <exclude name="mil.dod.th.core.lexicon.api.jar" />
+                <include name="*.jar" />
+            </fileset>
+        </copy>
+    </target> 
+        
+    <target name="clean-gen-jaxb" description="removes generated JAXB class files">
+        <delete failonerror="false" includeemptydirs="true">
+            <fileset dir="${src}" includes="**/*.java" excludes="**/package-info.java,**/DateXmlConverter.java,**/UUIDXmlConverter.java" />
+        </delete>
+    </target>
+    
+    <target name="gen-jaxb" depends="init,clean-gen-jaxb" 
+        description="Generates Java classes from the XSD lexicon definition">
+        <taskdef name="xjc" classname="com.sun.tools.xjc.XJC2Task">
+            <classpath>
+                <fileset id="xjc" dir="${deps.dir}/jaxb-xjc" includes="**/*.jar" />
+            </classpath>
+            <classpath path="${project.buildpath}" />
+        </taskdef>
+        <xjc destdir="${src}">
+            <binding file="bindings.xml"/>
+            <schema dir="schemas" includes="**/*.xsd" />
+            <arg value="-verbose"/>
+            <arg value="-npa"/>
+            <arg value="-extension"/>
+            <arg value="-Xinject-code"/>
+            <arg value="-Xfluent-api"/>
+            <arg value="-Xvalue-constructor"/>
+            <arg value="-Xcommons-lang"/>
+        </xjc>
+    </target>
+
+    <!-- override so generated code is not included in coverage reports -->
+    <target name="cc.instrument" depends="init" unless="${cc.disabled}">
+        <fail unless="${javac.debug}" message="Debug must be enabled when compiling code in order to instrument"/>
+        <cobertura-instrument todir="cc-bin" datafile="${cobertura.ser.file}" ignoreTrivial="true" failonerror="true">
+            <fileset dir="${bin}">
+                <include name="mil/dod/th/core/converter/*.class" />
+            </fileset>
+            <auxClasspath path="${project.buildpath}" />
+            <ignoreMethodAnnotation annotationName="mil.dod.th.ose.utils.CoverageIgnore"/>
+        </cobertura-instrument>
+    </target>
+
+    <target name="gen-lexicon-doc" depends="init">
+        <java classname="mil.dod.th.ose.lexicon.doc.main.LexiconDocGeneratorMain" fork="true" failonerror="true">
+            <!-- Output file the confluence markup should be written to. -->
+            <arg value="${workspacedir}/mil.dod.th.core.lexicon/generated/lexicon_markup_doc.txt"/>
+            <!-- XSD file location. -->
+            <arg value="${workspacedir}/mil.dod.th.core.lexicon/schemas/core" />
+            <classpath path="${project.buildpath}" />
+        </java>
+    </target>
+</project>

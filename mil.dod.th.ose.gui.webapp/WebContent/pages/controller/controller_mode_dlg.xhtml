@@ -1,0 +1,48 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ Dialog box used to display and alter the controller status for a selected controller.
+ This dialog is triggered by a user clicking the mode button on an individual
+ controller in the controller side bar.
+ 
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+    <p:dialog id="controllerModeDialog" widgetVar="controllerModeDlg" header="Controller Mode" resizable="false" width="275">
+        <p:outputPanel id="controllerModePanel">
+            <p>Please select which mode you would like to be in.</p>
+            <table style="width:100%;">
+                <tr align="center">
+                    <td>
+                        <p:commandButton id="opModeButton" value="Operational" icon="iconOPERATIONAL_MODE" 
+                            disabled="#{controllerStatusDialogHelper.controller.operationalMode}" 
+                            style="width:200px;" actionListener="#{controllerStatusDialogHelper.updatedSystemStatus('OPERATIONAL_MODE')}" 
+                            oncomplete="controllerModeDlg.hide()"/>
+                        <p:commandButton id="testModeButton" value="Test" icon="iconTEST_MODE" 
+                            disabled="#{!controllerStatusDialogHelper.controller.operationalMode}" 
+                            style="width:200px;" actionListener="#{controllerStatusDialogHelper.updatedSystemStatus('TEST_MODE')}" 
+                            oncomplete="controllerModeDlg.hide()"/>
+                    </td>
+                </tr>
+            </table>
+         </p:outputPanel>
+    </p:dialog>
+</ui:composition>

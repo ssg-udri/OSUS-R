@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<ns2:AssetCapabilities xmlns="capability.core.th.dod.mil" xmlns:ns2="capability.asset.core.th.dod.mil" xmlns:ns3="capability.physical.ccomm.core.th.dod.mil" xmlns:ns4="capability.link.ccomm.core.th.dod.mil" xmlns:ns5="http://th.dod.mil/core/datastream/types" xmlns:ns6="capability.datastream.core.th.dod.mil" xmlns:ns7="capability.ccomm.core.th.dod.mil" xmlns:ns8="capability.transport.ccomm.core.th.dod.mil" xmlns:ns9="capability.controller.core.th.dod.mil" productName="HikVision IP Camera" description="HikVision IP Camera" manufacturer="HikVision">
+    <primaryImage encoding="image/jpeg">AAEC</primaryImage>
+    <secondaryImages encoding="image/jpeg">AAEC</secondaryImages>
+    <secondaryImages encoding="Unknown">AAEC</secondaryImages>
+    <ns2:modalities value="Imager"/>
+    <ns2:minRange>0.0</ns2:minRange>
+    <ns2:maxRange>0.0</ns2:maxRange>
+    <ns2:nominalRange>0.0</ns2:nominalRange>
+    <ns2:minFov>0.0</ns2:minFov>
+    <ns2:maxFov>0.0</ns2:maxFov>
+    <ns2:nominalFov>0.0</ns2:nominalFov>
+    <ns2:supportedCameras id="0" type="Visible"/>
+    <ns2:digitalMediaCapabilities>
+        <ns2:encodings>image/jpeg</ns2:encodings>
+    </ns2:digitalMediaCapabilities> 
+    <ns2:imageCapabilities colorAvailable="false">
+        <ns2:minResolution width="704" height="480"/>
+        <ns2:maxResolution width="1280" height="720"/>
+        <ns2:availableCameraIDs>0</ns2:availableCameraIDs>
+    </ns2:imageCapabilities>
+    <ns2:commandCapabilities captureData="true" performBIT="true">
+        <ns2:supportedCommands>GetCameraSettingsCommand</ns2:supportedCommands>
+        <ns2:supportedCommands>GetPanTiltCommand</ns2:supportedCommands>
+        <ns2:supportedCommands>GetPositionCommand</ns2:supportedCommands>
+        <ns2:supportedCommands>SetCameraSettingsCommand</ns2:supportedCommands>
+        <ns2:supportedCommands>SetPanTiltCommand</ns2:supportedCommands>
+        <ns2:supportedCommands>SetPositionCommand</ns2:supportedCommands>
+        <ns2:panTilt azimuthSupported="true" elevationSupported="true" bankSupported="false">
+            <ns2:minAzimuth>-179</ns2:minAzimuth>
+            <ns2:maxAzimuth>180</ns2:maxAzimuth>
+            <ns2:minElevation>0.0</ns2:minElevation>
+            <ns2:maxElevation>90.0</ns2:maxElevation>
+            <ns2:minBank>0.0</ns2:minBank>
+            <ns2:maxBank>0.0</ns2:maxBank>
+        </ns2:panTilt>
+        <ns2:cameraSettings minFocus="0.0" maxFocus="0.0" maxNumAutoFocusWindow="0" maxAutoFocusWindowArea="0" minExposureTimeInMs="0" maxExposureTimeInMs="0" minExposureIndex="0" maxExposureIndex="0" minAperture="0.0" maxAperture="0.0" autoFocusSupported="false" exposureModeSupported="false" whiteBalanceSupported="false"/>
+    </ns2:commandCapabilities>
+    <ns2:observationCapabilities observedTimestampAvailable="false"/>
+</ns2:AssetCapabilities>

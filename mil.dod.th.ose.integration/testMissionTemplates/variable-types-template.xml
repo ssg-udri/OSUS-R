@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<p:MissionProgramTemplate xmlns:p="http://th.dod.mil/core/mp/model" 
+    xmlns:shared="http://th.dod.mil/core/types"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://th.dod.mil/core/mp/model ../resources/missionProgramSchema/MissionProgramTemplate.xsd ">
+  <p:source>
+  <![CDATA[obj = 
+{
+    execute: function()
+    {
+        // Main functionality
+        //get the service reference of the TestPrimitivesService within the integration tests
+        var ref = bndCnt.getServiceReference(PrimitiveServiceRef);
+        //request the actual service, by passing service ref
+        var service = bndCnt.getService(ref);
+        //set primitive values for the service
+        service.setIntegerA(intA);
+        service.setIntegerB(intB);
+        service.setLongA(longA);
+        service.setShortA(shortA);
+        service.setDoubleA(doubleA);
+        service.setBooleanA(booleanA);
+        service.assertValues();
+        logSvc.info(msg, []);
+    },
+    test: function()
+    {
+        return TestResult.class.static.PASSED;
+    },
+    shutdown: function()
+    {
+        logSvc.info("Simple script is shutting down!.", []);
+    }
+};]]>
+</p:source>
+  <p:name>variable-types-template</p:name>
+  <p:description> This script tests that the JavaScript engine can actually bind 
+variable values, to variables within the script being executed. Also
+that different primitive values are handled correctly. </p:description>
+
+  <p:withInterval>false</p:withInterval>
+  <p:withImageCapture>false</p:withImageCapture>
+  <p:withSensorTrigger>false</p:withSensorTrigger>
+  <p:withTimerTrigger>false</p:withTimerTrigger>
+  <p:withPanTilt>false</p:withPanTilt>
+
+  <p:supportTestExecution>true</p:supportTestExecution>
+
+  <p:variableMetaData>
+    <shared:name>PrimitiveServiceRef</shared:name>
+    <shared:description>Name of service to fetch from within the script</shared:description>
+    <shared:humanReadableName>data</shared:humanReadableName>
+    <p:type>String</p:type>
+  </p:variableMetaData>
+  <p:variableMetaData>
+    <shared:name>intA</shared:name>
+    <shared:description>Numeric value used for testing simple javascript implementations.</shared:description>
+    <shared:humanReadableName>intA</shared:humanReadableName>
+    <p:type>Integer</p:type>
+  </p:variableMetaData>
+    <p:variableMetaData>
+    <shared:name>intB</shared:name>
+    <shared:description>Numeric value used for testing simple javascript implementations.</shared:description>
+    <shared:humanReadableName>intB</shared:humanReadableName>
+    <p:type>Integer</p:type>
+  </p:variableMetaData>
+    <p:variableMetaData>
+    <shared:name>longA</shared:name>
+    <shared:description>Numeric value used for testing simple javascript implementations.</shared:description>
+    <shared:humanReadableName>longA</shared:humanReadableName>
+    <p:type>Long</p:type>
+  </p:variableMetaData>
+    <p:variableMetaData>
+    <shared:name>msg</shared:name>
+    <shared:description>Message that will be displayed once the mission is complete.</shared:description>
+    <shared:humanReadableName>message</shared:humanReadableName>
+    <p:type>String</p:type>
+  </p:variableMetaData>
+    <p:variableMetaData>
+    <shared:name>shortA</shared:name>
+    <shared:description>Numeric value used for testing simple javascript implementations.</shared:description>
+    <shared:humanReadableName>shortA</shared:humanReadableName>
+    <p:type>Short</p:type>
+  </p:variableMetaData>
+      <p:variableMetaData>
+    <shared:name>doubleA</shared:name>
+    <shared:description>Numeric value used for testing simple javascript implementations.</shared:description>
+    <shared:humanReadableName>doubleA</shared:humanReadableName>
+    <p:type>Double</p:type>
+  </p:variableMetaData>
+  <p:variableMetaData>
+    <shared:name>booleanA</shared:name>
+    <shared:description>Boolean value used for testing simple javascript implementations.</shared:description>
+    <shared:humanReadableName>booleanA</shared:humanReadableName>
+    <p:type>Boolean</p:type>
+  </p:variableMetaData>
+</p:MissionProgramTemplate>

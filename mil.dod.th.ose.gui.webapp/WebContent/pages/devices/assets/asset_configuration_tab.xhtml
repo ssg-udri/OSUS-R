@@ -1,0 +1,245 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ 
+ The configuration tab displays and allows manipulation of asset
+ specific values. Values displayed include an asset's location, name, and status.
+ 
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:common="http://java.sun.com/jsf/composite/common">
+        <p:separator/>
+        <h:outputScript library="scripts/push/pages/devices" name="commonAssetFunctions.js"/>
+        <h:outputText value="No assets, set an 'active' controller." rendered="#{not activeController.isActiveControllerSet()}"/>
+        <p:dataTable styleClass="tablesNoBorderOnCells" value="#{assetDisplay.isSetSelectedObject() ? assetDisplay.getSelectedFactoryObject() : assetMgr.getAssetsForControllerAsync((activeController.getActiveController()).getId())}"
+            var="asset" rendered="#{activeController.isActiveControllerSet()}" id="assetObjData">
+            <p:column>
+                <table id="assetTable" style="margin:1em 0">
+                    <tr>
+                        <td style="text-align:right;width:100%;margin: 0.1em" id="assetStatusPanel" colspan="4">
+                            <h:outputText id="assetActiveStatus" 
+                                value="#{empty asset.getActiveStatus() ? 'Status not retrieved' : asset.getActiveStatus()}" 
+                                style="font-size:.8em;padding-right: .4em;"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:5%;text-align:left">
+                            <p:graphicImage library="images" name="#{asset.getImage()}" alt="Image Not Found"/>
+                        </td>
+                        <td class="editConfigInput" style="text-align:left">
+                            <h:form onsubmit="return saveAssetName('#{asset.getWidgetVarName()}')">
+                                <p:outputPanel id="editPanel" >
+                                    <p:inplace style="font-weight:bold;font-size:1.2em;" editor="true" widgetVar="#{asset.getWidgetVarName()}" >
+                                        <p:inputText id="assetName" value="#{asset.name}" required="true"/>
+                                        <p:ajax update="editPanel" event="save" listener="#{selectedAsset.requestNameUpdate(asset)}"/>
+                                    </p:inplace>
+                                    <p:graphicImage id="assetNameImg" style="height:1em"  library="images" name="icons/Pencil.png" alt="Image Not Found" onclick="#{asset.getWidgetVarName()}.show();"/>
+                                </p:outputPanel>
+                                <p:tooltip for="editPanel" value="Click on an asset's name to edit the value." />
+                            </h:form>
+                        </td>
+                        <td style="text-align:right">
+                            <h:form>
+                                <p:commandButton id="activationButton" value="Activate" actionListener="#{selectedAsset.requestActivation(asset)}" 
+                                    process="@this" icon="ui-icon-arrowrefresh-1-w" rendered="#{!asset.isActive()}" style="width: 10em;margin: 0.1em" />
+                                <p:commandButton id="deactivationButton" value="Deactivate" actionListener="#{selectedAsset.requestDeactivation(asset)}" 
+                                    process="@this" icon="ui-icon-stop" rendered="#{asset.isActive()}" style="width: 10em;margin: 0.1em" />
+                                <p:tooltip for="activationButton" value="Activate this asset." />
+                                <p:tooltip for="deactivationButton" value="Deactivate this asset." />
+                                <p:commandButton id="removeButton" value="Remove" onclick="assetConfirmationDlg.show();" 
+                                    process="@this" actionListener="#{selectedAsset.setSelectedAssetForDialog(asset)}" style="width: 10em;margin: 0.1em" />
+                                <p:tooltip for="removeButton" value="Remove this asset from the controller." />
+                            </h:form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:form>
+                                <common:status id="assetStatusLed" 
+                                    statusCapableObject="#{asset}" 
+                                    pushTopic="window.thTopic.assetStatusUpdated"
+                                    uniqueId="#{asset.uuid}"
+                                    pushFilter="obj.uuid=#{asset.uuid}"
+                                    pushStatusProp="asset.status.summary" />
+                                <p:tooltip for="assetStatusLed" value="#{empty asset.getSummaryStatus() ? 'No Status' : asset.getSummaryStatus()}" />
+                            </h:form>
+                        </td>
+                        <td style="text-align:left;width:65%;">
+                            <h:form>    
+                                <h:outputText id="assetStatusDescription" value="#{empty asset.getSummaryDescription() ? 'No Summary Description' : asset.getSummaryDescription()}" style="text-align:left;font-weight:bold;text-overflow:hidden;"/>
+                                <common:pushUpdateOutputText for="assetStatusDescription"
+                                    pushTopic="window.thTopic.assetStatusUpdated"
+                                    uniqueId="#{asset.uuid}"
+                                    pushFilter="obj.uuid=#{asset.uuid}" 
+                                    pushValueProp="asset.status.description"
+                                    cleanupFilter="assetDescriptionCleanupFilter"
+                                    cleanupTopic="window.thTopic.assetRemoved"/>
+                            </h:form>
+                        </td>
+                    </tr>
+                    <!-- Only display orientation / position if the asset supports it -->
+                    <tr style="margin-top:5em">
+                        <td style="width:100%;text-align:left" colspan="4" >
+                            <h:form>
+                                <p:outputPanel>
+                                    <p:fieldset legend="Location" id="locationFieldset" toggleable="true" toggleSpeed="500" collapsed="#{asset.isLocationToggle()}" >
+                                        <h:outputText id="positionNotAvailable" style="font-weight:bold;width: 75%;" 
+                                            value="Position is not available" rendered="#{!asset.isReadableAsync()}" />
+                                        <p:ajax event="toggle" listener="#{asset.setLocationToggle}" />  
+                                        <h:panelGrid style="text-align:center" columns="2" cellpadding="10" rendered="#{asset.isReadableAsync()}">
+                                            <p:row>
+                                                <h:outputText value="Latitude:" />
+                                                <br/>
+                                                <p:outputPanel id="editPanelLat">
+                                                    <p:inputText id="assetLatLocation"
+                                                        validator="#{asset.validateValue}"
+                                                        value="#{asset.location.latitude}" required="true"
+                                                        disabled="#{!asset.isEditingLocation()}">
+                                                        <f:convertNumber minFractionDigits="6"
+                                                            rendered="#{!empty asset.location.latitude}" />
+                                                        <p:ajax update="assetLatLocationMsg" />
+                                                    </p:inputText>
+                                                </p:outputPanel>
+                                                <p:message id="assetLatLocationMsg" for="assetLatLocation" />
+                                                <p:tooltip for="editPanelLat" value="Click on an asset's latitude to edit the value." />
+    
+                                                <h:outputText value="Longitude:" />
+                                                <br/>
+                                                <p:outputPanel id="editPanelLong">
+                                                    <p:inputText id="assetLongLocation"
+                                                        validator="#{asset.validateValue}"
+                                                        value="#{asset.location.longitude}" required="true"
+                                                        disabled="#{!asset.isEditingLocation()}">
+                                                        <f:convertNumber minFractionDigits="6"
+                                                            rendered="#{!empty asset.location.longitude}" />
+                                                         <p:ajax update="assetLongLocationMsg" />
+                                                     </p:inputText>
+                                                </p:outputPanel>
+                                                <p:message id="assetLongLocationMsg" for="assetLongLocation" />
+                                                <p:tooltip for="editPanelLong" value="Click on an asset's longitude to edit the value." />
+    
+                                                <h:outputText value="Altitude:" />
+                                                <br />
+                                                <p:outputPanel id="editPanelAlt">
+                                                     <p:inputText id="assetAltitudeLocation"
+                                                        validator="#{asset.validateValue}"
+                                                        value="#{asset.location.altitude}" required="true"
+                                                        disabled="#{!asset.isEditingLocation()}">
+                                                        <f:convertNumber minFractionDigits="6"
+                                                            rendered="#{!empty asset.location.altitude}" />
+                                                        <p:ajax update="assetAltitudeLocationMsg" />
+                                                     </p:inputText>
+                                                </p:outputPanel>
+                                                <p:message id="assetAltitudeLocationMsg" for="assetAltitudeLocation" />
+                                                <p:tooltip for="editPanelAlt" value="Click on an asset's altitude to edit the value." />
+                                            </p:row>
+                                            <p:row>
+                                                <h:outputText value="Heading:" />
+                                                <br />
+                                                <p:outputPanel id="editPanelHead">
+                                                    <p:inputText id="assetHeadingLocation"
+                                                        validator="#{asset.validateValue}"
+                                                        value="#{asset.location.heading}" required="true"
+                                                        disabled="#{!asset.isEditingLocation()}">
+                                                        <f:convertNumber minFractionDigits="2"
+                                                            rendered="#{!empty asset.location.heading}" />
+                                                        <p:ajax update="assetHeadingLocationMsg" />
+                                                    </p:inputText>
+                                                </p:outputPanel>
+                                                <p:message id="assetHeadingLocationMsg" for="assetHeadingLocation" />
+                                                <p:tooltip for="editPanelHead" value="Click on an asset's heading to edit the value." />
+                                        
+                                                <h:outputText value="Elevation:" />
+                                                <br />
+                                                <p:outputPanel id="editPanelEle">
+                                                    <p:inputText id="assetElevationLocation"
+                                                        validator="#{asset.validateValue}"
+                                                        value="#{asset.location.elevation}" required="true"
+                                                        disabled="#{!asset.isEditingLocation()}">
+                                                        <f:convertNumber minFractionDigits="2"
+                                                            rendered="#{!empty asset.location.elevation}" />
+                                                        <p:ajax update="assetElevationLocationMsg" />
+                                                    </p:inputText>
+                                                </p:outputPanel>
+                                                <p:message id="assetElevationLocationMsg" for="assetElevationLocation" />
+                                                <p:tooltip for="editPanelEle" value="Click on an asset's elevation to edit the value." />
+                                        
+                                                <h:outputText value="Bank:" />
+                                                <br />
+                                                <p:outputPanel id="editPanelBank">
+                                                    <p:inputText id="assetBankLocation"
+                                                        validator="#{asset.validateValue}"
+                                                        value="#{asset.location.bank}" required="true"
+                                                        disabled="#{!asset.isEditingLocation()}">
+                                                        <f:convertNumber minFractionDigits="2"
+                                                            rendered="#{!empty asset.location.bank}" />
+                                                        <p:ajax update="assetBankLocationMsg" />
+                                                    </p:inputText>
+                                                </p:outputPanel>
+                                                <p:message id="assetBankLocationMsg" for="assetBankLocation" />
+                                                <p:tooltip for="editPanelBank" value="Click on an asset's bank to edit the value." />
+                                            </p:row>             
+                                        </h:panelGrid>
+                                        <h:panelGrid rendered="#{asset.isReadableAsync()}">
+                                            <p:column>
+                                                    <p:commandButton id="editLocationButton" value="Edit Location"
+                                                        style="margin:.5em"
+                                                        actionListener="#{asset.setEditingLocation(true)}"
+                                                        rendered="#{!asset.isEditingLocation() and asset.isEditableAsync()}"
+                                                        update='@([id$="locationFieldset"])' />
+                                                    <p:tooltip for="editLocationButton" value="Edit the location of the asset. You must sync the location before editing." />
+                                                <p:commandButton id="updateLocationButton"
+                                                    style="margin:.5em"
+                                                    value="Update Location"
+                                                    action="#{asset.setEditingLocation(false)}"
+                                                    update="locationFieldset"
+                                                    actionListener="#{assetMgr.locationUpdate((activeController.getActiveController()).getId(), asset)}"
+                                                    rendered="#{asset.isEditingLocation() and asset.isEditableAsync()}" />
+                                                <p:tooltip for="updateLocationButton" value="Update the location of the asset." />
+                                                
+                                                <p:commandButton id="syncLocationButton" 
+                                                    style="margin:.5em"
+                                                    value="Sync Location"
+                                                    actionListener="#{assetMgr.syncPosition((activeController.getActiveController()).getId(), asset)}" />
+                                                <p:tooltip for="syncLocationButton" value="Sync to the current location of the asset." />
+                                            </p:column>
+                                        </h:panelGrid>
+                                    </p:fieldset>
+                                </p:outputPanel>
+                            </h:form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" style="text-align:center;padding:.5em">
+                            <h:form>
+                                <p:commandButton id="configurationButton" update='@([id$="assetEditConfiguration"])' oncomplete="assetEditConfigurationDlg.show();" action="#{factoryObjConfigModifierView.setSelectedFactoryModel(asset)}" value="Configuration"/>
+                                <p:tooltip for="configurationButton" value="Configure the asset."/>
+                                <p:commandButton id="performBit" value="Perform BIT" actionListener="#{selectedAsset.requestBIT(asset)}" process="@this" disabled="#{!asset.isBitSupportAsync()}" />
+                                <p:tooltip for="performBit" value="Have the asset perform it's built-in-test." />
+                                <p:commandButton id="captureData" value="Capture Data" actionListener="#{selectedAsset.requestCaptureData(asset)}" disabled="#{!asset.isDataCaptureSupportAsync()}" process="@this" />
+                                <p:tooltip for="captureData" value="Have the asset capture data." />
+                            </h:form>
+                        </td>
+                    </tr>
+                </table>
+            </p:column>
+        </p:dataTable>
+</ui:composition>

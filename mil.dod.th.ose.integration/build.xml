@@ -1,0 +1,147 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Build and execute controller integration tests.
+
+==============================================================================
+-->
+<project name="mil.dod.th.ose.integration" default="test">
+
+    <import file="../cnf/ant/integration-commons.xml" />
+    
+    <target name="init" depends="master.init">
+        <property name="target.app.dir" value="${workspacedir}/target/generic/controller-app"/>
+    
+        <property name="remote.controller.app.dir" value="${target-dir}/remote-controller"/>
+
+        <property name="integration.tests.optional" value="TestGenericTerraHarvestController" />
+        <property name="integration.tests.2ndrun" 
+            value="TestPersistedAsset,TestBundlesActivated,TestPersistedMissionPrograms,TestPersistedAddresses,TestPersistedCommLayers,TestPersistedObservations,TestPersistedRemoteChannelLookup,TestXmlConfigurations2ndRun"/>
+    </target>
+
+    <target name="clean" depends="template.clean" description="Remove all build files">
+        <delete failonerror="false" includeemptydirs="true" >
+            <fileset dir="${target-dir}" >
+                <include name="example-service/**" />
+            </fileset>
+        </delete>
+    </target>
+
+    <target name="setup" depends="deploy-target">
+        <propertyfile file="${remote.controller.app.dir}/conf/th.system.properties" >
+            <entry key="id" value="0x00000002"/>
+            <entry key="name" value="Remote"/>
+        </propertyfile>
+        <propertyfile file="${remote.controller.app.dir}/conf/config.properties" >
+            <entry key="mil.dod.th.ose.remote.socket.port" value="4001"/>
+            <entry key="mil.dod.th.ose.remoteinterface.server.socket.port" value="3001"/>
+            <entry key="osgi.shell.telnet.port" value="6667"/>
+        </propertyfile>
+            
+        <delete failonerror="false">
+            <fileset dir="${target-dir}" includes="TEST-*.xml" />
+            <fileset dir="${target-dir}" includes="ALLTESTS.xml" />
+        </delete>
+        
+        <copy todir="${target-dir}/deploy/bundle" failonerror="true">
+            <fileset file="${junit4.test.runner.jar}" />
+            <fileset dir="${integration.dir}/${target-dir}">
+                 <include name="*.example.*.jar" />
+            </fileset>
+            <fileset dir="${example.asset.dir}/${target-dir}" includes="*.main.jar" />
+            <fileset dir="${example.ccomm.dir}/${target-dir}" includes="*.main.jar" />
+            <fileset file="${target-dir}/mil.dod.th.ose.integration.tests.jar" />
+        </copy>
+        <copy tofile="${target-dir}/deploy/bundle/zzz.config.jar" 
+            file="${integration.dir}/${target-dir}/mil.dod.th.ose.integration.zzz.config.jar" failonerror="true" />
+        <copy todir="${target-dir}/deploy/templates" >
+            <fileset dir="${integration.dir}/testMissionTemplates" />
+        </copy>
+        <copy todir="${target-dir}/deploy/conf" overwrite="true">
+            <fileset dir="${integration.dir}/testConfigurationFiles" />
+        </copy>
+    </target>
+
+    <target name="deploy-target" depends="integration-commons.deploy-target">
+        <unzip dest="${remote.controller.app.dir}">
+            <fileset dir="${target.app.dir}/${bin}" includes="*.zip"  />
+        </unzip>
+    </target>
+
+    <target name="test" depends="build,setup,try-kill-controller-processes" 
+        description="Run all integration tests">
+
+        <!-- start the remote controller -->
+        <parallel>
+            <!-- run controller as daemon so it stops when Ant is done-->
+            <daemons> 
+               <java fork="true" 
+                     classname="org.apache.felix.main.Main" 
+                     dir="${remote.controller.app.dir}"
+                     failonerror="true">
+                   <jvmarg value="-ea" />
+                   <classpath>
+                       <pathelement location="${remote.controller.app.dir}/${bin}/felix.jar"/>
+                   </classpath>
+                   <sysproperty key="gosh.args" value="--noi" />
+               </java>
+            </daemons>
+            <sequential>
+                <!-- wait to ensure that the remote controller has had a chance to start -->
+                <sleep seconds="10" />
+                <!-- change log level to DEBUG for testing to make it easier to debug afterwards -->
+                <replace file="${target-dir}/deploy/conf/config.properties">
+                    <replacefilter token="mil.dod.th.ose.logging.level=INFO" value="mil.dod.th.ose.logging.level=DEBUG" />
+                </replace>
+                <java fork="true" 
+                      inputstring=""
+                      classname="org.apache.felix.main.Main" 
+                      dir="${target-dir}/deploy"
+                      failonerror="true">
+                      <jvmarg value="-ea" />
+                    <classpath>
+                        <pathelement location="${target-dir}/deploy/${bin}/felix.jar"/>
+                    </classpath>
+                    <sysproperty key="mil.dod.th.ose.junit4xmltestrunner.autoStartShutdown" value="true" />
+                    <sysproperty key="mil.dod.th.ose.junit4xmltestrunner.reportDir" value="${projectdir}/${target-dir}" />
+                    <sysproperty key="mil.dod.th.ose.junit4xmltestrunner.optionalClasses" value="${integration.tests.optional}" />
+                    <sysproperty key="gosh.args" value="-noi" />
+                </java>
+                <antcall target="test-2nd-run" />
+                <antcall target="check-for-test-results" />
+            </sequential>
+        </parallel>
+    </target>
+
+    <target name="test-2nd-run" if="integration.tests.2ndrun">
+        <java fork="true" 
+              inputstring=""
+              classname="org.apache.felix.main.Main" 
+              dir="${target-dir}/deploy"
+              failonerror="true">
+            <jvmarg value="-ea" />
+            <classpath>
+                <pathelement location="${target-dir}/deploy/${bin}/felix.jar"/>
+            </classpath>
+            <sysproperty key="mil.dod.th.ose.junit4xmltestrunner.autoStartShutdown" value="true" />
+            <sysproperty key="mil.dod.th.ose.junit4xmltestrunner.reportDir" value="${projectdir}/${target-dir}" />
+            <sysproperty key="mil.dod.th.ose.junit4xmltestrunner.testClasses" value="${integration.tests.2ndrun}" />
+            <sysproperty key="mil.dod.th.ose.junit4xmltestrunner.reportSuffix" value="2ndrun" />
+            <sysproperty key="mil.dod.th.ose.junit4xmltestrunner.timeoutSec" value="60" />
+            <sysproperty key="gosh.args" value="--noi" />
+        </java>
+    </target>
+</project>
+    

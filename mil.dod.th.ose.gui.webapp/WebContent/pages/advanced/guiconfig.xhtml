@@ -1,0 +1,73 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ This xhtml file enables display and editing of attributes that are 
+ specific to the GUI's configuration.
+==============================================================================
+ --> 
+
+<ui:composition template="../templates/mainscreenTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui">
+    
+    <ui:define name="content">
+       <h:outputScript library="scripts/push/pages/advanced/" name="pushEventGuiConfigMessages.js"/>
+       <h:outputScript library="scripts" name="inputNumbersLettersOnly.js"/>
+       <h:form>
+          <p:commandButton id="save" widgetVar="changes" value="Save Changes" style="float:right;" 
+            update='@([id$="sysId"])' actionListener="#{terraHarvestSystemUtil.setSystemNameAndId()}" />
+          <table style="width:100%">
+              <tr>
+                  <td>
+                       <h:outputText id="sysNameHeader" styleClass="textHeader" value="System Name"/>
+                       <br/>
+                       <p:inputText id="systemname" styleClass="allInputs" value="#{terraHarvestSystemUtil.systemName}"/>
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                       <h:outputText id="sysIdHeader" styleClass="textHeader" value="System ID"/>
+                       <br/>
+                       <!-- inputNumbersLettersOnly sets the mask for this mask input. Folder: WebContent,resources,scripts -->
+                       <p:inputMask id="sysId" converter="hexConverter" styleClass="allInputs" value="#{terraHarvestSystemUtil.systemId}"/>
+                       <p:message id="msg" for="sysId"/>
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                       <h:outputText id="sysVersionHeader" styleClass="textHeader" value="System Version"/>
+                       <br/>
+                       <h:outputText styleClass="allInputs" value="#{terraHarvestSystemUtil.systemVersion}"/>
+                  </td>
+              </tr>
+          </table>
+          <h:outputText id="sysBuildInfoHeader" styleClass="textHeader" value="System Build Information" />
+            <p:dataTable widgetVar="buildPropTable" id="buildProps"
+                styleClass="allTableStylesWithBorder"
+                value="#{terraHarvestSystemUtil.systemBuildInformationKeys}" var="key">
+                <p:column headerText="Build Property Key">
+                    #{key} 
+                </p:column>
+                <p:column headerText="Build Property Value">
+                    #{terraHarvestSystemUtil.systemBuildInformation[key]} 
+                </p:column>
+            </p:dataTable>
+        </h:form>
+    </ui:define>
+    
+</ui:composition>

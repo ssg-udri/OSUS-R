@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ GUI integration test script
+
+==============================================================================
+-->
+<p:MissionProgramTemplate xmlns:p="http://th.dod.mil/core/mp/model" 
+                          xmlns:p1="http://th.dod.mil/core/asset/types" 
+                          xmlns:shared="http://th.dod.mil/core/types"
+                          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                          xsi:schemaLocation="http://th.dod.mil/core/mp/model ../resources/missionProgramSchema/MissionProgramTemplate.xsd ">
+  <p:source>
+<![CDATA[//variables
+testInt;
+testDouble;
+testDropDown;
+testString;
+
+obj = {
+    execute: function () {},
+    test: function () { return TestResult.class.static.PASSED },
+    shutdown: function () {}
+};
+
+]]>
+</p:source>
+    <p:name>test-mission</p:name>
+    <p:description>This script is purely a test script. It was built with the sole purpose
+                    of being used during the mission setup integration test. Therefore if
+                    you are reading this then there is probably something wrong. That or
+                    you are running the integration test and are a quick reader. But then
+                    again you may have an extremely slow computer... oh well...</p:description>
+    <p:withInterval>true</p:withInterval>
+    <p:withImageCapture>true</p:withImageCapture>
+    <p:withSensorTrigger>true</p:withSensorTrigger>
+    <p:withTimerTrigger>true</p:withTimerTrigger>
+    <p:withPanTilt>false</p:withPanTilt>
+    <p:supportTestExecution>true</p:supportTestExecution>
+    
+    <p:variableMetaData>
+        <shared:name>testInt</shared:name>
+        <shared:defaultValue>0</shared:defaultValue>
+        <shared:description>"Description about an integer value of some sorts..."</shared:description>
+        <shared:humanReadableName>Test Int</shared:humanReadableName>
+        <p:type>Integer</p:type>
+    </p:variableMetaData>
+    
+    <p:variableMetaData>
+        <shared:name>testDouble</shared:name>
+        <shared:defaultValue>00</shared:defaultValue>
+        <shared:description>"Description about a double value... blah blah blah..."</shared:description>
+        <shared:humanReadableName>Test Double</shared:humanReadableName>
+        <p:type>Double</p:type>
+    </p:variableMetaData>
+    
+    <p:variableMetaData>
+        <shared:name>testString</shared:name>
+        <shared:defaultValue>String</shared:defaultValue>
+        <shared:description>"Enter anything here and it will work!"</shared:description>
+        <shared:humanReadableName>Test String</shared:humanReadableName>
+        <p:type>String</p:type>
+    </p:variableMetaData>
+    
+    <p:variableMetaData>
+        <shared:name>testDropDown</shared:name>
+        <shared:defaultValue>Default</shared:defaultValue>
+        <shared:optionValues>Option 1</shared:optionValues>
+        <shared:optionValues>Option 2</shared:optionValues>
+        <shared:optionValues>Option 3</shared:optionValues>
+        <shared:description>"Some description for a choice of values from a drop down list."</shared:description>
+        <shared:humanReadableName>Test Dropdown</shared:humanReadableName>
+        <p:type>String</p:type>
+    </p:variableMetaData>
+</p:MissionProgramTemplate>

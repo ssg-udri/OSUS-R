@@ -1,0 +1,222 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+//
+// Description: Contains OSGi MetaTypeService related functionality for the
+// remote interface.
+//
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+
+//Namespace contains functions related to the OSGi MetaTypeService interface to incorporate
+//more type flexibility to properly exchange data within the THOSE remote interface.
+//The primary function of this namespace entails getting all the properties associated
+//with a particular attribute definition.
+message MetaTypeNamespace
+{
+    //Enumeration representing the possible message types of a meta type message.
+    enum MetaTypeMessageType
+    {
+        //Request all PIDs, and factory PIDs for a given bundle id
+        //Response is contained in GetBundlePidsResponse
+        GetBundlePidsRequest = 1;
+        //Response containing all PIDs and factory PIDs for the bundle id in the request
+        GetBundlePidsResponse = 2;
+
+        //Request to get properties defining one or more attributes
+        //Response is contained in GetAttributeDefinitionResponse
+        GetAttributeDefinitionRequest = 3;
+        //Response containing relevant properties defining an attribute
+        GetAttributeDefinitionResponse = 4;
+
+        //Request to get a list of attribute keys based on a configuration PID and the
+        //symbolic name of the bundle containing the metaType information.
+        //Response is contained in GetAttributeKeyResponse
+        GetAttributeKeyRequest = 5;
+        //Contains list of attribute keys based on GetAttributeKeyRequest
+        GetAttributeKeyResponse = 6;
+
+        //Request to get meta type information contained on a system
+        //Response is contained in GetMetaTypeInfoResponse
+        GetMetaTypeInfoRequest = 7;
+        //Contains a list of all meta type information for all bundles on a system.
+        GetMetaTypeInfoResponse = 8;
+    }
+
+    //This is the meta type service message type
+    required MetaTypeMessageType type = 1;
+
+    // serialization of the data associated with the message (may be n/a), represents a protocol buffer message where
+    // the type is the MessageType field value with "Data" appended, for this namespace this would be
+    // "'MetaTypeMessageType'Data"
+    optional bytes data = 100;
+
+}
+
+//Message that contains a request to get the configuration PIDs associated with a bundle based on the bundle's
+//id.
+message GetBundlePidsRequestData
+{
+    //The bundle id of the bundle to get PIDs for
+    required int64 bundleId = 1;
+}
+
+//Message that returns lists of configuration PIDs and factory PIDs associated with the bundle containing
+//the meta type information.
+message GetBundlePidsResponseData
+{
+    //The bundle id of the bundle the PIDs pertain to.
+    required int64 bundleId = 1;
+    //List containing all PIDs for the bundle id in the request
+    repeated string pids = 2;
+    //List containing all factory PIDs for the bundle id in the request
+    repeated string factoryPids = 3;
+}
+
+//Message containing the request to get the properties defining an attribute or attributes based on a bundle's id,
+//configuration object PID or factory configuration PID, and optionally an attribute key.
+//If the attribute key is present it is expected that it will match a unique identity(id) for an attribute.
+//If the key and ID match an attribute, the attribute definition data will be returned in the response message.
+//When the key is not present all attribute definitions will be returned that correlate to the bundle id and PID within
+//the request.
+message GetAttributeDefinitionRequestData
+{
+    //the bundle id of the bundle to get attributes for
+    required int64 bundleId = 1;
+    //must be either configuration PID or factory configuration PID
+    required string pid = 2;
+    //corresponds to ID field of AttributeDefinition interface - can be used to obtain attribute value
+    optional string key = 3;
+}
+
+//Message containing properties of attributes
+//Detailed descriptions of each property can be found in the OSGi AttributeDefinition documentation
+message GetAttributeDefinitionResponseData
+{
+    //Bundle id the PID belongs to.
+    required int64 bundleId = 1;
+    //PID of the configuration object
+    required string pid = 2;
+    //List of attribute definitions from the bundle id given in the request
+    repeated AttributeDefinitionType attributeDefinition = 3;
+}
+
+//Message that contains a request to get a list of attribute keys based on a
+//configuration PID and the id of the bundle containing the metaType information
+message GetAttributeKeysRequestData
+{
+    //Bundle id of the bundle containing the metaType information
+    required int64 bundleId = 1;
+    //PID of configuration object
+    required string pid = 2;
+}
+
+//Message that contains the keys of the attribute table based on GetAttributeKeysRequest
+message GetAttributeKeysResponseData
+{
+    //Bundle ID the PID belongs to.
+    required int64 bundleId = 1;
+    //PID of configuration object
+    required string pid = 2;
+    //repeated strings representing attribute keys
+    repeated string key = 3;
+}
+
+//Message representing an osgi attribute definition and all its parameters
+//as described in the interface org.osgi.service.metatype.AttributeDefinition
+message AttributeDefinitionType
+{
+    //Represents the cardinality of an attribute.  Attributes with multiple values are handled by arrays or Vector objects.
+    //A return value of 0 indicates that one occurrence in the array is required
+    //A return value of x > 0 indicates that the array contains 0 to x elements
+    //A return value of x < 0 indicates that the Vector object contains 0 to |x| elements
+    //A return value of Integer.MAX_VALUE indicates that the array has no limit
+    //A return value of Integer.MIN_VALUE indicates that the Vector object has no limit
+    required sint32 cardinality = 1;
+
+    //A default value for an attribute. The object must be an appropriate type defined by the cardinality and attribute type.
+    repeated string defaultValue = 2;
+
+    //Unique identity for an attribute.  The ID may be an OSI Object Identifier (OID) or a unique ID which can be a Java class
+    //name (reverse domain) or generated with a GUID algorithm.
+    required string id = 3;
+
+    //The name of an attribute
+    required string name = 4;
+
+    //List of option labels that this attribute accepts.  If empty, then there are no option labels available. This list
+    //must be in the same sequence as optionValue, i.e., for each index i in optionLabel, i in optionValue should be the
+    //associated value.
+    repeated string optionLabel = 5;
+
+    //List of option values that this attribute accepts.  If empty, then there are no option values available. Each 
+    //value must be convertible to the type of the attribute.  This list must be in the same sequence as optionLabel,
+    //i.e., for each index i in optionValue, i in optionLabel should be the label.
+    repeated string optionValue = 6;
+
+    //The return type for an attribute
+    //Types are defined by the constants: STRING, LONG, INTEGER, CHAR, BYTE, DOUBLE, FLOAT, BOOLEAN
+    //which are defined in the OSGi AttributeDefinition class
+    required int32 attributeType = 7;
+
+    //The description of the attribute
+    optional string description = 8;
+    
+    //Whether the property is required or not. This field is not defined in the AttributeDefinition interface but is
+    //determined when retrieving AttributeDefintions from an org.osgi.service.metatype.ObjectClassDefinition.
+    optional bool required = 9 [default = false];
+}
+
+//Message that contains a request to retrieve meta type information from system.
+message GetMetaTypeInfoRequestData
+{
+    //ID of bundle to retrieve meta type information for. If no bundle ID is specified then meta type information for
+    //all bundles on the system is retrieved.
+    optional int64 bundleId = 1;
+}
+
+//Message containing all meta type information for a system
+message GetMetaTypeInfoResponseData
+{
+    //List of all meta type information on the system
+    repeated MetaTypeInfoType metaType = 1;
+}
+
+//Message that contains OSGi Meta type object information corresponding to a particular configuration
+//Information that is returned includes the bundle ID, PID, and all attribute information
+message MetaTypeInfoType
+{
+    //Bundle ID the PID belongs to.
+    required int64 bundleId = 1;
+    //PID of configuration object
+    required string pid = 2;
+    //Used to determine if the information pertains to a factory configuration
+    required bool isFactory = 3;
+    //List of all attributes associated with the pid
+    repeated AttributeDefinitionType attributes = 4;
+    //Description of the Object Class Definition to which the above Attribute Definitions belong
+    required ObjectClassDefinitionType ocd = 5;
+}
+
+//Message that describes properties of an OSGi Object Class Definition.
+message ObjectClassDefinitionType
+{
+    //The name of the OCD.
+    required string name = 1;
+
+    //The unique identifier of the OCD.
+    required string id = 2;
+
+    //The human-readable description of the OCD, may be an empty string.
+    optional string description = 4;
+}

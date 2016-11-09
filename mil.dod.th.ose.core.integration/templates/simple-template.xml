@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<p:MissionProgramTemplate xmlns:p="http://th.dod.mil/core/mp/model" 
+    xmlns:shared="http://th.dod.mil/core/types"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://th.dod.mil/core/mp/model ../resources/missionProgramSchema/MissionProgramTemplate.xsd ">
+  <p:source>
+  <![CDATA[
+  importPackage(Packages.mil.dod.th.core.mp);
+  
+obj = 
+{
+    execute: function()
+    {
+        b = 6;
+        c = a * b;
+        logSvc.info("Simple script.", []);
+    },
+    test: function()
+    {
+        b = 6;
+        c = a * b;
+        logSvc.info("Simple script test.", []);
+        return MissionScript.TestResult.PASSED;
+    },
+    shutdown: function()
+    {
+        logSvc.info("Simple script is shutting down!.", []);
+    }
+};]]>
+</p:source>
+  <p:name>simple-template</p:name>
+  <p:description> This script tests that the JavaScript engine can actually bind 
+  variable values passed in to variables within the script being executed. </p:description>
+
+  <p:withInterval>false</p:withInterval>
+  <p:withImageCapture>false</p:withImageCapture>
+  <p:withSensorTrigger>false</p:withSensorTrigger>
+  <p:withTimerTrigger>false</p:withTimerTrigger>
+  <p:withPanTilt>false</p:withPanTilt>
+
+  <p:supportTestExecution>true</p:supportTestExecution>
+
+  <p:variableMetaData>
+    <shared:name>a</shared:name>
+    <shared:description>Numeric value used for testing simple javascript implementations.</shared:description>
+    <shared:humanReadableName>Asset</shared:humanReadableName>
+    <p:type>Integer</p:type>
+  </p:variableMetaData>
+</p:MissionProgramTemplate>

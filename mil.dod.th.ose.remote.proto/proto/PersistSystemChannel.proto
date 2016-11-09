@@ -1,0 +1,49 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.ose.remote.proto";
+option java_outer_classname = "PersistSystemChannel";
+
+//Message used to store system channel for the remote lookup
+message SystemChannels
+{
+    //Corresponds to the TerraHarvest system id that identifies the endpoint
+    required int32 sysId = 1;
+    
+    //Socket channels for the given system
+    repeated SocketChannelType socketChannel = 2;
+    
+    //Transport channels for the given system
+    repeated TransportChannelType transportChannel = 3;
+}
+
+//Type which contains attributes of a client socket channel including host name and port number.
+message SocketChannelType
+{
+    required string host = 1;
+    
+    required int32 port = 2;
+}
+
+//Type which contains attributes of a transport channel including the transport name and message destination address.
+message TransportChannelType
+{
+    //transportName is the string name of the transport layer used to send data for the remote interface
+    required string transportName = 1;
+    
+    //string representation of local address used by the transport layer when receiving message
+    required string localAddress = 2;
+    
+    //string representation of remote address used by the transport layer when sending/receiving messages
+    required string remoteAddress = 3;
+}

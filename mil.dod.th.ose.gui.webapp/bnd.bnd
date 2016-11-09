@@ -1,0 +1,100 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+-include: ../cnf/ext/defaultproperties.bnd
+Web-ContextPath: ${gui.contextpath}
+Bundle-Version: 1.0.2.${tstamp}
+Bundle-Description: Bundle containing the JSF web application for THOSE
+Bundle-Name: THOSE GUI Web Application
+Export-Package: mil.dod.th.ose.gui.webapp.controller.history;hasPersistentTypes=true
+Private-Package: mil.dod.th.ose.gui.webapp.*
+
+#Note that any components defined in this bundle cannot be referenced by a JSF managed class such
+#as managed beans and singletons so service components should be avoided
+Service-Component: *
+
+-wab: WebContent/
+-wablib: \
+        ../mil.dod.th.ose.gui.primefaces.patch/generated/mil.dod.th.ose.gui.primefaces.patch.jar, \
+        ../mil.dod.th.ose.gui.theme/generated/mil.dod.th.ose.gui.theme.day.jar, \
+        ../mil.dod.th.ose.gui.theme/generated/mil.dod.th.ose.gui.theme.night.jar, \
+        lib/atmosphere-runtime-1.0.13.jar, \
+        lib/atmosphere-compat-jbossweb-1.0.13.jar, \
+        lib/atmosphere-compat-tomcat-1.0.13.jar, \
+        lib/atmosphere-compat-tomcat7-1.0.13.jar, \
+        lib/atmosphere-08131253-1.0.0-20130826.192228-1.jar, \
+        lib/collections-2.1.jar, \
+        lib/slf4j-api-1.7.2.jar, \
+        lib/slf4j-simple-1.7.2.jar
+        
+Include-Resource: schemas/
+Bundle-Vendor: UDRI
+# several packages could be used by Primefaces but currently is not:
+# com.lowagie.text is for DataExporter (PDF)
+# com.sun.syndication is for ROME RSS feeds
+# org.apache.poi is for DataExporter (Excel)
+# eu.infomas.annotation scans classes for specified annotations
+# org.eclipse.jetty is a web server and javax.servlet containter
+# org.jboss.servlet.http is another type of servlet implementation
+# org.mortbay.util.ajax is an implementation of ajax with JSON support
+# org.apache.catalina.comet is Tomcat implementation of Comet
+# org.apache.catalina.websocket is Tomcat implementation of websockets
+# org.apache.coyote.http11.upgrade is component that supports HTTP/1.1 protocol for catalina
+# org.apache.tomcat.util.http.mapper implements server mapping rules for Tomcat
+# com.sun.enterprise.web.connector.grizzly.comet contains a comet implementation 
+# org.glassfish.grizzly is glassfish provided Grizzly implementation
+Import-Package:  \
+    !com.lowagie.text.*, \
+    !com.sun.syndication.*, \
+    !org.apache.poi.*, \
+    !eu.infomas.annotation, \
+    !org.eclipse.jetty.*, \
+    !org.jboss.servlet.http, \
+    !org.mortbay.util.ajax, \
+    !org.apache.catalina.comet, \
+    !org.apache.catalina.websocket, \
+    !org.apache.coyote.http11.upgrade, \
+    !org.apache.tomcat.util.http.mapper, \
+    !com.sun.enterprise.web.connector.grizzly.comet, \
+    !org.glassfish.grizzly.*, \
+    *
+    
+-buildpath:  \
+    com.google.guava,\
+    com.google.protobuf;version=2.6.1,\
+    biz.aQute.bnd.annotation,\
+    org.apache.commons.lang,\
+    osgi.cmpn,\
+    osgi.core,\
+    ${glassfish},\
+    ${workspace}/deps/primefaces/primefaces-3.4.jar;version=file,\
+    lib/atmosphere-runtime-1.0.13.jar;version=file,\
+    lib/atmosphere-compat-jbossweb-1.0.13.jar;version=file,\
+    lib/atmosphere-compat-tomcat-1.0.13.jar;version=file,\
+    lib/atmosphere-compat-tomcat7-1.0.13.jar;version=file,\
+    lib/atmosphere-08131253-1.0.0-20130826.192228-1.jar;version=file,\
+    lib/collections-2.1.jar;version=file,\
+    lib/slf4j-api-1.7.2.jar;version=file,\
+    lib/slf4j-simple-1.7.2.jar;version=file,\
+    ${junit},\
+    ${mockito},\
+    ${powermock},\
+    javax.jdo,\
+    mil.dod.th.ose.utils;version=latest,\
+    mil.dod.th.core.api;version=latest,\
+    mil.dod.th.core.proto.messages;version=latest,\
+    mil.dod.th.core.proto.converters;version=latest,\
+    mil.dod.th.ose.shared;version=latest,\
+    mil.dod.th.ose.remote;version=latest,\
+    mil.dod.th.ose.gui.api;version=latest,\
+    mil.dod.th.ose.config.event;version=latest

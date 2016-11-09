@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<AssetCapabilities xmlns="capability.asset.core.th.dod.mil"
+    productName="ExampleObservationsAsset" description="An example asset that creates observations on activation."
+    manufacturer="ExampleManufacturer">
+    <modalities description="none" value="Acoustic"/>
+    <modalities description="none" value="Magnetic"/>
+    <nominalFov>100.0</nominalFov>
+    <supportedCameras id="1" type="Visible"/>
+    
+    <detectionCapabilities directionOfTravel="false" targetFrequency="true" targetId="true" targetLOB="true"
+        targetLocation="true" targetOrientation="true" targetRange="false" targetSpeed="false" trackHistory="true" >
+        <typesAvailable>Alarm</typesAvailable> 
+        <typesAvailable>Tamper</typesAvailable>
+        <typesAvailable>Test</typesAvailable>
+    </detectionCapabilities>
+    <digitalMediaCapabilities>
+        <encodings>video/h.264</encodings>
+    </digitalMediaCapabilities>
+    <audioCapabilities>
+        <recorders description="none" value="Microphone"/>
+        <sampleRatesKHz>0.0</sampleRatesKHz>
+    </audioCapabilities>   
+    <videoCapabilities colorAvailable="false">
+        <minResolution height="0" width="0"/>
+        <maxResolution height="0" width="0"/>
+        <availableCameraIDs>1</availableCameraIDs>
+        <framesPerSecond>30.0</framesPerSecond>
+    </videoCapabilities>
+    <commandCapabilities captureData="true" performBIT="true">
+    </commandCapabilities>
+</AssetCapabilities>

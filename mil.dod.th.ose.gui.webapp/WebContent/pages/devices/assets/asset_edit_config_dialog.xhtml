@@ -1,0 +1,50 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ 
+ Dialog shown for editing the configuration properties of an Asset.
+ 
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:configuration="http://java.sun.com/jsf/composite/configuration">
+
+    <p:dialog widgetVar="assetEditConfigurationDlg" id="assetEditConfiguration" width="700" header="Asset Configuration" resizable="false">
+       <h2>Configuration Values</h2>
+       <p:outputPanel id="assetEditConfigPanel" >
+           <c:set value="#{factoryObjConfigModifierView.getSelectedFactoryModel()}" var="factoryModel"/>
+           <configuration:edit_configuration execCancel="assetEditConfigurationDlg.hide()" 
+               execSave="assetEditConfigurationDlg.hide()" 
+               rendered="#{factoryModel != null}"/>
+           
+           <p:panelGrid style="border:none" styleClass="panelGridNoBordersOnCells" rendered="#{factoryModel == null}">
+                <p:row>
+                    <p:column>
+                        <p:graphicImage library="images" name="thoseIcons/default/attention.png" />
+                    </p:column>
+                    <p:column>
+                        <h:outputText value="An error has occurred when trying to display configurations for this model. Please try to refresh the page."/>
+                    </p:column>
+                </p:row>
+           </p:panelGrid>
+       </p:outputPanel>
+    </p:dialog>
+    
+</ui:composition>

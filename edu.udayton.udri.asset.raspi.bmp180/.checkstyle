@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<fileset-config file-format-version="1.2.0" simple-config="false" sync-formatter="false">
+  <local-check-config name="all" location="/cnf/checkstyle/checkstyle-rules-all-files.xml" type="project" description="">
+    <additional-data name="protect-config-file" value="false"/>
+  </local-check-config>
+  <local-check-config name="java" location="/cnf/checkstyle/checkstyle-rules.xml" type="project" description="">
+    <additional-data name="protect-config-file" value="false"/>
+  </local-check-config>
+  <local-check-config name="java-test" location="/cnf/checkstyle/checkstyle-test-rules.xml" type="project" description="">
+    <additional-data name="protect-config-file" value="false"/>
+  </local-check-config>
+  <fileset name="all" enabled="true" check-config-name="all" local="true">
+    <file-match-pattern match-pattern="." include-pattern="true"/>
+    <file-match-pattern match-pattern=".project|.pmd|.checkstyle|.classpath|.class|.jar|.gitignore" include-pattern="false"/>
+    <file-match-pattern match-pattern=".DS_Store" include-pattern="false"/>
+    <file-match-pattern match-pattern=".settings/" include-pattern="false"/>
+    <file-match-pattern match-pattern=".generated/" include-pattern="false"/>
+  </fileset>
+  <fileset name="java-test" enabled="true" check-config-name="java-test" local="true">
+    <file-match-pattern match-pattern="test/.*.java$" include-pattern="true"/>
+  </fileset>
+  <fileset name="java" enabled="false" check-config-name="java" local="true">
+    <file-match-pattern match-pattern="src/.*.java$" include-pattern="true"/>
+  </fileset>
+</fileset-config>

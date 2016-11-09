@@ -1,0 +1,40 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ 
+ This dialog is presented if a mission is attempted to be loaded and an 'active'
+ controller is NOT set.
+ 
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+    
+    <p:dialog widgetVar="missionUnableLoadDlg" header="Unable to Load Mission" width="275" resizable="false" id="unableLoadDlg" >
+        <h:form>
+            <div style="width:100%" align="center" >
+                <p>An active controller must be set.</p>
+                <p>A controller is set as active by selecting it from the 'Controller Statuses' menu.
+                </p>
+                <br/>
+                <p:commandButton id="closeDialog" value="Close" style="width:50%; text-align:center;" onclick="missionUnableLoadDlg.hide()" ></p:commandButton>
+            </div>
+        </h:form>
+    </p:dialog>
+</ui:composition>

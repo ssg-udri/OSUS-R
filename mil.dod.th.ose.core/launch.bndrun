@@ -1,0 +1,50 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+
+-runfw: org.apache.felix.framework;version='[4,5)'
+-runsystemcapabilities: ${native_capability}
+
+-resolve.effective: active
+
+-runsystempackages: com.sun.xml.internal.bind, sun.misc
+
+-runbundles:  \
+    org.apache.felix.gogo.runtime,\
+    org.apache.felix.gogo.shell,\
+    org.apache.felix.gogo.command,\
+    mil.dod.th.ose.core.impl;version=latest,\
+    org.datanucleus.api.jdo,\
+    javax.jdo,\
+    org.datanucleus,\
+    org.datanucleus.store.rdbms,\
+    biz.aQute.bnd.annotation,\
+    com.google.guava,\
+    com.google.protobuf;version=latest,\
+    mil.dod.th.ose.metatype;version=latest,\
+    mil.dod.th.ose.core.shared;version=latest,\
+    org.apache.felix.scr,\
+    mil.dod.th.ose.utils;version=latest,\
+    org.apache.commons.lang,\
+    org.apache.felix.configadmin,\
+    org.apache.felix.eventadmin,\
+    org.apache.felix.metatype,\
+    org.apache.felix.log,\
+    mil.dod.th.ose.logging;version=latest,\
+    mil.dod.th.ose.controller;version=latest,\
+    org.h2;version=latest,\
+    mil.dod.th.ose.integration.example.asset;version=latest
+
+-runrequires:  \
+    osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
+    osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
+    osgi.identity;filter:='(osgi.identity=mil.dod.th.ose.core.impl)'

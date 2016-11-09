@@ -1,0 +1,707 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+
+<project name="root" default="individual-build">
+
+    <property environment="env" />
+
+    <property file="../build.properties" prefix="bp"/>
+
+    <dirname property="root.basedir" file="${ant.file.root}"/>
+    <dirname property="bp.workspace.dir" file="${root.basedir}/../build.xml"/>
+    <echo message="Build workspace.dir is: ${bp.workspace.dir}"/>
+
+    <import file="${bp.workspace.dir}/cnf/ant/commons.xml"/>
+    
+    <!-- Build all basic tool dependencies -->
+    <target name="build-tools">
+        <ant antfile="${bp.workspace.dir}/cnf/ant/tools.xml" target="build" />
+    </target>
+    
+    <!-- Build all dependencies needed by a generic controller and GUI, can be used when building specific targets
+        so shared dependency aren't built twice -->
+    <target name="build-controller-gui-deps" depends="build-tools">
+        <ant antfile="${bp.workspace.dir}/cnf/ant/shared.xml" target="build" />
+        <ant dir="${bp.rxtxtty.dir}" target="build" />
+    </target>
+
+    <!-- Whenever a different branch is checked out or opening Eclipse for the first time, this target should be run and
+        Eclipse will then be able to buld the rest. After running this target either start Eclipse or if already open,
+        select all projects and refresh them using F5 so Eclipse picks up the changes. -->
+    <target name="build-for-eclipse" depends="build-tools"
+        description="Builds what Eclipse doesn't, run this before Eclipse is used">
+        <ant dir="${bp.core.lexicon.dir}" target="clean" />
+        <ant dir="${bp.core.proto.dir}" target="clean" />
+        <ant dir="${bp.core.dir}" target="clean" />
+        <ant dir="${bp.ose.core.proto.dir}" target="clean" />
+        <ant dir="${bp.remote.proto.dir}" target="clean" />
+        <ant dir="${bp.core.lexicon.dir}" target="build" />
+        <ant dir="${bp.core.proto.dir}" target="build" />
+        <ant dir="${bp.core.dir}" target="build" />
+        <ant dir="${bp.ose.core.proto.dir}" target="build" />
+        <ant dir="${bp.remote.proto.dir}" target="build" />
+    </target>
+    
+    <!-- 
+        Build both the controller and GUI, don't use directly, used by Continuous Integration and 
+        special builds (development, individual, etc.)
+    -->
+    <target name="build" depends="build-controller-gui-deps,gen-docs-terra-harvest">
+        
+        <ant dir="${bp.junit4.test.runner.dir}" target="build" />
+
+        <!-- Build non-generic code (always build even if not deployed, code only depends on core API) -->
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.serial.swig" target="build" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.serial" target="build" />
+        <ant dir="${bp.workspace.dir}/edu.udayton.udri.smartphone" target="build" />
+    
+        <!-- Must build assets and example projects as they are referenced by integration projects -->
+        <subant target="build">
+            <fileset dir="${bp.workspace.dir}">
+                <include name="edu.udayton.udri.asset.*/build.xml" />
+                <include name="example.*/build.xml"/> 
+                <exclude name="*.integration/build.xml"/>
+            </fileset>
+        </subant>
+    
+        <!-- build common integration utilities -->
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.integration.commons" target="build" />
+        
+        <!-- must build base integration before linux and linux integration before custom linux projects -->
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.integration" target="build" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.gui.integration" target="build" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.remote.integration" target="build" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.integration" target="build" />
+                
+        <ant dir="${bp.time.service.dir}" target="build" />
+                
+        <!-- all target application dependencies have been built, now build each target application specific bundle -->
+        <ant dir="${bp.base.target.dir}" target="build-no-deps" />
+
+        <ant dir="${bp.remote.client.dir}" target="build" />
+        <ant dir="${bp.word.htm.doclet.dir}" target="build" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.confluence.doclet" target="build" />
+
+        <ant dir="${bp.checkstyle.ext.dir}" target="build" />
+    </target>
+
+    <target name="clean" description="Clean all files generated from building entire system">
+        <!-- Clean all projects -->
+        <subant target="clean">
+            <fileset dir="${bp.workspace.dir}" includes="*/build.xml" excludes="cnf/**" />
+        </subant>
+    </target>
+
+    <target name="junit" description="Run all unit tests on local/host machine" >
+        <subant target="junit">
+            <fileset dir="${bp.workspace.dir}">
+                <include name="*/build.xml" />
+                <exclude name="cnf/**" />
+            </fileset>
+        </subant>
+    </target>
+
+    <target name="test" description="Run all integration tests on host machine except GUI">
+        <subant target="test">
+            <fileset dir="${bp.workspace.dir}">
+                <include name="*.integration/build.xml" />
+                <exclude name="mil.dod.th.ose.gui.integration/build.xml" />
+            </fileset>
+        </subant>
+    </target>
+
+    <target name="target-test" description="Run all integration tests that run on a separate target">
+        <!--
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.PLATFORM.integration" target="test" />
+        -->
+    </target>
+
+    <target name="gen-docs-terra-harvest" description="Generate all Terra Harvest standard documents">
+        <ant dir="${bp.core.dir}" target="javadoc" />
+    </target>
+    
+    <target name="gen-docs-all" depends="gen-docs-terra-harvest,javadoc-those" description="Generate all documentation" />
+
+    <!-- Package will only include SWIG generated files if they already exist -->
+    <target name="javadoc-those" description="Generate Javadoc documentation for the entire system">
+        <subant target="javadoc">
+            <fileset dir="${bp.workspace.dir}">
+                <include name="mil.dod.th.*/build.xml" />
+            </fileset>
+        </subant>
+    </target>
+
+    <!-- all Java source exluding test code and external libraries -->
+    <fileset id="those.java.sources" dir="${bp.workspace.dir}">
+        
+        <include name="mil.dod.th.*/**/src/**/*.java" />
+        
+        <!-- Exclude generated code -->
+        <exclude name="*.proto/**/*.java" /> <!-- projects ending in .proto contain protobuf generated code only -->
+        <exclude name="mil.dod.th.core.lexicon/**/*.java" /> <!-- contains JAXB generated code only -->
+        
+        <!-- exclude legacy code -->
+        <exclude name="mil.dod.th.confluence.doclet/**" />
+        <exclude name="mil.dod.th.word.htm.doclet/**" />
+                                
+        <!-- Exclude test helper code -->
+        <exclude name="mil.dod.th.ose.test/**/*.java" />
+        
+        <!-- Exclude third party code -->
+        <exclude name="mil.dod.th.junit4.test.runner/src/mil/dod/th/ose/junit4xmltestrunner/ant/*.java" />
+        <exclude name="mil.dod.th.ose.gui.glassfish.patch/**" />
+        
+        <!-- exclude integration test code and helper code -->
+        <exclude name="*.integration/**" />
+        <exclude name="mil.dod.th.ose.integration.commons/**"/>
+    </fileset>
+
+    <!-- all Java source excluding test code and 3rd party dep code-->
+    <fileset id="those.all.java.sources" dir="${bp.workspace.dir}">
+        <include name="**/*.java" />
+        
+        <!-- Exclude third party dependency code -->
+        <exclude name="deps/**/*.java" />
+        
+        <!-- Exclude test code -->
+        <exclude name="*/test/**/*.java" />
+    </fileset>
+        
+    <fileset id="those.sdk.java.sources" dir="${bp.workspace.dir}/mil.dod.th.ose.sdk.integration/${bp.gen.dir}">
+        <include name="example.sdk.*/**/*.java" />
+    </fileset>
+    
+    <!-- All files, even non-source code excluding external libraries -->
+    <fileset id="those.sources" dir="${bp.workspace.dir}">
+        <include name="**/*" />
+        
+        <!-- Exclude third party code/ -->
+        <exclude name="**/open-src/**" />
+        <exclude name="deps/**" />
+        <exclude name="mil.dod.th.ose.core/**/org/datanucleus/plugin/osgi/*.java" />
+        <exclude name="mil.dod.th.ose.gui.webapp/WebContent/resources/css/jquery.mobile-1.1.0.min.css" />
+        <exclude name="cnf/gradle/doc/**" />
+                                                
+        <!-- Exclude files managed by other tools -->
+        <exclude name="build.gradle" />
+        <exclude name="settings.gradle" />
+        <exclude name=".gradle/**" />
+        <exclude name="cnf/build-template.xml" />
+        <exclude name="cnf/checkstyle/*.xml" />
+        <exclude name="cnf/gradle/template/**" />
+        <exclude name="cnf/javadoc/**" />
+        <exclude name="cnf/jpm-index.json" />
+        <exclude name="cnf/cache/**" />
+        <exclude name="design/**" />
+        <exclude name="eclipse-dictionary" />
+        <exclude name="eclipse-javascript-profile.xml" />
+        <exclude name="eclipse-preferences.epf" />
+        <exclude name="LICENSE" />
+        <exclude name="mil.dod.th.ose.core/TH-standard-template*/**" />
+        <exclude name="mil.dod.th.ose.core/TH-standard.xsl" />
+        <exclude name="mil.dod.th.ose.shell/resources/motd" />
+        <exclude name="**/.checkstyle" />
+        <exclude name="**/.pmd" />
+        <exclude name="**/.project" />
+        <exclude name="**/.cproject" />
+        <exclude name="**/.classpath" />
+        <exclude name="**/*.pageflow" />
+        <exclude name="**/*.ftl" />
+        <exclude name="**/.settings/**" />
+        <exclude name="**/.externalToolBuilders/**" /> 
+        <exclude name="**/mozilla.cfg" />
+        <exclude name="**/localstore.rdf" />
+        <exclude name="**/packageinfo" />
+        <exclude name="target/generic/gui/passwd" />
+        <exclude name="build.properties" />
+        <exclude name="**/index.xml.gz*" /> <!-- files managed by bundle repos -->
+                                        
+        <!-- Exclude files we can't add header to for some reason -->
+        <exclude name="mil.dod.th.ose.gui.webapp/WebContent/pages/templates/mainscreenTemplate.xhtml" />
+                
+        <!-- Exclude generated/binary code/files -->
+        <exclude name="**/*.class" />
+        <exclude name="**/*.jar" />
+        <exclude name="**/*.o" />
+        <exclude name="**/*.so" />
+        <exclude name="**/*.zip" />
+        <exclude name="**/*.gif" />
+        <exclude name="**/*.png" />
+        <exclude name="**/*.bmp" />
+        <exclude name="**/*.ico" />
+        <exclude name="**/*.xcf" />
+        <exclude name="**/*.cer" />
+        <exclude name="**/*.wixobj" />
+        <exclude name="**/*.log" />
+        <exclude name="**/reports/**" />
+        <exclude name="**/src/c/*Wrap.c" />
+        <exclude name="*.proto/**/*.java" /> <!-- projects ending in .proto contain protobuf generated code only -->
+        <exclude name="mil.dod.th.core.lexicon/**/*.java" /> <!-- contains JAXB generated code only -->
+        <exclude name="*/gen-src/**/*.java" />
+        <exclude name="cnf/tmp.build.properties" />
+        <exclude name="cnf/custom.bnd" />
+        <exclude name="cnf/ext/platform.bnd" />
+        <exclude name="**/generated/**" />
+        <exclude name="target/*/*/deploy/**" />
+        <exclude name="**/cobertura.ser" />
+        <exclude name="**/*.h2.db" />
+        <exclude name="**/*.lock.db" />
+    </fileset>
+    
+    <!-- all Junit tests excluding external libraries -->
+    <fileset id="those.test.sources" dir="${bp.workspace.dir}">
+        <!-- Limit to test folders -->
+        <include name="*/test/**/*.java"/>
+
+        <!-- also include integration tests and supporting code -->
+        <include name="*.integration/**/*.java"/>
+        <include name="mil.dod.th.ose.integration.commons/**/*.java"/>
+    </fileset>
+    
+    <target name="checkstyle" description="Run Checkstyle on all code">
+        <!-- must make sure extenion JAR is built before task is defined, so can't define task in commons.xml -->
+        <ant dir="${bp.checkstyle.ext.dir}" target="build" />
+        <path id="checkstyle.classpath">
+            <pathelement location="${bp.checkstyle.lib.jar.file}" />
+            <pathelement location="${bp.checkstyle.ext.jar.file}" />
+            <pathelement location="${bp.core.api.bundle.file}" />
+        </path>
+        <taskdef resource="checkstyletask.properties" classpathref="checkstyle.classpath" />
+        <checkstyle config="${bp.checkstyle.config.file}">
+            <fileset refid="those.java.sources" />
+            <formatter type="xml" toFile="${bp.report.path}/checkstyle-java-results.xml" />
+        </checkstyle>
+        <checkstyle config="${bp.checkstyle.ext.java.config.file}">
+            <fileset refid="those.all.java.sources" />
+            <formatter type="xml" toFile="${bp.report.path}/checkstyle-ant-java-source-results.xml" />
+        </checkstyle>
+        <checkstyle config="${bp.checkstyle.sdk.config.file}">
+            <fileset refid="those.sdk.java.sources" />
+            <formatter type="xml" toFile="${bp.report.path}/checkstyle-sdk-java-results.xml" />
+        </checkstyle>
+        <checkstyle config="${bp.checkstyle.all.file}">
+            <fileset refid="those.sources" />
+            <formatter type="xml" toFile="${bp.report.path}/checkstyle-all-files-results.xml" />
+        </checkstyle>
+        <checkstyle config="${bp.checkstyle.test.config.file}">
+            <fileset refid="those.test.sources" />
+            <formatter type="xml" toFile="${bp.report.path}/checkstyle-test-results.xml" />
+        </checkstyle>
+    </target>
+
+    <target name="pmd" description="Run PMD on all code">
+        <path id="pmd.lib">
+            <fileset dir="${bp.deps.dir}/pmd">
+                <include name="*.jar" />
+            </fileset>
+        </path>
+        <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.lib" />
+        <pmd shortFilenames="true">
+            <ruleset>${bp.pmd.java.config.file}</ruleset>
+            <fileset refid="those.java.sources" />
+            <formatter type="xml" toFile="${bp.report.path}/pmd-java-results.xml" />
+        </pmd>
+        <pmd shortFilenames="true">
+            <ruleset>${bp.pmd.test.config.file}</ruleset>
+            <!-- don't use those.test.sources fileset as this check is for JUnit4 tests only -->
+            <fileset dir="${bp.workspace.dir}">
+                <!-- Limit to test folders -->
+                <include name="*/test/**/*.java"/>
+
+                <!-- include integration tests that use old test runner -->
+                <include name="mil.dod.th.ose.gui.integration/**/*.java"/>
+                <include name="mil.dod.th.ose.integration/**/*.java"/>
+                <include name="mil.dod.th.ose.remote.integration/**/*.java"/>
+            </fileset>
+            <formatter type="xml" toFile="${bp.report.path}/pmd-test-results.xml" />
+        </pmd>
+    </target>
+
+    <target name="cobertura" description="create Cobertura coverage reports">
+        <taskdef resource="tasks.properties">
+            <classpath>
+                <fileset dir="${bp.cobertura.deps.path}">
+                    <include name="cobertura.jar" />
+                    <include name="lib/**/*.jar" />
+                </fileset>
+            </classpath>
+        </taskdef>
+        <cobertura-report format="xml" destdir="${bp.cobertura.report.path}" datafile="${bp.cobertura.ser.file}">
+            <dirset dir="${bp.workspace.dir}">
+                <include name="**/*src*" />
+            </dirset>
+        </cobertura-report>
+       
+        <cobertura-check linerate="90" branchrate="80" datafile="${bp.cobertura.ser.file}" haltonfailure="false">
+            <regex pattern="mil.dod.th.core.*" linerate="95" branchrate="90" />
+            <regex pattern="mil.dod.th.ose.core.*" linerate="95" branchrate="90" />
+            <regex pattern="mil.dod.th.ose.gui.*" linerate="85" branchrate="75" />
+        </cobertura-check>
+    </target>
+
+    <target name="cobertura-clean" description="Remove generated Cobertua report and data file.">
+        <delete includeemptydirs="true">
+            <fileset dir="${bp.cobertura.report.path}" includes="**/*" />
+        </delete>
+    </target>
+
+    <target name="run-owasp-dependency-check" description="Dependency-Check Analysis">
+        <mkdir dir="${bp.report.path}/dep-check"/>
+        <dependency-check applicationname="OSUS"
+                          autoupdate="true"
+                          reportoutputdirectory="${bp.report.path}/dep-check"
+                          reportformat="XML"
+                          logFile="${bp.report.path}/dep-check/dependency-check-log.txt">
+            <fileset dir="${bp.workspace.dir}">
+                <include name="**/deps/**"/>
+                <include name="**/lib/**"/>
+                <exclude name="**/ant-contrib/**"/>
+                <exclude name="**/apache-ant-1.8.4/**"/>
+                <exclude name="**/checkstyle-6.1.1/**"/>
+                <exclude name="**/cobertura/**"/>
+                <exclude name="**/confluence-cli/**"/>
+                <exclude name="**/eclipse-plug-ins/**"/>
+                <exclude name="**/hamcrest/**"/>
+                <exclude name="**/junit/**"/>
+                <exclude name="**/mockito/**"/>
+                <exclude name="**/monte_screenrecorder/**"/>
+                <exclude name="**/owasp-dep-check-ant/**"/>
+                <exclude name="**/pmd/**"/>
+                <exclude name="**/powermock/**"/>
+                <exclude name="**/selenium-*/**"/>
+            </fileset>
+        </dependency-check>
+    </target>
+    
+    <target name="run-fortify-scan" 
+            description="Runs a Fortify Scan on the specified files and outputs results binary to the reports folder.">
+        
+        <path id="deps.fortify.cp">
+            <pathelement location="${bp.bnd.annotation.jar.file}"/>
+            <pathelement location="${bp.com.google.protobuf.bundle.file}"/>
+            <pathelement location="${bp.com.sun.jna.file}"/>
+            <pathelement location="${bp.com.sun.jna.platform.file}"/>
+            <pathelement location="${bp.commons-io.jar.file}"/>
+            <pathelement location="${bp.commons-lang.jar}"/>
+            <pathelement location="${bp.datanucleus-api-jdo.jar}"/>
+            <pathelement location="${bp.datanucleus-core.jar}"/>
+            <pathelement location="${bp.gogo.runtime.bundle.file}"/>
+            <pathelement location="${bp.guava.jar.file}"/>
+            <pathelement location="${bp.guice.jar.file}"/>
+            <pathelement location="${bp.javaee.api.jar}"/>
+            <pathelement location="${bp.javax.el.api.jar}"/>
+            <pathelement location="${bp.javax.faces.jar}"/>
+            <pathelement location="${bp.javax.servlet.jar}"/>
+            <pathelement location="${bp.jdo.api.jar}"/>
+            <pathelement location="${bp.org.bouncycastle.jar.file}"/>
+            <pathelement location="${bp.org.osgi.cmpn.jar.file}"/>
+            <pathelement location="${bp.org.osgi.core.jar.file}"/>
+            <pathelement location="${bp.osgi-cdi.jar}"/>
+            <pathelement location="${bp.primefaces.jar}"/>
+            <pathelement location="${bp.rxtx.jar}"/>
+        </path>
+        
+        <pathconvert property="fortify.deps" refid="deps.fortify.cp" pathsep=";"/>
+        
+        <echo message="${fortify.deps}"></echo>
+       
+        <mkdir dir="${bp.report.path}/fortify"/>
+        
+        <!-- Build necessary components to satisfy dependencies -->
+        <antcall target="build-tools"/>
+        <ant dir="${bp.target.gui.dir}" target="build-with-deps"/>
+        <ant dir="${bp.junit4.test.runner.dir}" target="build" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.serial.swig" target="build" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.serial" target="build" />
+        <!-- Fortify clean -->
+        <exec executable="sourceanalyzer" failonerror="true" dir="${bp.workspace.dir}">
+            <arg line="-b"/>
+            <arg line="those.fortify.scan"/>
+            <arg line="-clean"/>
+        </exec>
+        
+        <!-- Fortify Translation -->
+        <exec executable="sourceanalyzer" failonerror="true" dir="${bp.workspace.dir}">
+            <arg line="-b"/>
+            <arg line="those.fortify.scan"/>
+            <arg line="-machine-output"/>
+            
+            <arg line="-exclude"/>
+            <arg line="cnf"/>
+            <arg line="-exclude"/>
+            <arg line="deps"/>
+            <arg line="-exclude"/>
+            <arg line="design"/>
+            <arg line="-exclude"/>
+            <arg line="example.asset"/>
+            <arg line="-exclude"/>
+            <arg line="example.ccomm"/>
+            <arg line="-exclude"/>
+            <arg line="example.platform.power"/>
+            <arg line="-exclude"/>
+            <arg line="example.project"/>
+            <arg line="-exclude"/>
+            <arg line="example.serial.reader"/>
+            <arg line="-exclude"/>
+            <arg line="edu.udayton.udri.asset.axis.integration"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.checkstyle.ext"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.remote.client"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.confluence.doclet"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.core.lexicon/src"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.core.proto"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.ose.core.proto"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.junit4.test.runner"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.word.htm.doclet"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.ose.core.integration"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.ose.gui.integration"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.ose.integration"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.ose.linux.integration"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.ose.remote.integration"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.ose.remote.proto"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.ose.rxtxtty.integration"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.ose.sdk"/>            
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.ose.sdk.integration"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.ose.shell.integration"/>
+            <arg line="-exclude"/>
+            <arg line="mil.dod.th.remote.client.integration"/>
+            <arg line="-exclude"/>
+            <arg line="reports"/>
+            <arg line="-exclude"/>
+            <arg line="**/test/**/*.java"/>
+            <arg line="-exclude"/>
+            <arg line="**/remote-test/**/*.java"/>
+            
+            <arg line="-cp"/>
+            <arg line="${fortify.deps}"/>
+            <arg line="-source"/>
+            <arg line="1.8"/>
+            <arg line="**/src/**/*"/>
+            <arg line="**/WebContent/**/*"/>
+            <arg line="**/schemas/**/*"/>
+        </exec>
+        
+        <!-- Fortify Scan -->
+        <exec executable="sourceanalyzer" failonerror="true" dir="${bp.workspace.dir}">
+            <arg line="-b"/>
+            <arg line="those.fortify.scan"/>
+            <arg line="-build-project"/>
+            <arg line="${env.JOB_NAME}"/>
+            <arg line="-build-version"/>
+            <arg line="${env.GIT_COMMIT}"/>
+            <arg line="-machine-output"/>
+            <arg line="-format"/>
+            <arg line="fpr"/>
+            <arg line="-f"/>
+            <arg line="${bp.report.path}/fortify/those-scan-results-${env.JOB_NAME}-${git.descriptor}.fpr"/>
+            <arg line="-scan"/>
+        </exec>
+    </target>
+
+    <target name="deploy" description="Create a deployment for each project, if applicable.">
+        <subant target="deploy">
+            <fileset dir="${bp.workspace.dir}">
+                <include name="*/build.xml" />
+                <exclude name="cnf/**" />                
+                <exclude name="target/**" /><!-- The exclusion moves it from the subant task to the ant task below --> 
+            </fileset>
+        </subant>
+        <ant dir="${bp.base.target.dir}" target="deploy"/>
+    </target>
+
+    <target name="deploy-clean" description="Remove all deployed items from the respective deploy diretories">
+        <ant dir="${bp.base.target.dir}" target="deploy-clean" />
+    </target>
+    
+    <target name="build-source-zip" description="Create a zip of all the source code that goes into a target">
+        <ant dir="${bp.base.target.dir}" target="build-source-zip" />
+    </target>
+
+    <!-- set the build info for an individual build -->
+    <target name="individual-build-info-update">
+        <propertyfile file="${bp.tmp.build.file}" comment="${bp.tmp.build.file.comments}">
+            <entry key="build.buildnum" type="int" default="0" operation="+" pattern="0" />
+            <entry key="build.type" type="string" value="ind" />
+            <entry key="build.user" type="string" value="${user.name}" />
+            <entry key="build.workspace" type="string" value="${bp.workspace.dir}" />
+            <entry key="build.time" type="date" value="now" />
+        </propertyfile>
+    </target>
+    
+    <!-- set the build info for an automated build -->
+    <target name="automated-build-info-update">
+        <!-- create git descriptor -->
+        <exec executable="git" failonerror="true" outputproperty="git.descriptor" >
+            <arg value="describe"/>
+            <arg value="--dirty"/>
+            <arg value="--always"/>
+        </exec>
+        <propertyfile file="${bp.tmp.build.file}" comment="${bp.tmp.build.file.comments}">
+            <entry key="build.buildnum" type="string" value="${env.BUILD_NUMBER}" />
+            <entry key="build.node" type="string" value="${env.NODE_NAME}" />
+            <entry key="build.workspace" type="string" value="${bp.workspace.dir}" />
+            <entry key="build.git.sha" type="string" value="${env.GIT_COMMIT}" />
+            <entry key="build.job" type="string" value="${env.JOB_NAME}" />
+            <entry key="build.time" type="date" value="now" />
+            <entry key="build.descriptor" type="string" value="${git.descriptor}" />
+            <entry key="build.branch" type="string" value="${env.GIT_BRANCH}" />
+        </propertyfile>
+    </target>
+
+    <!-- set the build info for a Jenkins build -->
+    <target name="jenkins-build-info-update" depends="automated-build-info-update">
+        <propertyfile file="${bp.tmp.build.file}" comment="${bp.tmp.build.file.comments}">
+            <entry key="build.type" type="string" value="automated" />
+        </propertyfile>
+    </target>
+            
+    <!-- This should not be executed by itself.  Only as part of a build -->
+    <target name="save-build-props">
+        <mkdir dir="${bp.report.path}" />
+        <echoproperties destfile="${bp.report.path}/build.properties" />
+    </target>
+    
+    <!-- copy to custom.bnd so file will be found by build.bnd, should only be needed when the release-bundle-repo
+         is not accessible like when continuous integration is running -->
+    <target name="place-custom-bnd">
+        <copy file="${bp.cnf.dir}/custom.bnd.hide" tofile="${bp.cnf.dir}/custom.bnd" />
+    </target>
+    
+    <target name="individual-build" depends="individual-build-info-update,build,deploy,save-build-props" />
+
+    <target name="ci-init" depends="save-build-props,jenkins-build-info-update,place-custom-bnd" />
+    
+    <target name="ci-standard" 
+            depends="ci-init,build-source-zip,build,junit,cobertura,deploy,test,checkstyle,pmd" 
+            description="Build used by Continuous Integration to perform a standard build with basic testing">
+    </target>
+    
+    <target name="ci-gui" 
+            depends="ci-init,build-deploy-gui" 
+            description="Build used by Continuous Integration to build the web GUI only">
+    </target>
+    <target name="build-deploy-gui" depends="build-tools">
+        <ant dir="${bp.gui.target.dir}" target="build-deploy" />
+    </target>
+
+    <target name="ci-target" depends="ci-init,build-source-zip,build,deploy,target-test" 
+            description="Build used by Continuous Integration, runs integration tests on target along with target 
+        specific tests.">
+    </target>
+    
+    <target name="ci-docs" depends="ci-init,build,gen-docs-all" 
+        description="Build used by Continuous Integration, builds documentation only (Javadocs, support for remote interface)" />
+
+    <target name="ci-build-only" depends="ci-init,build,deploy" 
+        description="Build used by Continuous Integration to build code with profiling code injected">
+    </target>
+
+    <target name="ci-security-checks" 
+        depends="ci-init,run-owasp-dependency-check,run-fortify-scan"
+        description="Build used by Continuous Integration, checks dependencies for potential vulnerablilites
+        and does a vulnerability scan on all source code."/>
+    
+    <target name="build-core-api" depends="build-tools">
+        <ant dir="${bp.core.lexicon.dir}" target="build" />
+        <ant dir="${bp.core.proto.dir}" target="build" />
+        <ant dir="${bp.core.dir}" target="build" />
+    </target>
+    <target name="ci-core-api" 
+            depends="ci-init,build-core-api" 
+            description="Build accessed from the THOSE-Core project to only build and test the core">
+    </target>
+
+    <target name="build-core" depends="build-tools">
+        <ant dir="${bp.org.h2.dir}" target="build" />
+        <ant dir="${bp.mp.runtime.dir}" target="build" />
+        <ant dir="${bp.core.lexicon.dir}" target="build" />
+        <ant dir="${bp.core.proto.dir}" target="build" />
+        <ant dir="${bp.core.dir}" target="build" />
+        <ant dir="${bp.test.dir}" target="build" />
+        <ant dir="${bp.ose.core.proto.dir}" target="build" />
+        <ant dir="${bp.shared.dir}" target="build" />
+        <ant dir="${bp.ose.core.dir}" target="build" />
+        <ant dir="${bp.controller.dir}" target="build" />
+        <ant dir="${bp.logging.dir}" target="build" />            
+    </target>
+    <target name="junit-core">
+        <ant dir="${bp.shared.dir}" target="junit" />
+        <ant dir="${bp.ose.core.dir}" target="junit" />
+        <ant dir="${bp.controller.dir}" target="junit" />
+        <ant dir="${bp.logging.dir}" target="junit" />            
+    </target>
+    <target name="test-core">
+        <!-- build deps first -->
+        <ant dir="${bp.example.asset.dir}" target="build" />
+        <ant dir="${bp.example.ccomm.dir}" target="build" />
+        <ant dir="${bp.example.platform.power.dir}" target="build" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.integration.commons" target="build" />
+                
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.core.integration" target="test" />
+    </target>
+    <target name="ci-core" 
+            depends="ci-init,build-core,junit-core,cobertura,test-core" 
+            description="Build accessed from the THOSE-Core project to only build and test the core">
+    </target>
+    
+    <target name="ci-gui-integration-build" depends="ci-init"
+            description="Run the Selenium based GUI integration tests">
+        <!-- force stop Glassfish if still running just in case, but mainly delete the domain, so a new one can be 
+            created -->
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.gui.integration" target="stop-delete-glassfish" />
+
+        <antcall target="build-controller-gui-deps" />
+        
+        <ant dir="${bp.target.controller.generic.dir}" target="build-no-deps" />
+        <ant dir="${bp.target.gui.dir}" target="build-no-deps" />
+        <ant dir="${bp.target.controller.generic.dir}" target="deploy" />
+        <ant dir="${bp.target.gui.dir}" target="deploy" />
+        
+        <!-- needed by controller integration project -->
+        <ant dir="${bp.junit4.test.runner.dir}" target="build" />
+        
+        <!-- need to build example bundles for GUI integration tests -->
+        <ant dir="${bp.example.project.dir}" target="build" />
+        <ant dir="${bp.example.asset.dir}" target="build" />
+        <ant dir="${bp.example.ccomm.dir}" target="build" />
+        <ant dir="${bp.integration.generic.dir}" target="build" />
+    </target>
+    
+    <target name="ci-gui-integration-asset" depends="ci-gui-integration-build">
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.gui.integration" target="test-asset" />
+    </target>
+   
+    <target name="ci-gui-integration-other" depends="ci-gui-integration-build">
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.gui.integration" target="test-other" />
+    </target>
+
+</project>

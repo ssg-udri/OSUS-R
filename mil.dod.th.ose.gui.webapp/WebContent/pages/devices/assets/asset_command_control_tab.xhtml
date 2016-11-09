@@ -1,0 +1,100 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ 
+Command/Control on the assets page. Handles syncing and sending commands to
+assets.
+ 
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:assets="http://java.sun.com/jsf/composite/assets">
+    <p:separator/>
+    <h:outputText value="No assets, set an 'active' controller." rendered="#{not activeController.isActiveControllerSet()}"/>
+    <p:dataTable style="text-align:center;" value="#{assetDisplay.isSetSelectedObject() ? assetDisplay.getSelectedFactoryObject() : assetMgr.getAssetsForControllerAsync((activeController.getActiveController()).getId())}"
+        var="asset" rendered="#{activeController.isActiveControllerSet()}" id="assetCommandControl">
+        <p:column>       
+            <ui:param name="indexHolder" value="#{assetPageDisplayHelper.getAssetCommandIndexHolder(activeController.activeController.id, asset.getUuid())}"/>
+            <ui:param value="#{assetCommandMgr.getAssetCommands(asset)}" name="commandModel"/>
+            <ui:param value="#{assetGetCommandMgr.getAssetCommands(asset)}" name="getCommandModel"/>
+            <p:outputPanel styleClass="tablesNoBorderOnCells" rendered="#{commandModel != null}">
+                <table style=" margin-top:1em; margin-bottom:1em">
+                    <tr>
+                        <td colspan="2" />
+                    </tr>
+                    <tr>
+                        <td style="width:5%">
+                            <p:graphicImage library="images" name="#{asset.getImage()}" alt="Image Not Found"/>
+                        </td>
+                        <td style="width:35%;text-align:left;text-overflow: hidden;">
+                            <h:outputText style="font-weight:bold;margin-left:5px;font-size:1.2em;" id="assetName" value="#{asset.name}"/>
+                        </td>
+                        <td>
+                           <h:form>
+                             <p:commandButton id="syncAll" value="Sync All" actionListener="#{assetCommandMgr.syncCall(activeController.activeController.id, commandModel)}"/>
+                           </h:form>
+                        </td>
+                    </tr>
+                </table>  
+            </p:outputPanel>
+            <p:outputPanel rendered="#{getCommandModel != null}" style="width:100%">
+                <h:form>
+                    <!-- If this accordion panel is updated/removed be sure to remove css entry in command.css -->
+                    <p:accordionPanel id="getCommandPanel" activeIndex="#{indexHolder.activeGetCommandPanel.index}" style="width:100%;">
+                        <p:ajax event="tabChange" process="@this"/>
+                        <p:tab title="Get Commands" style="width:100%">
+                            <h:outputText value="No individual get commands found." rendered="#{getCommandModel.getSupportedCommands().size() == 0}"/>
+                            <p:tabView id="getCommandTab" orientation="left" activeIndex="#{indexHolder.activeGetCommandTab.index}" value="#{getCommandModel.getSupportedCommands()}" var="commandType" rendered="#{getCommandModel.getSupportedCommands().size() > 0}">
+                                <p:ajax event="tabChange" process="@this"/>
+                                <p:tab title="#{getCommandModel.getCommandDisplayName(commandType)}" style="height:100%">
+                                    <ui:param name="responseModel" value="#{getCommandModel.getCommandResponseByType(commandType)}"/>
+                                    <h:outputText id="timeData" value="Time Received: #{responseModel.printTimeMessage()}"/>
+                                    <br />
+                                    <p:inputTextarea id="responseData" readonly="true" autoResize="false" rows="10" style="width:90%;height:210px" value="#{responseModel.printResponseMessage()}"/>
+                                    <br/>
+                                    <p:commandButton id="executeButton" style="margin-top:5px" value="Execute" actionListener="#{commandHandlerMgr.sendCommand(activeController.activeController.id, asset.getUuid(), commandType)}"/>
+                                </p:tab>
+                            </p:tabView>
+                        </p:tab>
+                    </p:accordionPanel>
+                </h:form>
+                <br/>
+            </p:outputPanel>
+            <p:outputPanel rendered="#{commandModel != null}" style="width:100%">
+                <h:form>
+                    <p:accordionPanel value="#{commandModel.getSupportedCommands()}" var="commandType" activeIndex="#{indexHolder.activeCommandPanel.index}">
+                        <p:ajax event="tabChange" process="@this"/>
+                        <p:tab title="#{commandModel.getCommandDisplayName(commandType)}">
+                            <assets:commandTree commandObject="#{commandModel.getCommandByType(commandType)}" assetUuid="#{commandModel.getUuid()}"/>
+                            <table>
+                                <tr>
+                                  <td align="center">
+                                      <p:commandButton id="sendCommand" style="margin: 5px 0 5px 0;" value="Send Command" actionListener="#{commandHandlerMgr.sendCommand(activeController.activeController.id, asset.getUuid(), commandModel.getCommandByType(commandType), commandType)}"/>
+                                      <p:commandButton id="syncCommand" style="margin: 5px 0 5px 5px;" rendered="#{commandModel.canSync(commandType)}" value="#{commandModel.getSyncActionName(commandType)}" actionListener="#{assetCommandMgr.doSync(activeController.activeController.id, commandModel, commandType)}"/>
+                                  </td>
+                                </tr>
+                            </table>
+                        </p:tab>   
+                    </p:accordionPanel>
+                </h:form>
+            </p:outputPanel>
+        </p:column>
+    </p:dataTable>
+</ui:composition>

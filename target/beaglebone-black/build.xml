@@ -1,0 +1,74 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Build components for the BeagleBone Black platform.
+
+==============================================================================
+-->
+<project name="those-target-beaglebone-black" default="build-with-deps">
+
+    <property environment="env" />
+
+    <dirname property="those-target-beaglebone-black.basedir" file="${ant.file.those-target-beaglebone-black}"/>
+    <dirname property="bp.workspace.dir" file="${those-target-beaglebone-black.basedir}/../../build.xml"/>
+    <echo message="Build workspace.dir is: ${bp.workspace.dir}"/>
+
+    <property file="../../build.properties" prefix="bp" />
+    <property file="${bp.workspace.dir}/cnf/ant/default.properties" prefix="bp" />
+    <property file="build.properties" prefix="bp" />
+    <property file="default.properties" prefix="bp" />
+
+    <import file="../../cnf/ant/commons.xml"/>
+    <import file="../../cnf/ant/linux-commons.xml"/>
+
+    <var name="target.enabled" unset="true"/>
+    <available file="${bp.bbb.toolchain.dir}" type="dir" property="target.enabled" />
+
+    <target name="build-no-deps" if="target.enabled" depends="set-arch">
+        <echo message="### Build BeagleBone Black (no deps) ###" />
+       
+        <!-- build each target -->
+        <ant dir="controller-app" target="build-no-deps" />
+    </target>
+
+    <target name="build-with-deps" if="target.enabled" depends="set-arch">
+        <echo message="### Build BeagleBone Black (with deps) ###" />
+
+        <!-- build dependencies of each target -->
+        <ant dir="../linux/controller-app" target="build-with-deps" />
+
+        <antcall target="build-no-deps" />
+    </target>
+
+    <target name="clean" if="target.enabled" depends="set-arch">
+        <echo message="### Clean BeagleBone Black ###" />
+        <ant dir="controller-app" target="clean" />
+    </target>
+
+    <target name="deploy" if="target.enabled" depends="set-arch">
+        <echo message="### Deploy BeagleBone Black ###" />
+        <ant dir="controller-app" target="deploy" />
+    </target>
+
+    <target name="deploy-clean" if="target.enabled" depends="set-arch">
+        <echo message="### Deploy-Clean BeagleBone Black ###" />
+        <ant dir="controller-app" target="deploy-clean" />
+    </target>
+
+    <target name="build-source-zip" description="Create a zip of all the source that makes up the BeagleBone Black target">
+        <echo message="### Build Source Zip BeagleBone Black ###" />
+    </target>
+
+</project>

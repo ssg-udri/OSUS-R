@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<ns2:AssetCapabilities xmlns="capability.core.th.dod.mil" xmlns:ns2="capability.asset.core.th.dod.mil" xmlns:ns3="capability.ccomm.core.th.dod.mil" xmlns:ns4="capability.controller.core.th.dod.mil" xmlns:ns5="capability.link.ccomm.core.th.dod.mil" xmlns:ns6="capability.transport.ccomm.core.th.dod.mil" xmlns:ns7="capability.physical.ccomm.core.th.dod.mil" productName="Raspberry Pi PIR Plug-In" description="A Raspberry Pi plug-in for a PIR connected to GPIO pin 7." manufacturer="">
+    <ns2:modalities value="PIR"/>
+    <ns2:statusCapabilities sensorRangeAvailable="false" sensorFovAvailable="false" batteryChargeLevelAvailable="false" batteryVoltageAvailable="false" assetOnTimeAvailable="false" temperatureAvailable="false" powerConsumptionAvailable="false" analogAnalogVoltageAvailable="false" analogDigitalVoltargeAvailable="false" analogMagVoltageAvailable="false" internalArchiveStatusAvailable="false">
+    </ns2:statusCapabilities>
+    <ns2:detectionCapabilities targetLocation="false" targetSpeed="false" targetRange="false" targetOrientation="false" targetLOB="false" targetFrequency="false" trackHistory="false" directionOfTravel="false" targetId="false">
+        <ns2:typesAvailable>Alarm</ns2:typesAvailable>
+    </ns2:detectionCapabilities>
+    <ns2:commandCapabilities captureData="false" performBIT="false">
+    </ns2:commandCapabilities>
+    <ns2:observationCapabilities observedTimestampAvailable="true"/>
+</ns2:AssetCapabilities>

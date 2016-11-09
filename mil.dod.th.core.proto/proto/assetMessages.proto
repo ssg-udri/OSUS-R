@@ -1,0 +1,311 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+package mil.dod.th.core.remote.proto;
+option java_package = "mil.dod.th.core.remote.proto";
+
+import "observation/types/Observation.proto";
+import "mapTypes.proto";
+import "types/command/CommandTypes.proto";
+import "shared.proto";
+import "types/remote/RemoteTypes.proto";
+
+//enum for asset active statuses
+enum AssetActiveStatus
+{
+    //Asset is currently activated
+    ACTIVATED = 1;
+
+    //Asset is attempting to commence communications with its physical asset
+    ACTIVATING = 2;
+
+    //Asset is currently deactivated
+    DEACTIVATED = 3;
+
+    //Asset is attempting to cease communications with its physical asset
+    DEACTIVATING = 4;
+}
+
+//Namespace for proper handling of remote assets
+message AssetNamespace
+{
+    //An enumeration of different requests/responses for handling remote assets
+    enum AssetMessageType
+    {
+        //Request to activate asset, responses are contained in ActivateResponse. The response message must not be interpreted to
+        //mean the activation was successful, but merely represents that the request was received.
+        ActivateRequest = 1;
+
+        //Response for ActivateRequest
+        ActivateResponse = 2;
+
+        //Request to deactivate asset, responses are contained in DeactivateResponse
+        DeactivateRequest = 3;
+
+        //Response for DeactivateRequest
+        DeactivateResponse = 4;
+
+        //Request to get asset active status, responses are contained in GetActiveStatusResponse
+        GetActiveStatusRequest = 5;
+
+        //Response for GetActiveStatusRequest
+        GetActiveStatusResponse = 6;
+
+        //Request to set the name of an asset
+        SetNameRequest = 7;
+        
+        //Response for the request to set an asset's name
+        SetNameResponse = 8;
+        
+        //Request to get an asset's name
+        GetNameRequest = 9;
+        
+        //Response for the request to get an asset's name 
+        GetNameResponse = 10;
+        
+        //Get the status of the asset, responses are contained in GetLastStatusRequest
+        GetLastStatusRequest = 11;
+
+        //Response for GetLastStatusRequest
+        GetLastStatusResponse = 12;
+
+        //Request to perform a BIT to make sure the asset is working properly, responses are contained
+        //in PerformBitResponse
+        PerformBitRequest = 13;
+
+        //Response for PerformBitResponse
+        PerformBitResponse = 14;
+
+        //Request to capture data, responses are contained within CaptureDataRequest
+        CaptureDataRequest = 15;
+
+        //Response for CaptureDataRequest
+        CaptureDataResponse = 16;
+
+        //Request to execute a command, responses are contained within ExecuteCommandResponse
+        ExecuteCommandRequest = 17;
+
+        //Response for ExecuteCommandRequest
+        ExecuteCommandResponse = 18;
+
+        //Request to set property(ies) for a given asset.
+        SetPropertyRequest = 19;
+        
+        //Response for SetPropertyRequest
+        SetPropertyResponse = 20;
+       
+        //Request to delete the asset, responses are contained in DeleteResponse
+        DeleteRequest = 21;
+
+        //Response for DeleteRequest
+        DeleteResponse = 22;
+    }
+
+    //This is the asset message type
+    required AssetMessageType type = 1;
+
+    // serialization of the data associated with the message (may be n/a), represents a protocol buffer message where
+    // the type is the MessageType field value with "Data" appended, for this namespace this would be
+    // "AssetMessageTypeData"
+    optional bytes data = 2;
+}
+
+//This message requests the activation of an asset.
+message ActivateRequestData
+{
+    //uuid of the asset to activate
+    required UUID uuid = 1;
+}
+
+//This message requests the deactivation of an asset.
+message DeactivateRequestData
+{
+    //uuid of the asset to deactivate
+    required UUID uuid = 1;
+}
+
+//This message requests the status of an asset.
+message GetActiveStatusRequestData
+{
+    //uuid of the asset to get the status of
+    required UUID uuid = 1;
+}
+
+//This message returns the active status of the asset.
+message GetActiveStatusResponseData
+{
+    //uuid of the asset to which this status belongs
+    required UUID uuid = 1;
+
+    //asset status represented by the enum above
+    required AssetActiveStatus status = 2;
+}
+
+//This message requests to set the name of the asset that has the specified uuid
+message SetNameRequestData
+{
+    //uuid of the asset that has its name set
+    required UUID uuid = 1; 
+    //Name of the asset to set
+    required string assetName = 2; 
+}
+
+//This message requests the name of the asset that has the specified uuid
+message GetNameRequestData
+{
+    //uuid of the asset that has its name requested
+    required UUID uuid = 1; 
+}
+
+//This message returns the name of the asset that has the specified uuid
+message GetNameResponseData
+{
+    //the uuid of the asset that has its name requested
+    required UUID uuid = 1; 
+    // the name of the asset 
+    required string assetName = 2; 
+}
+
+//This message requests the status of an asset.
+message GetLastStatusRequestData
+{
+    //UUID of the asset to get the status of
+    required UUID uuid = 1;
+
+    // Indicates what data format the status observation object should be sent as. Only NATIVE is supported at this 
+    // time.
+    optional LexiconFormat.Enum statusObservationFormat = 2 [default = NATIVE];
+}
+
+//This message returns the status of an Asset.
+message GetLastStatusResponseData
+{
+    //UUID of the Asset to which this summary belongs
+    required UUID assetUuid = 1;
+
+    //the mil.dod.th.core.observation.types.Observation containing the Asset's status, may not be
+    //set if the Asset has not established its status
+    oneof statusObservation
+    {
+        UUID statusObservationUuid = 2;
+        Observation statusObservationNative = 3;
+        bytes statusObservationXml = 4;
+    }
+}
+
+//This message requests that the asset run the built-in-test.
+message PerformBitRequestData
+{
+    //UUID of the asset to request the built in test to be run
+    required UUID uuid = 1;
+
+    // Indicates what data format the status observation object should be sent as. Only NATIVE is supported at this 
+    // time.
+    optional LexiconFormat.Enum statusObservationFormat = 2 [default = NATIVE];
+}
+
+//This message returns the status summary of the asset after performing a built-in-test (BIT)S.
+message PerformBitResponseData
+{
+    //UUID of the asset to which this status belong
+    required UUID assetUuid = 1;
+
+    //the mil.dod.th.core.observation.types.Observation containing the Asset's status after it has performed its BIT
+    oneof statusObservation
+    {
+        UUID statusObservationUuid = 2;
+        Observation statusObservationNative = 3;
+        bytes statusObservationXml = 4;
+    }
+}
+
+//This message requests that the asset capture data. This message also specifies if an observation 
+//should be sent with the response.
+message CaptureDataRequestData
+{
+    //UUID of the asset to capture data
+    required UUID uuid = 1;
+
+    // Indicates what data format the observation object should be sent as. Only NATIVE and UUID_ONLY is supported at 
+    // this time.
+    optional LexiconFormat.Enum observationFormat = 3 [default = NATIVE];
+}
+
+//This message returns an observation from data capture.
+message CaptureDataResponseData
+{
+    //UUID of the asset to which this data belongs
+    required UUID assetUuid = 1;
+
+    //data captured
+    oneof observation
+    {
+        UUID observationUuid = 2;
+        Observation observationNative = 3;
+        bytes observationXml = 4;
+    }
+}
+
+//This message requests that an asset execute a specified command.
+message ExecuteCommandRequestData
+{
+    //UUID of the asset to run the command on
+    required UUID uuid = 1;
+
+    //Enum value that represents the command type this execute request contains
+    required CommandType.Enum commandType = 2;
+
+    // Indicates what data format the command object is in. If NATIVE, the command bytes must be parsed as a protocol
+    // buffer message. Only NATIVE is supported at this time.
+    optional LexiconFormat.Enum commandFormat = 3 [default = NATIVE];
+
+    //serialization of the command object found in the mil.dod.th.core.asset.commands.proto package
+    required bytes command = 4;
+
+    // Indicates what data format the response object sent back should be in. If NATIVE, the response bytes must be 
+    // parsed as a protocol buffer message. Only NATIVE is supported at this time.
+    optional LexiconFormat.Enum responseFormat = 5 [default = NATIVE];
+}
+
+//This message returns the response data of an executed command.
+message ExecuteCommandResponseData
+{
+    //UUID of the asset that performed the command
+    required UUID uuid = 1;
+
+    //Enum value that represents the response type contained within this message
+    required CommandResponse.Enum responseType = 2;
+
+    // Indicates what data format the response object is in. If NATIVE, the response bytes must be 
+    // parsed as a protocol buffer message. Only NATIVE is supported at this time.
+    optional LexiconFormat.Enum responseFormat = 3 [default = NATIVE];
+
+    //serialization of the response object found in the mil.dod.th.core.asset.commands.proto package
+    required bytes response = 4;
+}
+
+//This message requests that a property(ies) be set on a given asset.
+message SetPropertyRequestData
+{
+    //UUID of the asset that the property is to be set on.
+    required UUID uuid = 1;
+    
+    //map of properties that need to be set for this asset.
+    repeated SimpleTypesMapEntry properties = 2; 
+}
+
+//This message requests the deletion of an asset.
+message DeleteRequestData
+{
+    //uuid of the asset to remove
+    required UUID uuid = 1;
+}

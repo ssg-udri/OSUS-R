@@ -1,0 +1,83 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+      
+    <p:dialog resizable="false" header="Mission Information" widgetVar="infoDlg" height="300" width="500" id="infoBox">
+        <p:outputPanel id="mInfo" layout="block" style="width:100%;">
+             <h:outputText style="font-size:15px; margin-top:10px;font-size:15px;font-weight:bold;" value="#{missionSetUpMgr.mission.name}"/>
+             <table style="width:100%;margin-top:10px;margin-bottom:10px;">
+                 <tr>
+                     <td>
+                         <ui:include src="setup_mission_icon_ribbon.xhtml">
+                             <ui:param name="mission" value="#{missionSetUpMgr.mission}"/>
+                             <ui:param name="justify" value="left"/>
+                         </ui:include>
+                     </td>
+                     <td align="right">
+                         <h:form>
+                            <p:commandButton value="Export" actionListener="#{missionExport.handleExportMission(missionSetUpMgr.mission.name)}" ajax="false">
+                                <p:fileDownload value="#{missionExport.downloadFile}"/>
+                            </p:commandButton>
+                         </h:form>
+                     </td>
+                 </tr>
+             </table>
+             <table style="margin-bottom:10px;">
+                 <tr>
+                     <td style="width:10%;">
+                         <p:graphicImage value="#{missionRequest.streamPrimaryImage}" alt="Image not found">
+                             <f:param name="primeImageMissionName" value="#{missionSetUpMgr.mission.name}"/>
+                         </p:graphicImage>
+                     </td>
+                     <td style="width:90%;padding-left:15px;">
+                         <div style="width:100%; overflow:hidden;text-overflow:ellipsis; max-height: 200px">
+                             <h:outputText style="word-wrap: break-word; " value="#{missionSetUpMgr.mission.description}" />
+                         </div>
+                     </td>
+                 </tr>
+             </table>
+             <div style="margin-top:15px;">
+                 <h:outputText style="font-weight:bold;" value="Secondary Images"/>
+             </div>
+             <div style="width:100%;margin-bottom:15px;">
+                 <p:dataGrid value="#{missionSetUpMgr.mission.getSecondaryImageIds()}" var="imageId" columns="3" rows="3" paginatorAlwaysVisible="false"
+                    paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}" paginator="true" paginatorPosition="bottom">
+                     <p:panel style="width:125px;text-align:center;">
+                         <p:graphicImage value="#{missionRequest.streamSecondaryImage}" alt="Image not found">
+                             <f:param name="imageId" value="#{imageId}"/>
+                             <f:param name="secondImageMissionName" value="#{missionSetUpMgr.mission.name}"/>
+                         </p:graphicImage>
+                     </p:panel>
+                 </p:dataGrid>
+             </div>
+             <h:outputText style="font-weight: bold;" value="Parameter Information"/>
+             <p:dataList value="#{missionSetUpMgr.mission.arguments}" var="variable" itemType="square">
+                 <h:outputText style="font-weight: bold;" value="#{variable.name}"/>
+                 <br/>
+                 <h:outputText value="Type: #{variable.type.value()}"/>
+                 <br/>
+                 <h:outputText value="#{variable.description}"/>
+             </p:dataList>
+        </p:outputPanel>
+    </p:dialog>
+        
+</ui:composition>

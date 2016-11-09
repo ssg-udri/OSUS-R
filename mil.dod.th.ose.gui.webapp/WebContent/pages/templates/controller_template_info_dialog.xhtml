@@ -1,0 +1,80 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ Dialog box used to display controller information for a selected controller.
+ This dialog is triggered by a user clicking the information button on an individual
+ controller in the controller side bar.
+ 
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:those="http://java.sun.com/jsf/composite/common">
+     
+    <p:dialog widgetVar="controllerInfoDlg" id="controllerInfoDlg" header="Controller Info" width="500" resizable="false">
+        <p:tabView id="controllerInfoTab">
+            <p:tab title="System Info">
+              <table style="width:100%">
+                  <tr>
+                      <td>
+                           <h:outputText styleClass="textHeader" value="System Id"/>
+                           <br/>
+                           <h:outputText style="margin-left:10px" value="#{controllerInfoDialogHelper.infoController.id}">
+                                <f:converter converterId="hexConverter"/>
+                           </h:outputText>
+                      </td>
+                      <td style="text-align: right;">
+                         <p:commandButton id="specsButton" icon="ui-icon-search" value="Specs" oncomplete="ctlrCapDlg.show()" update='@([id$="ctlrTreeTable"])' />
+                      </td>
+                  </tr>
+                  <tr>
+                      <td colspan="2">
+                           <h:outputText styleClass="textHeader" value="System Version"/>
+                           <br/>
+                           <p:outputPanel rendered="#{controllerInfoDialogHelper.infoController.version != ''}">
+                                <h:outputText style="margin-left:10px" value="#{controllerInfoDialogHelper.infoController.version}"/>
+                           </p:outputPanel>
+                           <p:outputPanel rendered="#{controllerInfoDialogHelper.infoController.version == ''}">
+                                <h:outputText style="margin-left:10px" value="Unknown"/>
+                           </p:outputPanel>
+                      </td>
+                  </tr>
+              </table>
+              <h:outputText id="controllerBuildInfoHeader" styleClass="textHeader" value="System Build Information" />
+              <p:dataTable widgetVar="controllerBuildPropTable" id="controllerBuildProps"
+                  styleClass="allTableStylesWithBorder" style="width:100%"
+                  value="#{controllerInfoDialogHelper.infoController.buildInfoKeys}" var="key">
+                  <p:column headerText="Build Property Key">
+                      #{key} 
+                  </p:column>
+                  <p:column headerText="Build Property Value" width="250">
+                      <div style="width:100%; word-wrap:break-word;text-overflow:ellipsis;">
+                        #{controllerInfoDialogHelper.infoController.buildInfo[key]}
+                      </div>
+                  </p:column>
+              </p:dataTable>
+            </p:tab>
+        </p:tabView>
+        <div style="padding-top:10px;text-align:center">
+            <p:commandButton value="Close" onclick="controllerInfoDlg.hide();"/>
+        </div>
+    </p:dialog>
+  <those:capabilitiesTree capObject="#{controllerInfoDialogHelper.ctlrCaps}" prefix="ctlr" />
+</ui:composition>

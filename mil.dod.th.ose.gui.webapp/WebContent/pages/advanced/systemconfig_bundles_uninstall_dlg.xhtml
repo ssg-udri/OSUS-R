@@ -1,0 +1,43 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+This xhtml page renders the bundle uninstall dialog box. This dialog box
+alerts the user that they are about to uninstall a bundle and gives them the
+opportunity to cancel their action.
+
+==============================================================================
+ -->
+<ui:composition
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui">
+      <p:dialog id="uninstallDialog" widgetVar="uninstallDlg" header="Uninstall Bundle" resizable="false" height="150" width="350">
+        <p:outputPanel id="uninstallPanel">
+            <h:form>
+                <ui:param name="bundle" value="#{bundleConfigurationMgr.getUninstallBundle()}"/>
+                <h:outputText value="You are about to uninstall bundle #{bundle.bundleId}:" styleClass="confirmDialogText"/>
+                <h:outputText value="#{bundle.bundleName}" styleClass="confirmDialogTextImportant"/>
+                <h:outputText value="Are you sure you wish to proceed?" styleClass="confirmDialogText"/>
+                <div class="confirmDialogButtons">
+                    <p:commandButton id="uninstallButton" value="Uninstall" ajax="false" update='@([id="bundleTable"])' actionListener="#{bundleConfigurationMgr.uninstallBundle(bundle.bundleId)}"/>
+                    <p:commandButton value="Cancel" oncomplete="uninstallDlg.hide()"/>
+                </div>
+            </h:form>
+        </p:outputPanel>
+      </p:dialog>
+</ui:composition>

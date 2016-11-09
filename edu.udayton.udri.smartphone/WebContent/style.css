@@ -1,0 +1,41 @@
+/*==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+*/
+body {
+    padding: 5px;
+    font-family: 'Open Sans', sans-serif;
+    background-color: #424242;
+    color: #BFBFBF;
+}
+
+ul {
+    list-style-type: none;
+    padding-left: 20px;
+}
+
+label {
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+.toggle {
+    margin-top: 0;
+    margin-bottom: 10px;
+    vertical-align: middle;
+}
+
+.num-input {
+    width: 40px;
+    font-weight: 400;
+    background-color: #6B6B6B;
+}

@@ -1,0 +1,326 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Build and execute GUI integration tests.
+ 
+==============================================================================
+-->
+<project name="mil.dod.th.ose.gui.integration" default="setup">
+
+    <import file="../cnf/ant/integration-commons.xml" />
+    <import file="../cnf/ant/gui-commons.xml" />
+
+    <target name="init" depends="master.init">
+        <!-- directory of application being tested -->
+        <property name="target.app.dir" value="${workspacedir}/target/generic/gui"/>
+        
+        <property name="controller.app.dir" value="${target-dir}/deploy/controller"/>
+        
+        <property name="gui.deploy.dir" value="${target-dir}/deploy" />
+        <!-- set properties used when deploying gui app -->
+        <property name="bp.glassfish.deploy.dir" value="${gui.deploy.dir}/glassfish3/glassfish" />
+        <property name="bp.domain.deploy.dir" value="${bp.glassfish.deploy.dir}/domains/those" />
+        <property name="bp.data.deploy.dir" value="${bp.domain.deploy.dir}/config" />
+    
+        <!-- default browser to use for GUI testing -->
+        <property name="browser" value="firefox" />
+        <property name="controller.id" value="0x0000007D"/>
+        <property name="controller.name" value="THarvest"/>
+        <property name="env.FIREFOX_BINARY" value="" />
+        
+        <fileset id="asset.tests" dir="${src}" includes="**/asset/Test*.java" />
+        <fileset id="other.tests" dir="${src}" includes="**/Test*.java" excludes="**/asset/Test*.java" />
+    </target>
+    
+    <target name="setup" depends="init,deploy-target">
+        <delete failonerror="false">
+            <fileset dir="${target-dir}" includes="TEST-*.xml" />
+            <fileset dir="${target-dir}" includes="ALLTESTS.xml" />
+        </delete>
+        
+        <!-- Copies the example jars to controller. -->
+        <copy todir="${controller.app.dir}/bundle">
+            <fileset dir="${integration.dir}/${target-dir}" includes="*.example.*.jar" />
+            <fileset dir="${example.asset.dir}/${target-dir}">
+                <include name="*.main.jar" />
+                <include name="*.gui.jar" />
+                <include name="*.lexicon.jar" />
+            </fileset>
+            <fileset dir="${example.ccomm.dir}/${target-dir}">
+                <include name="*.main.jar" />
+                <include name="*.serial.jar" />
+            </fileset>
+            <fileset dir="${target-dir}">
+                <include name="*.jar" />
+            </fileset>
+        </copy>
+        <copy todir="${controller.app.dir}/conf" overwrite="true">
+            <fileset dir="testConfigurationFiles" />
+        </copy>
+        
+        <!-- Copies the plugin jars containing example comms. -->
+        <copy todir="${bp.glassfish.deploy.dir}/modules/those">
+            <fileset dir="${integration.dir}/${target-dir}" includes="*.example.*.jar" />
+            <fileset dir="${example.ccomm.dir}/${target-dir}">
+                <include name="*.main.jar" />
+                <include name="*.serial.jar" />
+            </fileset>
+        </copy>
+        
+        <!-- Copies the test mission needed for running the mission setup integration test. -->
+        <copy todir="${bp.data.deploy.dir}/templates/" file="resource/test-mission.xml" />
+        <!-- Set system values for the controller-->
+        <propertyfile file="${controller.app.dir}/conf/th.system.properties" >
+            <entry key="id" value="${controller.id}"/>
+            <entry key="name" value="${controller.name}"/>
+        </propertyfile>
+    </target>
+            
+    <macrodef name="run-tests-macro" description="Macro to run all tests on a specific browser based on attribute">
+        <attribute name="browser" default="${browser}" />
+        <element name="tests"/>
+        <sequential>
+            <!-- 
+                give the test 150 minutes to complete, should be plenty of time, if something locks up though it will
+                be handled
+            -->
+            <limit minutes="150" failonerror="true">
+                <!-- must only fork a single time to ensure all tests use the same static web driver -->
+                <junit haltonfailure="no" showoutput="true" printsummary="true" failureproperty='stop' 
+                    errorproperty='stop' fork="true" dir="${basedir}" forkmode="once" includeAntRuntime="no">
+                    <formatter type="xml" />
+                    <formatter classname="mil.dod.th.ose.gui.integration.screenrecorder.RecorderListener" usefile="false"/>
+                    <classpath path="${project.buildpath}:${testbin}" />
+                    <batchtest todir="${target-dir}">
+                        <fileset dir="${src}" includes="**/ConnectController.java" />
+                        <tests />
+                        <fileset dir="${src}" includes="**/ShutdownTasks.java" />
+                    </batchtest>
+                    <jvmarg value="-Dmil.dod.th.ose.gui.integration.browser=@{browser}"/>
+                    <jvmarg value="-Dmil.dod.th.ose.gui.integration.firefox.binary=${env.FIREFOX_BINARY}"/>
+                    <jvmarg value="-Dmil.dod.th.ose.gui.portbase=${gui.portbase}"/>
+                    <jvmarg value="-Dmil.dod.th.ose.gui.integration.controller.id=${controller.id}"/>
+                    <jvmarg value="-Dmil.dod.th.ose.gui.integration.controller.name=${controller.name}"/>
+                </junit>
+            </limit>
+            <antcall target="check-for-test-results" />
+        </sequential>
+    </macrodef>
+    
+    <target name="run-asset-tests" depends="init" description="Run asset tests, don't start/stop GUI server or do init">
+        <run-tests-macro>
+            <tests>
+                <fileset refid="asset.tests" />
+            </tests>
+        </run-tests-macro>
+    </target>
+    
+    <target name="run-other-tests" depends="init" description="Run all other tests, don't start/stop GUI server or do init">
+        <run-tests-macro>
+            <tests>
+                <fileset refid="other.tests" />
+            </tests>
+        </run-tests-macro>
+    </target>
+
+    <target name="test-asset" depends="build,setup" description="Run all integration tests">
+        <test-macro file.set="asset.tests" />
+    </target>
+        
+    <target name="test-other" depends="build,setup" description="Run all integration tests">
+        <test-macro file.set="other.tests" />
+    </target>
+    
+    <macrodef name="test-macro">
+        <attribute name="file.set" />
+        <sequential>
+            <!-- ensure no controllers are already running -->
+            <antcall target="try-kill-controller-processes" />
+            <trycatch>
+                <try>
+                    <antcall target="start-glassfish" />
+                    <parallel>
+                        <!-- run controller as daemon so it stops when Ant is done even if the shutdown command doesn't work -->
+                        <daemons> 
+                           <java fork="true" 
+                                 classname="org.apache.felix.main.Main" 
+                                 dir="${controller.app.dir}"
+                                 failonerror="true">
+                               <jvmarg value="-ea" />
+                               <classpath>
+                                   <pathelement location="${controller.app.dir}/${bin}/felix.jar"/>
+                               </classpath>
+                               <sysproperty key="gosh.args" value="--noi" />
+                           </java>
+                        </daemons>
+                        <sequential>
+                            <!-- Give the web app time to start -->
+                            <sleep seconds="60" />
+                            
+                            <!-- Check that the web app is actually running -->
+                            <antcall target="check-web-app" />
+                            <run-tests-macro>
+                                <tests>
+                                    <fileset refid="@{file.set}" />
+                                </tests>
+                            </run-tests-macro>
+                            <antcall target="stop-glassfish" />
+                        </sequential>
+                    </parallel>
+                </try> 
+                <finally>
+                    <antcall target="archive-log-files" />
+                    <!-- force stop Glassfish if still running just in case -->
+                    <antcall target="stop-delete-glassfish" />
+                    <!-- ensure no controllers are still running -->
+                    <antcall target="try-kill-controller-processes" />
+                </finally>
+            </trycatch>
+        </sequential>
+    </macrodef>
+    
+    <target name="deploy-target" depends="integration-commons.deploy-target">
+        <chmod dir="${gui.deploy.dir}/glassfish3/bin" perm="a+x" includes="*" />
+        <chmod dir="${bp.glassfish.deploy.dir}/bin" perm="a+x" includes="*" />
+
+        <unzip dest="${target-dir}/deploy/controller">
+            <fileset dir="${workspacedir}/target/generic/controller-app/${bin}" includes="*.zip"  />
+        </unzip>
+    </target>
+    
+    <target name="archive-log-files" >
+        <copy todir="${target-dir}/test-data/gui-logs">
+            <fileset dir="${bp.domain.deploy.dir}/logs" includes="server.log" />
+            <fileset dir="${bp.data.deploy.dir}/those-logs" includes="*.log" />
+        </copy>
+        <copy todir="${target-dir}/test-data/controller-logs">
+            <fileset dir="${controller.app.dir}/logs" includes="*.log" />
+        </copy>
+    </target>
+    
+    <target name="check-port-prefix">
+        <!-- Get the port base prefix will be something like 81 if port base 8100 -->
+        <propertyregex property="port.base.prefix" 
+            input="${gui.portbase}" 
+            regexp="([1-9]*)00"
+            select="\1" />
+    </target>
+        
+    <target name="stop-delete-glassfish" 
+        description="Stops and deletes the existing those domain when a running glassfish server exists" 
+        depends="init,check-asadmin">
+        
+        <if>
+            <available file="${asadmin}" />
+            <then>
+                <!-- try to stop domain normally -->
+                <trycatch property="exceptionMsg">
+                    <try>
+                        <antcall target="stop-glassfish" />
+                    </try>
+                    <catch>
+                        <echo>${exceptionMsg}</echo>
+                    </catch>
+                </trycatch>
+            </then>
+        </if>
+        <!-- try kill process no matter what --> 
+        <antcall target="try-kill-glassfish-process" />
+        
+        <if>
+            <available file="${asadmin}" />
+            <then>
+                <echo>deleting domain using ${asadmin}</echo>
+                <exec executable="${asadmin}" failonerror="false">
+                    <arg value="delete-domain" />
+                    <arg value="those" />
+                </exec>
+            </then>
+        </if>
+    </target>
+    
+    <target name="start-glassfish" depends="check-asadmin">
+        <echo>starting domain using ${asadmin}</echo>
+        <exec executable="${asadmin}" failonerror="true">
+            <arg line="start-domain --debug=true" />
+        </exec>
+    </target>
+    
+    <target name="stop-glassfish" depends="check-asadmin">
+        <echo>stopping domain using ${asadmin}</echo>
+        <exec executable="${asadmin}" failonerror="false">
+            <arg value="stop-domain" />
+            <arg value="those" />
+        </exec>
+    </target>
+    
+    <target name="try-kill-glassfish-process" depends="check-port-prefix"
+        description="Try to kill a single running glassfish process">
+        <!-- Get the PID for the currently running Glassfish Server -->
+        <echo>getting pid list</echo>
+        <exec executable="jps" output="jps.out.file">
+            <arg value="-mv"/>
+        </exec>
+
+        <concat>
+            <fileset file="jps.out.file" />
+        </concat>
+        
+        <!-- ASMain will have JVM argument for the telnet port property, define what it should be given the port base-->
+        <property name="telnet.prop.entry" value="-Dosgi.shell.telnet.port=${port.base.prefix}66" />
+        
+        <!-- Search contents of file for the project name identified in jenkins -->
+        <echo>search for ASMain process with a matching prop "${telnet.prop.entry}":</echo>
+        <echo>pid will be printed below if found otherwise nothing to delete</echo>
+        <loadfile srcfile="jps.out.file" property="pid.out">
+            <filterchain>
+                <linecontains>
+                    <contains value="ASMain"/>
+                    <contains value="${telnet.prop.entry}"/>
+                </linecontains>
+                <tokenfilter>
+                    <replaceregex pattern=" .*"/>
+                    <trim/>
+                </tokenfilter>
+                <striplinebreaks/>
+            </filterchain>
+        </loadfile>
+
+        <!-- After PID is found remove the output file -->
+        <delete file="jps.out.file"/>
+        
+        <!-- Kill the controller process with the PID found. -->
+        <if>
+            <isset property="pid.out" />
+            <then>
+                <kill-process pid="${pid.out}" />
+            </then>
+            <else>
+                <echo>No web GUI found</echo>
+            </else>
+        </if>
+    </target>
+    
+    <target name="check-web-app" depends="check-port-prefix">
+        <!-- web port is port base + 80, so concat 80 to prefix -->
+        <property name="web.port" value="${port.base.prefix}80" />
+        <property name="web.url" value="http://localhost:${web.port}${gui.contextpath}/" />
+        <condition property="web.app.online">
+            <http url="${web.url}" />
+        </condition>
+        <fail unless="${web.app.online}" message="${web.url} is offline" />
+    </target>
+</project>
+

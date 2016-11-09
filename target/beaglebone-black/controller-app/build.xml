@@ -1,0 +1,83 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Ant build file for the entire controller subsystem.  This will build all 
+ units using their Ant build file and allows for deploying the files to the 
+ target.  Deployment requires an RSA key to be created for the user/host
+ machine and the public key to be appended to the target's authorized keys 
+ file.  The different builds can be performed from here as well: individual,
+ development, incremental and release (see SW development plan).
+
+==============================================================================
+-->
+<project name="beaglebone-black-controller-app" default="build-deploy">
+    <property environment="env" />
+
+    <!-- properties cannot be overriden, imported as first right to define (common->local) -->
+    <property file="../../../build.properties" prefix="bp" />
+    <property file="build.properties" prefix="bp" />
+    <property file="default.properties" prefix="bp" />
+    <property name="target.app.dir" value="${bp.workspace.dir}/target/beaglebone-black/controller-app"/>
+
+    <!-- TODO: TH-3687: Update for the BeagleBone Black controller plug-in -->
+    <property name="bbb.controller.dir" value="${bp.workspace.dir}/mil.dod.th.ose.controller" />
+
+    <import file="${bp.workspace.dir}/cnf/ant/target-commons.xml" />
+
+    <target name="build-no-deps">
+        <!-- Linux serial project must be built with the correct native library (no need to rebuild SWIG though) -->
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.serial" target="clean" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.serial" target="build" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.bbb.platform" target="clean" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.bbb.platform" target="build" />
+        <ant dir="${bbb.controller.dir}" target="build" />
+    </target>
+
+    <target name="build-with-deps">
+        <!-- Use the Linux controller build for base components -->
+        <ant dir="../../linux/controller-app" target="build-with-deps" />
+        <antcall target="build-no-deps" />
+    </target>
+
+    <target name="clean" description="Clean all files generated from build including units">
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.bbb.platform" target="clean" />
+        <ant dir="${bbb.controller.dir}" target="clean" />
+
+        <!-- Use the Linux controller build for base components -->
+        <ant dir="../../linux/controller-app" target="clean" />
+    </target>
+
+    <target name="deploy-app">
+        <!-- Use the Linux controller build for base components -->
+
+        <!-- Set c.arch so the proper bundle is deployed for the linux serial port project -->
+        <echo file="${bp.platform.bnd.file}">c.arch: arm_le</echo>
+        <ant dir="../../linux/controller-app" target="deploy-app" />
+
+        <antcall target="set-system-name-id" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.bbb.platform" target="deploy-component" />
+        <ant dir="${bbb.controller.dir}" target="deploy-component" />
+
+        <!-- Override the system configuration loading default -->
+        <copy file="resources/configs.xml" todir="${bp.subsystem.deploy.configuration}" overwrite="true"/>
+
+        <propertyfile file="${bp.subsystem.deploy.configuration}/config.properties">
+            <!-- max out cache to 4MB instead of the typical 16MB -->
+            <entry key="mil.dod.th.ose.core.observationstore.maxcache" operation="=" value="4096"/>
+            <entry key="mil.dod.th.ose.core.persistentdatastore.maxcache" operation="=" value="4096"/>
+        </propertyfile>
+    </target>
+
+</project>

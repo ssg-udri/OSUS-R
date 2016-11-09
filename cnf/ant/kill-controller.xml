@@ -1,0 +1,104 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Contains macros to kill a running controller that uses the Felix main launcher.
+
+==============================================================================
+-->
+<project name="kill-controller">
+
+    <!-- Kill the specified process on Windows or Unix -->
+    <macrodef name="kill-process">
+        <attribute name="pid"/>
+        <sequential>
+            <!-- first print out stack to get an idea of process when killed -->
+            <exec executable="jstack">
+                <arg value="@{pid}"/>
+            </exec>
+            <if>
+                <os family="windows" />
+                <then>
+                    <echo>Killing windows process @{pid}!</echo>
+                    <exec executable="taskkill" failonerror="true">
+                        <arg value="/F"/>
+                        <arg value="/PID"/>
+                        <arg value="@{pid}"/>
+                    </exec>
+                </then>
+                <else>
+                    <echo>Killing unix process @{pid}!</echo>
+                    <exec executable="kill" failonerror="true">
+                        <arg value="-SIGKILL"/>
+                        <arg value="@{pid}"/>
+                    </exec>
+                </else>
+            </if>
+        </sequential>
+    </macrodef>
+    
+    <target name="kill-process">
+        <echo>try kill "${pid}"</echo>
+        <kill-process pid="${pid}" />
+    </target>
+    
+    <macrodef name="kill-processes">
+        <attribute name="pid-list" />
+        <sequential>
+            <foreach target="kill-process" param="pid" delimiter=" " list="@{pid-list}">
+            </foreach>
+        </sequential>
+    </macrodef>
+    
+    <target name="try-kill-controller-processes" description="Try to kill all running controller processes">
+        <!-- Get the PIDs for the currently running controller(s) -->
+        <echo>getting pid list</echo>
+        <exec executable="jps" output="jps.out.file">
+            <arg value="-l" />
+        </exec>
+        
+        <concat>
+            <fileset file="jps.out.file" />
+        </concat>
+        
+        <echo>searching for controller Java process</echo>
+        <!-- get process ID for each line containing felix.jar and create a space delimited list -->
+        <loadfile srcfile="jps.out.file" property="pid.list">
+            <filterchain>
+                <linecontainsregexp>
+                    <!-- look if started with java -jar or by specifying the main class -->
+                    <regexp pattern="felix\.jar|org\.apache\.felix\.main\.Main"/>
+                </linecontainsregexp>
+                <tokenfilter>
+                    <replaceregex pattern=" .*" replace=" " />
+                </tokenfilter>
+                <striplinebreaks />
+            </filterchain>
+        </loadfile>
+
+        <!-- After PID is found remove the output file -->
+        <delete file="jps.out.file"/>
+
+        <!-- Kill the controller process with the PID found. -->
+        <if>
+            <isset property="pid.list" />
+            <then>
+                <kill-processes pid-list="${pid.list}" />
+            </then>
+            <else>
+                <echo>No controller found</echo>
+            </else>
+        </if>
+    </target>
+</project>

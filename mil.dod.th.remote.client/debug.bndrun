@@ -1,0 +1,31 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+
+-runbundles: \
+    org.apache.felix.gogo.runtime,\
+    org.apache.felix.gogo.shell,\
+    org.apache.felix.gogo.command,\
+    org.apache.felix.scr,\
+    org.apache.felix.configadmin,\
+    org.apache.felix.eventadmin,\
+    org.apache.felix.metatype,\
+    org.apache.felix.log,\
+    com.google.protobuf;version=2.6.1,\
+    mil.dod.th.remote.client;version=latest,\
+    ${web.console.bundles}
+
+-runproperties.webconsole: \
+    org.apache.felix.http.jettyEnabled=true
+
+# need to keep workding dir to preserve config admin settings
+#-runkeep

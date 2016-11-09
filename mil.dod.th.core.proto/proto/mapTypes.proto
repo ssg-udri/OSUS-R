@@ -1,0 +1,64 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+//
+// Description:
+// Contains Map structure like messages used by multiple proto files.
+//
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+option java_outer_classname = "MapTypes";
+
+import "observation/types/Observation.proto";
+import "linkLayerMessages.proto";
+import "missionProgramMessages.proto";
+import "shared.proto";
+import "types/status/StatusTypes.proto";
+
+// The label and entry of a map item such as a property.
+message SimpleTypesMapEntry
+{
+    // map entry key label
+    required string key = 1;
+
+    // map entry value appropriate for the defined key
+    required Multitype value = 2;
+}
+
+// Map type message for properties, where the value is a message. This map is intended for use where
+// properties might be not primitives, numbers or other easily convertible types. Simple types are also supported
+// by this map like structure.
+message ComplexTypesMapEntry
+{
+    // map entry key label
+    required string key = 1;
+
+    // value will be set depending on the key, see mil.dod.th.core event constants for the proper format 
+    oneof value
+    {
+        Multitype multi = 2;
+
+        // enums
+        LinkStatus linkLayerStatus = 3;
+        MissionStatus programStatus = 4;
+        MissionTestResult programTestResult = 5;
+        SummaryStatus.Enum summaryStatus = 6;
+        
+        // Observations will be in the format as specified during event registration. The 
+        // EventRegistrationRequestData.objectFormat field determines the format. If the value is NATIVE, 
+        // observationNative will be set. If XML, observationXml will be set. 
+        Observation observationNative = 30;
+        bytes observationXml = 31;
+        UUID observationUuid = 32;
+    }    
+}

@@ -1,0 +1,252 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ 
+ This page contains the linkages to all rendered information within the
+ custom comms feature.
+ 
+ =============================================================================
+ -->
+<ui:composition template="../../templates/mainscreenTemplate.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:factory="http://java.sun.com/jsf/composite/factory">
+
+    <ui:define name="content">
+        <h:outputScript library="scripts/push/pages/devices" name="pushEventCommsMessages.js"/>
+        <h:outputStylesheet library="css" name="comms.css"/>
+        <h:form>
+            <div style="text-align:right;">
+                <p:commandButton icon="ui-icon-plus" value="Add Comms Stack" id="addCommsButton" 
+                    onclick="addCommDlg.show()" rendered="#{activeController.isActiveControllerSet()}" />
+                <p:commandButton icon="ui-icon-folder-open" value="Import Comms Config" id="importCommsButton"
+                    onclick="importCommConfigDlg.show()" rendered="#{activeController.isActiveControllerSet()}"
+                    disabled="true"/> 
+                <p:commandButton icon="ui-icon-folder-open" value="Export Comms Config" id="exportCommsButton"
+                    onclick="exportCommConfigDlg.show()" rendered="#{activeController.isActiveControllerSet()}"
+                    disabled="true"/>                
+                    
+                
+                <p:tooltip for="addCommsButton" value="Add a new communications stack" /> 
+                <p:tooltip for="importCommsButton" value="Import a new communications configuration." /> 
+                <p:tooltip for="exportCommsButton" value="Export a single or multiple communications configuration(s)." /> 
+            </div>
+            <table style="width: 100%">
+                <tr>
+                    <td style="vertical-align:top;width:25%">
+                        <factory:factory_datalist
+                            dataTableValue="#{commsStackRequest.getTopMostComms((activeController.getActiveController()).getId())}"
+                            featureName="Comms"
+                            setSelected="#{selectedCommsHelper.setSelectedComms(commsStackRequest.getCommsStackForBaseModel((activeController.activeController).getId(), factObj))}"
+                            unSetSelected="#{selectedCommsHelper.unSetSelectedComms()}"
+                            tagAttrib="commsData"/>
+                    </td>
+                 <td style="vertical-align: top">
+                    <p:outputPanel id="commsData">
+                        <table style="width: 100%" >
+                            <tr>
+                                <td style="vertical-align: top">
+                                    <h:outputText value="No comms stacks, set an 'active' controller." 
+                                        style="text-align:center"
+                                        rendered="#{not activeController.isActiveControllerSet()}"/>
+                                    <p:dataTable
+                                        styleClass="tablesNoBorderOnCells" id="commsTable"
+                                        value="#{commsStackRequest.getSelectedCommsStacksAsync((activeController.getActiveController()).getId(), selectedCommsHelper.getSelectedComms())}" var="comms"
+                                        rendered="#{activeController.isActiveControllerSet()}">
+                                        <p:column>
+                                            <table class="commsInfoPanel">
+                                                <tr>
+                                                    <td style="width: 10%">
+                                                        <p:graphicImage
+                                                            library="images" name="#{comms.getImage()}" alt="Image Not Found">
+                                                        </p:graphicImage> 
+                                                    </td>
+                                                    <td style="width: 25%">
+                                                       <h:outputText
+                                                            styleClass="stackText"
+                                                            value="Comms Stack"
+                                                            rendered="#{comms.isComplete()}">
+                                                       </h:outputText>
+                                                       <h:outputText
+                                                            style="font-weight:bold; color:red; font-size:1.2em"
+                                                            rendered="#{!comms.isComplete()}"
+                                                            value="INCOMPLETE STACK">
+                                                       </h:outputText>
+                                                       <p:commandButton id="info" icon="ui-icon-help" rendered="#{!comms.isComplete()}"
+                                                            style="margin-left:10px;height:17px;width:17px;top:7px;" 
+                                                            title="What does this mean?"
+                                                            onclick="commsInfoDlg.show()"/>
+                                                    </td>
+                                                    <td style="width: 30%">
+                                                       <h:outputText id="commStatusText"
+                                                            styleClass="stackText"
+                                                            rendered="#{comms.link != null}"
+                                                            value="Status: #{comms.link.statusString}">
+                                                       </h:outputText>
+                                                       <br></br>
+                                                       <h:outputText
+                                                            style="color:red; font-size:1.2em"
+                                                            rendered="#{comms.link != null and !comms.link.isMetadataComplete()}"
+                                                            value="Link info incomplete">
+                                                       </h:outputText>
+                                                    </td>
+
+                                                    <td style="text-align: right; width: 35%">
+                                                        <p:commandButton id="activateButton" value="Activate" 
+                                                            actionListener="#{selectedCommsHelper.sendLinkActivationRequest(comms.link, (activeController.getActiveController()).getId())}" 
+                                                            process="@this" icon="ui-icon-arrowrefresh-1-w" rendered="#{comms.link != null and !comms.link.isActivated()}" 
+                                                            disabled="false"/>
+                                                        <p:commandButton id="deactivationButton" value="Deactivate" 
+                                                            actionListener="#{selectedCommsHelper.sendLinkActivationRequest(comms.link, (activeController.getActiveController()).getId())}" 
+                                                            process="@this" icon="ui-icon-stop" rendered="#{comms.link != null and comms.link.isActivated()}" 
+                                                            disabled="false"/>
+                                                        <p:tooltip for="activateButton" value="Activate this comms link." />
+                                                        <p:tooltip for="deactivationButton" value="Deactivate this comms link." /> 
+                                                        <p:commandButton value="Perform BIT" id="bitButton" rendered="#{comms.link != null}" 
+                                                            actionListener="#{selectedCommsHelper.sendLinkPerformBitRequest(comms.link, (activeController.getActiveController()).getId())}"  
+                                                            disabled="false"/>
+                                                        <p:tooltip for="bitButton" value="Perform a Built-In Test" /> 
+                                                        <p:commandButton value="Remove" id="removeButton"
+                                                            actionListener="#{selectedCommsHelper.setRemoveStack(comms)}"
+                                                            rendered="#{(comms.transport != null or comms.link != null) and !comms.link.isActivated()}"
+                                                            update='@([id$="removeDlgPanel"])' oncomplete="removeStackDlg.show();"/> 
+                                                        <p:tooltip for="removeButton" value="Remove comms stack when link is deactivated"/> 
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td></td>
+                                                    <td colspan="3" style="padding-top: 1em">
+                                                        <table
+                                                            style="width:70%; margin:1em auto 0px;">
+                                                            <ui:fragment rendered="#{comms.transport != null}">
+                                                                <tr class="stackRow">
+                                                                    <td style="padding-bottom: 1em">
+                                                                        <h:outputText
+                                                                            styleClass="stackText"
+                                                                            value="Transport Layer">
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td style="padding-bottom: 1em" colspan="2">
+                                                                        <h:outputText
+                                                                            style="font-size:1.1em"
+                                                                            rendered="#{comms.transport != null}"
+                                                                            value="#{comms.transport.name}">
+                                                                        </h:outputText>
+                                                                        <!-- <p:outputPanel id="transEditPanel" >
+                                                                            <p:inplace style="font-weight:bold;font-size:1.2em;" editor="true" >
+                                                                                <p:inputText id="transName" value="#{comms.transport.name}" required="true"/>
+                                                                            </p:inplace>
+                                                                            <p:graphicImage style="height:1em"  library="images" name="icons/Pencil.png" alt="Image Not Found"/>
+                                                                        </p:outputPanel>
+                                                                        <p:tooltip for="transEditPanel" value="Click on the layer's name to edit the value." />-->
+                                                                    </td>
+                                                                    <td style="padding-bottom: 1em; padding-top: 1em">
+                                                                       <p:commandButton icon="ui-icon-gear" id="transportConfigButton"
+                                                                            rendered="#{comms.transport != null}"
+                                                                            update='@([id$="mInfo"])' onclick="configDlg.show();" disabled="true">
+                                                                        </p:commandButton>
+                                                                        <p:tooltip for="transportConfigButton" value="Configure the transport layer." /> 
+                                                                    </td>
+                                                                </tr>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered="#{comms.link != null}">
+                                                                <tr class="stackRow">
+                                                                    <td style="padding:1em 0">
+                                                                        <h:outputText
+                                                                            styleClass="stackText"
+                                                                            value="Link Layer">
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td style="padding:1em 0" colspan="2">
+                                                                        <h:outputText style="font-size:1.1em"
+                                                                            rendered="#{comms.link != null}"
+                                                                            value="#{comms.link.name}">
+                                                                        </h:outputText>
+                                                                        <!-- ><p:outputPanel id="linkEditPanel" >
+                                                                            <p:inplace style="font-weight:bold;font-size:1em;" editor="true" >
+                                                                                <p:inputText id="linkName" value="#{comms.link.name}" required="true"/>
+                                                                            </p:inplace>
+                                                                            <p:graphicImage style="height:1em"  library="images" name="icons/Pencil.png" alt="Image Not Found"/>
+                                                                        </p:outputPanel>
+                                                                        <p:tooltip for="linkEditPanel" value="Click on the layer's name to edit the value." />-->
+                                                                    </td>
+                                                                    <td style="padding:1em 0">
+                                                                       <p:commandButton icon="ui-icon-gear"
+                                                                            id="linkConfigButton"
+                                                                            rendered="#{comms.link != null}"
+                                                                            update='@([id$="mInfo"])' onclick="configDlg.show();" disabled="true">
+                                                                        </p:commandButton>
+                                                                        <p:tooltip for="linkConfigButton" value="Configure the link layer." /> 
+                                                                    </td>
+                                                                </tr>
+                                                            </ui:fragment>
+
+                                                            <tr style="border-color:white">
+                                                                <td style="padding:1em 0">
+                                                                    <h:outputText styleClass="stackText"
+                                                                        value="Physical Link">
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td style="padding:1em 0" colspan="2">
+                                                                    <h:outputText style="font-size:1.1em"
+                                                                        rendered="#{comms.physical != null}"
+                                                                        value="#{comms.physical.name}">
+                                                                    </h:outputText>
+                                                                     
+                                                                    <!-- <p:outputPanel id="physEditPanel" >
+                                                                            <p:inplace style="font-weight:bold;font-size:1em;" editor="true" >
+                                                                                <p:inputText id="physName" value="#{comms.physical.name}" required="true"/>
+                                                                            </p:inplace>
+                                                                            <p:graphicImage style="height:1em"  library="images" name="icons/Pencil.png" alt="Image Not Found"/>
+                                                                        </p:outputPanel>
+                                                                        <p:tooltip for="physEditPanel" value="Click on the layer's name to edit the value." />-->
+                                                                       
+                                                                </td>
+                                                                <td style="padding:1em 0">
+                                                                    <p:commandButton icon="ui-icon-gear"
+                                                                        rendered="#{comms.physical != null}"
+                                                                        id="physicalConfigButton"
+                                                                        update='@([id$="mInfo"])' onclick="configDlg.show();" disabled="true">
+                                                                    </p:commandButton>
+                                                                    <p:tooltip for="transportConfigButton" value="Configure the physical layer." /> 
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </p:column>
+                                    </p:dataTable>
+                                 </td>
+                            </tr>
+                        </table>
+                    </p:outputPanel>
+                </td>
+            </tr>
+        </table>
+        <p:remoteCommand name="rcUpdateComms" update='@form @([id$="addCommPanel"])'/>      
+    </h:form>
+
+    <ui:include src="comms_add_layer_dialog.xhtml"/>
+    <ui:include src="comms_add_layer_confirm_dialog.xhtml" />
+    <ui:include src="comms_validation_err_dialog.xhtml" />
+    <ui:include src="comms_incomplete_info_dialog.xhtml" />
+    <ui:include src="comms_remove_stack_dlg.xhtml" />
+            
+  </ui:define>
+</ui:composition>

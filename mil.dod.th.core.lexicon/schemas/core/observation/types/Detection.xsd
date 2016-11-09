@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<xs:schema xmlns="http://th.dod.mil/core/observation/types"
+  targetNamespace="http://th.dod.mil/core/observation/types"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:shared="http://th.dod.mil/core/types"
+  xmlns:detection="http://th.dod.mil/core/types/detection"
+  xmlns:spatial="http://th.dod.mil/core/types/spatial"
+  elementFormDefault="qualified">
+  <xs:import namespace="http://th.dod.mil/core/types" schemaLocation="../../types/SharedTypes.xsd" />
+  <xs:import namespace="http://th.dod.mil/core/types/detection" schemaLocation="../../types/detection/DetectionTypes.xsd" />
+  <xs:import namespace="http://th.dod.mil/core/types/spatial" schemaLocation="../../types/spatial/SpatialTypes.xsd" />
+ 
+  <xs:complexType name="TargetClassification">
+    <xs:sequence>
+      <xs:element name="type" type="detection:TargetClassificationType" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+            <xs:documentation>
+                Target is classified as this type of target.
+            </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="confidenceFactors" type="shared:ConfidenceFactor" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+            <xs:documentation>
+                There can be multiple confidence factors per classification.
+            </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+ 
+  <xs:complexType name="Detection">
+    <xs:sequence>
+      <xs:element name="targetLocation" type="spatial:Coordinates" minOccurs="0" maxOccurs="1" >
+        <xs:annotation>
+            <xs:documentation>
+                Location of the detected target may be unknown if the asset has no GPS.
+            </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="targetClassifications" type="TargetClassification" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+            <xs:documentation>
+                There can be multiple classifications per detection. 0 if no classification performed.
+            </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="targetSpeed" type="shared:SpeedMetersPerSecond" minOccurs="0" maxOccurs="1" />
+      <xs:element name="targetRange" type="spatial:DistanceMeters" minOccurs="0" maxOccurs="1" />
+      <xs:choice minOccurs="0">
+          <xs:element name="targetOrientation" type="spatial:Orientation" minOccurs="1" maxOccurs="unbounded" >
+            <xs:annotation>
+                <xs:documentation>
+                    Target's orientation (global reference).
+                </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="targetLob" type="spatial:OrientationOffset" minOccurs="1" maxOccurs="unbounded">
+            <xs:annotation>
+                <xs:documentation>
+                    The line of bearing to the detected target relative to the asset. Bank measurement will be ignored.
+                    This field should be avoided in favor of targetOrientation if global orientation is available to the 
+                    asset.
+                </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+      </xs:choice>
+      <xs:element name="targetFrequency" type="shared:FrequencyKhz" minOccurs="0" maxOccurs="1" >
+        <xs:annotation>
+            <xs:documentation>
+                Frequency measured at the target.
+            </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="trackHistories" type="spatial:TrackElement" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+            <xs:documentation>
+                A track history of GPS coordinates complete with a timestamp
+            </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="directionOfTravel" type="shared:Direction" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+            <xs:documentation>
+                The direction that the target is moving in the imager’s FOV.
+            </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+      
+    <xs:attribute name="type" type="detection:DetectionTypeEnum" use="required" >
+        <xs:annotation>
+            <xs:documentation>
+                Type of detection observed.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="targetId" type="xs:string" use="optional" >
+        <xs:annotation>
+            <xs:documentation>
+                Unique identifier of the detected target where the identifier only has to be unique to a particular 
+                asset instance not globally unique.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="targetName" type="xs:string" use="optional">
+        <xs:annotation>
+            <xs:documentation>
+                Human readable identifier, as specific to the target instance as possible, not guaranteed to be unique, 
+                and suitable for display purposes. For instance, if the target is an access point, the name could be the
+                SSID.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+</xs:schema>

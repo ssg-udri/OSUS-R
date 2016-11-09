@@ -1,0 +1,85 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+This xhtml page is used to render the bundle configuration tab. This page
+displays all bundles contained on a controller and allows the bundles to be 
+stopped, started, and uninstalled.
+
+==============================================================================
+ -->
+<ui:composition
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui">
+    <h:form>
+      <h:outputText value="No active controller at this time! Please select a controller or add one." rendered="#{!activeController.isActiveControllerSet()}"/>
+      <p:dataTable styleClass="tablesNoBorderOnCells" id="bundleTable" widgetVar="bundleTbl" value="#{bundleConfigurationMgr.bundles}" var="bundle" filteredValue="#{bundleConfigurationMgr.filteredBundles}" 
+        rendered="#{activeController.isActiveControllerSet()}" emptyMessage="Please wait while bundle information is being retrieved.">
+        
+        <f:facet name="header">  
+            <p:outputPanel>
+                <div style="float:left;padding-top:5px;">
+                    <h:outputText value="Search for bundle: " />  
+                    <p:inputText id="globalFilter" onkeyup="bundleTbl.filter()" style="width:150px" />
+                </div>
+                <div style="text-align:right;float:right;">
+                    <p:commandButton id="installUpdate" icon="ui-icon-plus" value="Install/Update Bundle" onclick="installDlg.show();" rendered="#{activeController.isActiveControllerSet()}"/>
+                </div>  
+            </p:outputPanel>  
+        </f:facet>
+        <p:column headerText="Bundle ID">
+            <h:outputText style="font-size:1.3em" value="#{bundle.bundleId}"/>
+        </p:column>
+        <p:column filterBy="#{bundle.bundleName} #{bundle.symbolicName}" filterMatchMode="contains" filterStyle="float:left;visibility:hidden;height:0px;width:0px;" headerText="Bundle Name">
+            <h:outputText style="font-size:1.1em;font-weight:bold;" value="#{bundle.bundleName} "/>
+            <h:outputText style="font-size:1.1em;" value="(#{bundle.symbolicName})"/>
+        </p:column>
+        <p:column headerText="Status">
+            <h:outputText styleClass="bundleState#{bundle.state}" style="font-size:1.1em;font-weight:bold;" value="#{bundle.state}"/>
+        </p:column>
+        <p:column headerText="Vendor">
+            <h:outputText style="font-size:1.1em" value="#{bundle.bundleVendor}"/>
+        </p:column>
+        <p:column headerText="Version">
+            <h:outputText style="font-size:1.1em" value="#{bundle.version}"/>
+        </p:column>
+        <p:column headerText="Actions">
+            <table>
+                <tr>
+                    <td>
+                        <p:commandButton id="start" rendered="#{!bundle.state.equals('Active')}" icon="ui-icon-play" update="bundleTable" actionListener="#{bundleConfigurationMgr.startBundle(bundle.bundleId)}"/>
+                        <p:commandButton id="stop" rendered="#{bundle.state.equals('Active')}" icon="ui-icon-stop" update="bundleTable" actionListener="#{bundleConfigurationMgr.stopBundle(bundle.bundleId)}"/>
+                        <p:tooltip for="start" value="Start Bundle"/>
+                        <p:tooltip for="stop" value="Stop Bundle"/>
+                    </td>
+                    <td>
+                        <p:commandButton id="info" icon="ui-icon-info" ajax="true" update='@([id="bundleInfo"])' oncomplete="bundleDlg.show()" actionListener="#{bundleConfigurationMgr.setInfoBundle(bundle)}"/>
+                        <p:tooltip for="info" value="Show Bundle Details"/>
+                    </td>
+                    <td>
+                        <p:commandButton id="uninstall" icon="ui-icon-trash" ajax="true" update='@([id="uninstallPanel"])' oncomplete="uninstallDlg.show()" actionListener="#{bundleConfigurationMgr.setUninstallBundle(bundle)}"/>
+                        <p:tooltip for="uninstall" value="Uninstall Bundle"/>
+                    </td>
+                </tr>
+            </table>
+        </p:column>
+      </p:dataTable>
+    
+      <p:remoteCommand name="rcUpdateBundleTable" update='@([id$="bundleTable"])' />
+    </h:form>
+</ui:composition>

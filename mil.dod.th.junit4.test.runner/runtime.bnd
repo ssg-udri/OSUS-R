@@ -1,0 +1,30 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+Bundle-Name: JUnit4 XML Test Runner Bundle
+Bundle-Description: \
+    Junit4 XML Test Runner Bundle. Bundle should be used at runtime only, not for compiling.
+Bundle-Version: 2.0.0.${tstamp}
+Bundle-Vendor: UDRI
+Export-Package: org.junit.*;version=4.8.2,\
+    junit.*;version=4.8.2,\
+    org.hamcrest.*;version=1.2,\
+    mil.dod.th.ose.junit4xmltestrunner.*
+Import-Package: org.apache.tools.ant;resolution:=optional,\
+    org.apache.tools.ant.types;resolution:=optional,\
+    org.easymock;resolution:=optional,\
+    org.jmock.core;resolution:=optional,\
+    org.apache.felix.service.command;status=provisional,\
+    *
+Private-Package: org.apache.commons.io.*;-split-package:=merge-first
+Service-Component: mil.dod.th.ose.junit4xmltestrunner.*

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<fileset-config file-format-version="1.2.0" simple-config="false" sync-formatter="false">
+  <fileset name="all" enabled="true" check-config-name="THOSE All Base Checkstyle" local="false">
+    <file-match-pattern match-pattern="." include-pattern="true"/>
+    <file-match-pattern match-pattern="generated/|bin/|.settings/" include-pattern="false"/>
+    <file-match-pattern match-pattern=".checkstyle|.classpath|.project|.pmd|.DS_Store" include-pattern="false"/>
+  </fileset>
+  <fileset name="all" enabled="true" check-config-name="THOSE Checkstyle" local="false">
+    <file-match-pattern match-pattern="src" include-pattern="true"/>
+  </fileset>
+  <fileset name="all" enabled="true" check-config-name="THOSE Test Checkstyle" local="false">
+    <file-match-pattern match-pattern="test/.*" include-pattern="true"/>
+  </fileset>
+  <filter name="NonSrcDirs" enabled="false"/>
+  <filter name="FileTypesFilter" enabled="true">
+    <filter-data value="proto"/>
+    <filter-data value="css"/>
+    <filter-data value="java"/>
+    <filter-data value="properties"/>
+    <filter-data value="xml"/>
+    <filter-data value="js"/>
+    <filter-data value="example"/>
+    <filter-data value="bnd"/>
+    <filter-data value="cc"/>
+    <filter-data value="c"/>
+    <filter-data value="txt"/>
+    <filter-data value="h"/>
+    <filter-data value="xhtml"/>
+    <filter-data value="i"/>
+    <filter-data value="xsd"/>
+  </filter>
+</fileset-config>

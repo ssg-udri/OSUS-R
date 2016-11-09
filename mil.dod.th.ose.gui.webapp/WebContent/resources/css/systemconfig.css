@@ -1,0 +1,95 @@
+/*==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+This style sheet is for the system configuration page. Contains styles for the various
+different states a bundle can be in. Also contains an override of the accordion Primefaces
+element used in the bundles information dialog.
+*/
+
+/*This style is used to turn the text green when a bundle's state is active. */
+.bundleStateActive
+{
+    color:green;
+}
+
+/*This style is used to turn the text red when a bundle's state is installed. */
+.bundleStateInstalled
+{
+    color:red;
+}
+
+/*This style is used to turn the text black when a bundle's state is resolved. */
+.bundleStateResolved
+{
+    color:black;
+}
+
+/*This style is used to turn the text yellow when a bundle's state is starting. */
+.bundleStateStarting
+{
+    color:yellow;
+}
+
+/*This style is used to turn the text yellow when a bundle's state is stopping. */
+.bundleStateStopping
+{
+    color:yellow;
+}
+
+/* used to remove padding from the Primefaces accordion element in the bundles information dialog window. */
+tr td .ui-accordion-content
+{
+    padding:0px !important;
+}
+
+/* Style used for tables on the configuration tab. */
+.configurationTable
+{
+    padding:10px 0 10px 0;
+}
+
+/* Style used for the div that house the save and delete button for configurations.*/
+.saveDeleteDiv
+{
+    text-align: right;
+    margin-top:10px;
+}
+
+/* Style used for dialog text to confirm actions such as deleting a configuration or removing a bundle. */
+.confirmDialogText
+{
+    text-align:center;
+    display:block;
+    word-wrap:break-word;
+}
+
+/* Style used for dialog text to confirm actions such as deleting a configuration or removing a bundle. This style is
+used to highlight important information on the dialog. */
+.confirmDialogTextImportant
+{
+    text-align:center;
+    display:block;
+    font-weight:bold;
+    margin-top:10px;
+    margin-bottom:10px;
+    word-wrap:break-word;
+}
+
+/* Style used for the div that contains the confirm and cancel buttons on the confirmation dialog for deleting
+configurations or removing bundles.*/
+.confirmDialogButtons
+{
+    width:100%;
+    text-align:center;
+    margin-top:20px;
+}

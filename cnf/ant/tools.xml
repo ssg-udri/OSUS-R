@@ -1,0 +1,40 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Ant build file for tool components used by OSUS-R.
+
+==============================================================================
+-->
+<project name="tools" default="build">
+    <property environment="env" />
+
+    <property file="../../build.properties" prefix="bp" />
+    <import file="${bp.workspace.dir}/cnf/ant/commons.xml"/>
+
+    <target name="build" description="Build all tools" depends="clean">
+        <ant dir="${bp.utils.dir}" target="build" />
+        <ant dir="${bp.metatype.dir}" target="build" />
+        <ant dir="${bp.jaxb.proto.converter.dir}" target="build" />
+        <ant dir="${bp.lexicon.doc.generator.dir}" target="build" />
+    </target>
+
+    <target name="clean" description="Clean all tools">
+        <ant dir="${bp.utils.dir}" target="clean" />
+        <ant dir="${bp.metatype.dir}" target="clean" />
+        <ant dir="${bp.jaxb.proto.converter.dir}" target="clean" />
+        <ant dir="${bp.lexicon.doc.generator.dir}" target="clean" />
+    </target>
+</project>
+

@@ -1,0 +1,9 @@
+* text=auto !eol
+
+/README text
+
+build.xml text
+*.bnd text
+*.java text
+
+*.sh eol=lf

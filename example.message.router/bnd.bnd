@@ -1,0 +1,37 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+
+Bundle-Version: 1.0.0.${tstamp}
+Bundle-Description: Bundle example for a message router service
+Bundle-Name: Example Message Router Bundle
+Bundle-Vendor: UDRI
+
+Import-Package: \
+    org.apache.felix.service.command;status=provisional, \
+    *
+
+Private-Package: \
+    example.message.router,\
+    example.message.client,\
+    example.message
+Service-Component: example.message.*
+
+-buildpath: \
+    osgi.core,\
+    osgi.cmpn,\
+    biz.aQute.bnd.annotation,\
+    com.google.protobuf,\
+    org.apache.felix.gogo.runtime,\
+    mil.dod.th.core.api;version=latest,\
+    mil.dod.th.core.lexicon.api;version=latest,\
+    mil.dod.th.core.proto.messages;version=latest

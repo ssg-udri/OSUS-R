@@ -1,0 +1,174 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+option java_outer_classname = "RemoteBase";
+
+// Defines the different types of messages supported by the remote interface.
+// Enums 1-8 correspond to different OSGi-specific services.  Enums 9+ correspond to other declarative
+// services defined by the API.
+enum Namespace
+{
+    // Namespace contains any basic system information like name, version, id, etc.
+    Base = 0;
+
+    // Namespace for any OSGi event handling actions.
+    EventAdmin = 1;
+
+    // Namespace for any OSGi configuration admin actions.
+    ConfigAdmin = 2;
+
+    // Namespace for any OSGi actions related to the MetaType service.
+    MetaType = 3;
+
+    // Namespace for any OSGi bundle actions.
+    Bundle = 4;
+
+    // Namespace for any mission programming functions like sending program to controller or starting a program.
+    MissionProgramming = 9;
+
+    // Namespace for operations related to the PersistentDataStore.
+    Persistence = 10;
+
+    // Namespace for operations related to the ObservationStore.
+    ObservationStore = 11;
+
+    // Namespace for operations related to power management like starting the manager, requesting power down, etc.
+    PowerManagement = 12;
+
+    // Namespace for operations related to the custom comms service.
+    CustomComms = 13;
+
+    // Namespace for operations related to the link layers.
+    LinkLayer = 14;
+
+    // Namespace for operations related to the physical link layers.
+    PhysicalLink = 15;
+
+    // Namespace for operations related to the transport layers.
+    TransportLayer = 16;
+
+    // Namespace for operations related to the asset directory service.
+    AssetDirectoryService = 17;
+
+    // Namespace for any asset specific operations like querying for existing assets, capture data for an asset, etc.
+    Asset = 18;
+    
+    // Namespace for operations related to configuring remote channels managed by the remote channel look up service.
+    RemoteChannelLookup = 19;
+
+    // Namespace for operations related to encryption information. This namespace is never encrypted and should always
+    // be accepted by the system.
+    EncryptionInfo = 20;
+    
+    // Namespace for operations related to the streaming data service.
+    DataStreamService = 21;
+    
+    // Namespace for operations related to store-and-forward of streaming data
+    DataStreamStore = 22;
+}
+
+//Enumeration that defines the different types of Encryption modalities supported.
+//The proto enum ordinal value is used as a way to denote the level of encryption of a message, the higher the enum
+//constant the stronger the level of encryption.
+enum EncryptType
+{
+    //No Encryption used
+    NONE = 0;
+
+    //Advanced Encryption Standard with Elliptic Curve Diffie-Hellman/Elliptic Curve Digital Signature Algorithm.
+    //Elliptic Curve Diffie-Hellman (ECDH) is an anonymous key agreement protocol that allows two parties each having an
+    //elliptic curve public-private key pair, to establish a shared secret key over an insecure channel.
+    //Elliptic Curve Digital Signature Algorithm is a variant of the Digital Signature Algorithm (DSA) which uses
+    //elliptic curve cryptography.
+    AES_ECDH_ECDSA = 2;
+}
+
+// This is the base message type used for all remote interface traffic (basically the header).
+message TerraHarvestMessage
+{
+    // Embedded message containing version information for the remote interface.
+    message Version
+    {
+        // Systems with different major version will have messages that are incompatible.
+        required int32 major = 1;
+        // Minor version difference are compatible, there just might be some optional fields that are set in one and not
+        // used by the other.
+        required int32 minor = 2;
+    }
+
+    // Version of the remote interface as defined by the set of protocol buffer files that this message is created with.
+    // Set this field to the version of the remote interface used when creating the message.  When receiving, verify the
+    // version of received messages can be handled.  If the major version differs, the message cannot be handled and a
+    // INVALID_VERSION error code will be sent back.  When the remote interface of two systems is version incompatible,
+    // the TerraHarvestMessage read initially when receiving a message may not be readable.  If a required field is
+    // added to the TerraHarvestMessage, then a receiving system will not even be able to receive the initial message
+    // to know the version of the remote system.  In this case, the system will not respond as the base messages are
+    // incompatible between systems.
+    required Version version = 1;
+
+    //Type of Encryption
+    optional EncryptType encryptType = 2 [default = NONE];
+
+    //EncryptMessageData
+    optional EncryptInfo encryptInfo = 3;
+
+    // Terra Harvest system id for the system sending the message, the source.
+    required int32 sourceId = 4;
+
+    // Terra Harvest system id for the system that should handle the message, the destination.
+    required int32 destId = 5;
+
+    // If a sequence id is present in the TerraHarvestMessage the receiver will handle messages in the order of
+    // their id. If a message that fits the described sequence is not received within 5 seconds a timeout error
+    // will be rendered.
+    optional int32 sequenceId = 7;
+
+    // This is the id for matching up requests with responses. It is up to the sender of a message to decide how to set
+    // the id (they can use a random number, counter, start at 0, count down, etc.). Receiver must send any message
+    // responses with the same message id.
+    required int32 messageId = 8;
+
+    //Identifier of whether or not the message represented is a response or a request. True means that this message is
+    //a response.
+    optional bool isResponse = 9;
+
+    //TerraHarvestPayloadData
+    required bytes terraHarvestPayload = 100;
+}
+
+// The TerraHarvestPayload stores the namespace and namespace message information
+message TerraHarvestPayload
+{
+    // Namespace for the type of message (e.g., osgi, mission-programming, persistence, etc.).
+    optional Namespace namespace = 1 [default = Base];
+
+    // Serialization of the protocol buffer message where the type is the namespace value with "Namespace"
+    // appended. For example, if the namespace value is "Base", the message type is "BaseNamespace".
+    required bytes namespaceMessage = 100;
+}
+
+//The message Encrypt info is used to generate public private keys or to set Initialization vector
+//for block encrypting
+message EncryptInfo
+{
+    //Ephemeral ECDH public key generated by the sender (we can reuse it for multiple messages)
+    required bytes ephemeralKey = 1;
+
+    //ECDSA signature of the ephemeral public key, signed using sender's static private key
+    required bytes ephemeralKeySignature = 2;
+
+    //Nonce (Number used once) for AES/GCM - random value of at least 12 bytes per NIST SP-800-38D
+    //Can never be used for the same ephemeral Key.
+    required bytes initializationVector = 3;
+}

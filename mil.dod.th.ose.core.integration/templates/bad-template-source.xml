@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<p:MissionProgramTemplate xmlns:p="http://th.dod.mil/core/mp/model" xmlns:p1="http://th.dod.mil/core/asset/types" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://th.dod.mil/core/mp/model ../resources/missionProgramSchema/MissionProgramTemplate.xsd ">
+  <p:source>
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+// Usage:
+//     subscribeEvent = persisted, merged, or both
+//     filterOnAsset = the asset which will trigger the other asset to capture data
+//     assetNameOnEvent = the asset which will be triggered to capture data
+//     modalityType = the modality type of the filterOnAsset asset
+//     persist = true/false
+//
+// Description: 
+//     This script involves two assets. One asset will trigger another asset 
+//     to capture data. The filterOnAsset asset triggers the assetNameOnEvent 
+//     asset when it creates or merges observations (depends on subscribeEvent
+//     value). This mission will execute for an infinite amount of time. 
+//
+
+importClass(org.osgi.service.event.EventHandler);
+importPackage(Packages.mil.dod.th.core.observation.types)
+importPackage(Packages.mil.dod.th.core.asset.types)
+importPackage(Packages.mil.dod.th.core.asset.commands)
+importPackage(java.lang)
+
+//Variables
+subscribeEvent;
+filterOnAsset;
+assetNameOnEvent;
+persist;
+
+//
+// Function to determine which observation event to listen for
+//
+// theEvent - a string to determine which event to listen for. Valid
+//            parameter values are persisted, merged, both
+//            a string that represents the event to subscribe to 
+//
+function subscribedEvent(theEvent)
+{
+    switch(theEvent.toLowerCase())
+    {
+        case "persisted":
+            return "mil/dod/th/core/persistence/ObservationStore/OBSERVATION_PERSISTED";
+        case "merged":
+            return "mil/dod/th/core/persistence/ObservationStore/OBSERVATION_MERGED";
+        case "both":
+            return "both";
+    }
+}
+
+
+detectObj = 
+{ 
+    run : function () 
+    {
+        //get asset by calling asset directory service (see standard)
+        asset = ads.getAssetByName(assetNameOnEvent);
+
+        //call capture data 
+        asset.captureData(java.lang.Boolean.parseBoolean(persist)); 
+    }
+}
+
+eventObj = 
+{
+    handleEvent: function(event) 
+    {
+        //get the UUID to get the actual obsevation from the observation store (os)
+        observationUUID = event.getProperty("observation.uuid");
+        observation = os.find(observationUUID); 
+
+        if(observation != null)
+        {
+            //make sure that the observation has a detection and the asset name is the asset that 
+            //is the specified as the filtering asset 
+            if (observation.isSetDetection() && observation.getAssetName() == filterOnAsset)
+            {
+                //initiate the captureData event on the assetNameOnEvent
+                ls.info("Asset " + assetNameOnEvent + " has been triggered because event " + subscribeEvent 
+                    + " has occurred for filter " + filterOnAsset, []);
+
+                r = new java.lang.Runnable(detectObj);
+                t = new java.lang.Thread(r);
+                t.start();
+            }
+        }
+        else
+        {
+            ls.info("Observation with UUID " + observationUUID + " cannot be found. No event will be triggered.", []);
+        }
+    } 
+};
+
+handler = new EventHandler(eventObj);
+
+//figure out what event to subscribe to
+answer = subscribedEvent(subscribeEvent);
+
+if(answer == "both")
+{
+    ehh.registerHandler(handler, "mil/dod/th/core/persistence/ObservationStore/OBSERVATION_PERSISTED");
+    ehh.registerHandler(handler, "mil/dod/th/core/persistence/ObservationStore/OBSERVATION_MERGED");
+}
+else
+{
+    ehh.registerHandler(handler, answer);
+}
+</p:source>
+  <p:name>bad-template</p:name>
+  <p:description>This template will never execute or load. This xml document tests that source code which is not properly formed will fail validation. This template could be made valid by wrapping the source code in a CDATA element.</p:description>
+  <p:withInterval>false</p:withInterval>
+  <p:withImageCapture>false</p:withImageCapture>
+  <p:withSensorTrigger>false</p:withSensorTrigger>
+  <p:withTimerTrigger>false</p:withTimerTrigger>
+  </p:MissionProgramTemplate>

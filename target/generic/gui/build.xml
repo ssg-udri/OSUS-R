@@ -1,0 +1,167 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Ant build file for the entire GUI subsystem.  This will build all units using
+ their Ant build file and allows for deploying the files to the target.
+
+==============================================================================
+-->
+<project name="generic-gui-app" default="deploy">
+    <property environment="env" />
+
+    <!-- properties cannot be overriden, imported as first right to define (common->local) -->
+    <property file="../../../build.properties" prefix="bp" />
+    
+    <property name="target.app.dir" value="${bp.workspace.dir}/target/generic/gui"/>
+    <property name="gui.deploy.dir" value="${target.app.dir}/deploy" />
+        
+    <import file="${bp.workspace.dir}/cnf/ant/target-commons.xml" />
+    <import file="${bp.workspace.dir}/cnf/ant/gui-commons.xml" />
+
+    <target name="build-no-deps">
+        <ant dir="${bp.primefaces.patch.dir}" target="build" />
+        <ant dir="${bp.gui.theme.dir}" target="build" />
+        <ant dir="${bp.gui.api.dir}" target="build" />
+        <ant dir="${bp.gui.webapp.dir}" target="build" />
+        <ant dir="${bp.gui.remote.system.encryption.dir}" target="build" />   
+        <ant dir="${bp.glassfish.patch.dir}" target="build" />
+    </target>
+    
+    <target name="build-with-deps">
+        <ant dir="${bp.ant.build.files.dir}" antfile="shared.xml" target="build" />
+        <ant dir="${bp.rxtxtty.dir}" target="build" />
+        <antcall target="build-no-deps" />
+    </target>
+    
+    <target name="clean" description="Clean all files generated from build including units">
+        <ant dir="${bp.ant.build.files.dir}" antfile="shared.xml" target="clean" />
+        <ant dir="${bp.glassfish.patch.dir}" target="clean" />
+        <ant dir="${bp.primefaces.patch.dir}" target="clean" />
+        <ant dir="${bp.gui.theme.dir}" target="clean" />
+        <ant dir="${bp.gui.webapp.dir}" target="clean" />
+        <ant dir="${bp.gui.remote.system.encryption.dir}" target="clean" />
+        <ant dir="${bp.gui.api.dir}" target="clean" />
+        <ant dir="${bp.rxtxtty.dir}" target="clean" />
+    </target>
+
+    <target name="deploy-app" depends="check-asadmin">
+        <unzip dest="${bp.subsystem.deploy.dir}" src="${bp.glassfish.zip.file}" />
+        <ant dir="${bp.rxtxtty.dir}" target="deploy-component" />
+
+        <chmod dir="${bp.glassfish3.deploy.dir}/bin" perm="a+x" includes="*" />
+        <chmod dir="${bp.glassfish.deploy.dir}/bin" perm="a+x" includes="*" />
+
+        <exec executable="${asadmin}" failonerror="true">
+            <arg value="delete-domain" />
+            <arg value="domain1" />
+        </exec>
+        <propertyfile file="passwd">
+            <entry key="AS_ADMIN_PASSWORD" value="admin" />
+        </propertyfile>
+        <exec executable="${asadmin}" failonerror="true">
+            <arg line="-u admin -W passwd" />
+            <arg value="create-domain" />
+            <arg line="--portbase ${bp.gui.portbase}" />
+            <arg value="--checkports=false" />
+            <arg value="those" />
+        </exec>
+        
+        <copy todir="${bp.glassfish.deploy.dir}/modules/autostart" overwrite="true">
+            <fileset dir="${bp.deps.dir}/webconsole" includes="*.jar" />
+            <fileset file="${bp.commons-io.jar.file}" />
+        </copy>
+        <copy tofile="${bp.glassfish.deploy.dir}/modules/autostart/osgi-cdi.jar" failonerror="true"
+            file="${bp.glassfish.patch.dir}/${bp.gen.dir}/mil.dod.th.ose.gui.glassfish.patch.jar" />
+                        
+        <copy file="${bp.license.file}" todir="${bp.subsystem.deploy.dir}" />
+
+        <ant dir="${bp.ant.build.files.dir}" antfile="shared.xml" target="deploy-components" />
+                        
+        <!-- Apache Felix remote shell jar not needed, already included with Glassfish. -->
+        <delete file="${bp.bundle.deploy.dir}/org.apache.felix.shell.remote-1.1.2.jar"/>
+        <!-- don't need custom shell props, just delete all conf -->
+        <delete includeemptydirs="true" dir="${bp.subsystem.deploy.dir}/conf" />
+
+        <!-- Remove the incorrect version of grizzly jars. Version 1.9.51 is needed to enable PrimeFaces Push
+             to work correctly with Glassfish.-->
+        <delete file="${bp.glassfish.deploy.dir}/modules/grizzly-comet.jar"/>
+        <delete file="${bp.glassfish.deploy.dir}/modules/grizzly-config.jar"/>
+        <delete file="${bp.glassfish.deploy.dir}/modules/grizzly-framework.jar"/>
+        <delete file="${bp.glassfish.deploy.dir}/modules/grizzly-http.jar"/>
+        <delete file="${bp.glassfish.deploy.dir}/modules/grizzly-http-ajp.jar"/>
+        <delete file="${bp.glassfish.deploy.dir}/modules/grizzly-http-servlet.jar"/>
+        <delete file="${bp.glassfish.deploy.dir}/modules/grizzly-lzma.jar"/>
+        <delete file="${bp.glassfish.deploy.dir}/modules/grizzly-portunif.jar"/>
+        <delete file="${bp.glassfish.deploy.dir}/modules/grizzly-rcm.jar"/>
+        <delete file="${bp.glassfish.deploy.dir}/modules/grizzly-utils.jar"/>
+        <delete file="${bp.glassfish.deploy.dir}/modules/grizzly-websockets.jar"/>
+        
+         <!--Replace with the correct version of grizzly jars-->
+        <copy todir="${bp.glassfish.deploy.dir}/modules">
+            <fileset dir="${bp.deps.dir}/grizzly-1.9.51" includes="*.jar"/>
+        </copy>
+        
+        <!-- Replace version of Mojarra that comes with Glassfish with a newer version -->
+        <copy tofile="${bp.glassfish.deploy.dir}/modules/javax.faces.jar" failonerror="true" 
+            file="${bp.deps.dir}/mojarra/javax.faces-2.1.29.jar" />
+        
+        <!-- Copy script file needed to install glassfish as a service -->
+        <copy todir="${bp.glassfish.deploy.dir}/bin">
+            <fileset dir="${bp.subsystem.fullpath}/${bp.scripts.dir}" includes="*.bat"/>
+        </copy>
+        
+        <!-- 
+          these files are part of the shared JARs used by controller so are added as part of the shared targets, but are already
+          included with glassfish with a different version and location, overwrite with newer version
+        -->
+        <move file="${bp.bundle.deploy.dir}/${bp.osgi.config.admin.base}" 
+            tofile="${bp.glassfish.deploy.dir}/modules/org.apache.felix.configadmin.jar"/>
+        <move file="${bp.bundle.deploy.dir}/${bp.osgi.event.admin.base}" 
+            tofile="${bp.glassfish.deploy.dir}/modules/autostart/org.apache.felix.eventadmin.jar"/>
+        <move file="${bp.bundle.deploy.dir}/${bp.gogo.command.base}"
+            tofile="${bp.glassfish.deploy.dir}/modules/org.apache.felix.gogo.command.jar"/>
+        <move file="${bp.bundle.deploy.dir}/${bp.gogo.runtime.base}"
+            tofile="${bp.glassfish.deploy.dir}/modules/org.apache.felix.gogo.runtime.jar"/>
+        <move file="${bp.bundle.deploy.dir}/${bp.gogo.shell.base}" 
+            tofile="${bp.glassfish.deploy.dir}/modules/org.apache.felix.gogo.shell.jar"/>
+        <move file="${bp.bundle.deploy.dir}/${bp.osgi.scr.base}"
+            tofile="${bp.glassfish.deploy.dir}/modules/autostart/org.apache.felix.scr.jar"/>
+
+        <!-- need a newer version of the framework -->
+        <copy file="${bp.felix.main.bundle.file}"  tofile="${bp.glassfish.deploy.dir}/osgi/felix/bin/felix.jar" />
+        
+        <!-- must also customize domain.xml so that websocket and comet support are enabled for Primefaces Push features -->
+        <replaceregexp file="${bp.glassfish.deploy.dir}/domains/those/config/domain.xml" 
+            match="[\s*]&lt;protocol name=&quot;http-listener-1&quot;&gt;(\s*)&lt;http default-virtual-server=&quot;server&quot; max-connections=&quot;250&quot;&gt;" 
+            replace="&lt;protocol name=&quot;http-listener-1&quot;&gt; ${line.separator}&lt;http websockets-support-enabled=&quot;true&quot; default-virtual-server=&quot;server&quot; max-connections=&quot;250&quot; comet-support-enabled=&quot;true&quot;&gt;"/>
+        
+        <propertyfile file="${bp.glassfish.deploy.dir}/config/osgi.properties">
+            <entry key="glassfish.osgi.auto.install" operation="+" value=" ${com.sun.aas.installRootURI}modules/those/"/>
+            <entry key="glassfish.osgi.auto.start" operation="+" value=" ${datanucleus.bundles}"/>
+            <entry key="glassfish.osgi.auto.start" operation="+" value=" ${those.bundles}"/>
+            <entry key="glassfish.osgi.auto.start" operation="+" value=" ${webapp.bundle}"/>
+            <entry key="glassfish.osgi.start.level.final" operation="=" value="6"/>
+            <entry key="Felix.system.packages" operation="=" value="org.osgi.framework; version=1.7.0, org.osgi.framework.launch; version=1.1.0, org.osgi.framework.wiring; version=1.1.0, org.osgi.framework.startlevel; version=1.0.0, org.osgi.framework.hooks.bundle; version=1.1.0, org.osgi.framework.hooks.resolver; version=1.0.0, org.osgi.framework.hooks.service; version=1.1.0, org.osgi.framework.hooks.weaving; version=1.0.0, org.osgi.service.packageadmin; version=1.2.0, org.osgi.service.startlevel; version=1.1.0, org.osgi.service.url; version=1.0.0, org.osgi.util.tracker; version=1.5.1, ${extra-system-packages}" />
+        </propertyfile>
+                        
+        <concat append="true" destfile="${bp.glassfish.deploy.dir}/config/osgi.properties" fixlastline="yes">
+            <filelist files="${bp.subsystem.fullpath}/osgi.properties"/>
+        </concat>
+
+        <ant dir="${bp.gui.api.dir}" target="deploy-component" />
+        <ant dir="${bp.gui.webapp.dir}" target="deploy-component" />
+        <ant dir="${bp.gui.remote.system.encryption.dir}" target="deploy-component" />
+    </target>
+</project>

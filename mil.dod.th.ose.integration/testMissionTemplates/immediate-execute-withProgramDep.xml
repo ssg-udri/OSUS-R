@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<p:MissionProgramTemplate xmlns:p="http://th.dod.mil/core/mp/model" 
+    xmlns:shared="http://th.dod.mil/core/types" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://th.dod.mil/core/mp/model ../resources/missionProgramSchema/MissionProgramTemplate.xsd ">
+  <p:source>
+  <![CDATA[obj = 
+{
+    //execute function
+    execute: function()
+    {
+        // Main functionality
+        //generate a uuid
+        uuid = java.util.UUID.randomUUID();
+        value = new java.lang.Integer(arg);
+        //program dependency requesting outside interactions
+        dependencyProgramVariableMetaData = program.getVariableMetaData();
+        logSvc.info(dependencyProgramVariableMetaData, []);
+        dependencyProgramdStatus = program.getProgramStatus();
+        logSvc.info(dependencyProgramdStatus, []);
+        //create a persistence entity that identifies this script ran
+        prsDatStr.persist(value.getClass(), uuid, msg, value);
+    },
+    test: function()
+    {
+        //program dependency requesting outside interactions
+        dependencyProgramVariableMetaData = program.getVariableMetaData();
+        logSvc.info(dependencyProgramVariableMetaData, []);
+        return TestResult.class.static.PASSED;
+    },
+    shutdown: function()
+    {
+        logSvc.info("Immediate Execute Service script is shutting down!.", []);
+    }
+};]]>
+</p:source>
+    <p:name>immediate-execute-withProgramDep</p:name>
+    <p:description> Verifies that primitive type variables are bound correctly to the
+        JavaScript engine. And that these bindings behave correctly within the
+        script.
+    </p:description>
+
+    <p:withInterval>false</p:withInterval>
+    <p:withImageCapture>false</p:withImageCapture>
+    <p:withSensorTrigger>false</p:withSensorTrigger>
+    <p:withTimerTrigger>false</p:withTimerTrigger>
+    <p:withPanTilt>false</p:withPanTilt>
+
+    <p:supportTestExecution>true</p:supportTestExecution>
+
+    <p:variableMetaData>
+        <shared:name>program</shared:name>
+        <shared:description>The program to be used within this script.</shared:description>
+        <shared:humanReadableName>Program</shared:humanReadableName>
+        <p:type>Program Dependencies</p:type>
+    </p:variableMetaData>
+    <p:variableMetaData>
+        <shared:name>msg</shared:name>
+        <shared:description>The message to be used within this script.</shared:description>
+        <shared:humanReadableName>Message</shared:humanReadableName>
+        <p:type>String</p:type>
+    </p:variableMetaData>
+    <p:variableMetaData>
+        <shared:name>arg</shared:name>
+        <shared:description>The integer to be used within this script.</shared:description>
+        <shared:humanReadableName>Number Argument</shared:humanReadableName>
+        <p:type>Integer</p:type>
+    </p:variableMetaData>
+</p:MissionProgramTemplate>

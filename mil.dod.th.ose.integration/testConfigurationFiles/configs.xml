@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+-->
+<config:Configurations xmlns:config="config.model.th.dod.mil" 
+    xmlns:types="http://th.dod.mil/core/types" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" >
+    
+  <factoryObjects name="xmlConfigAsset1">
+    <factoryType>Asset</factoryType>
+    <properties key="th.activate.on.startup" value="true"/>
+    <properties key="devicePowerName" value="config-value"/>
+    <productType>example.asset.ExampleAsset</productType>
+    <createPolicy>IfMissing</createPolicy>    
+  </factoryObjects>
+  
+  <factoryObjects name="xmlConfigAsset2">
+    <factoryType>Asset</factoryType>
+    <properties key="devicePowerName" value="config-value"/>
+    <productType>example.asset.ExampleAsset</productType>
+    <createPolicy>FirstRun</createPolicy>   
+  </factoryObjects>
+  
+  <factoryObjects name="xmlConfigPhysicalLink">
+    <factoryType>PhysicalLink</factoryType>
+    <properties key="th.read.timeout.ms" value="500"/>
+    <properties key="th.databits" value="7"/>
+    <physicalLinkType>I2C</physicalLinkType>
+    <createPolicy>IfMissing</createPolicy>  
+  </factoryObjects>
+  
+  <factoryObjects name="xmlConfigLinkLayer">
+    <factoryType>LinkLayer</factoryType>
+    <properties key="th.activate.on.startup" value="true"/>
+    <properties key="th.retries" value="3"/>
+    <properties key="th.read.timeout.ms" value="1000"/>
+    <properties key="th.physical.link.name" value="xmlConfigPhysicalLink"/>
+    <productType>example.ccomms.ExampleLinkLayer</productType>
+    <createPolicy>IfMissing</createPolicy>  
+  </factoryObjects>
+  
+  <factoryObjects name="xmlConfigTransportLayer">
+    <factoryType>TransportLayer</factoryType>
+    <properties key="th.read.timeout.ms" value="1500"/>
+    <properties key="th.link.layer.name" value="xmlConfigLinkLayer"/>
+    <productType>example.ccomms.EchoTransport</productType>
+    <createPolicy>FirstRun</createPolicy>   
+  </factoryObjects>
+  
+  <addresses addressDescription="Example:1">
+    <createPolicy>IfMissing</createPolicy>
+  </addresses>
+  
+  <addresses addressDescription="Example:2">
+    <createPolicy>FirstRun</createPolicy>
+  </addresses>
+  
+  <osgiConfigs>
+    <pid>example.metatype.XML.ExampleClass</pid>
+    <properties key="example.config.value" value="50"/>
+    <properties key="example.config.value.string" value="config-value"/>
+  </osgiConfigs>
+  
+  <osgiConfigs>
+    <factoryPid>mil.dod.th.ose.logging.LogFilterImpl</factoryPid>
+    <properties key="severity" value="Debug"/>
+    <properties key="bundleSymbolicFilter" value="org.apache.felix..*"/>
+  </osgiConfigs>
+  
+  <osgiConfigs>
+    <pid>example.zzz.config.ZzzExampleClass</pid>
+    <properties key="example.config.value" value="200"/>
+  </osgiConfigs>
+  
+  <eventRegs canQueueEvent="false" eventFilter="(obj.name=remoteConfigTestAsset)" objectFormat="NATIVE" 
+    systemId="99">
+    <eventTopics>mil/dod/th/core/asset/Asset/DATA_CAPTURED</eventTopics>
+  </eventRegs>
+  
+  <socketChannels host="localhost" port="4001" systemId="2"/>
+  
+  <transportChannels transportLayerName="xmlConfigTransportLayer" localAddress="Example:1" remoteAddress="Example:2"
+    systemId="300"/>
+    
+  <transportChannels transportLayerName="nonConfigsTransportLayer" localAddress="Example:1" remoteAddress="Example:2"
+    systemId="250"/>
+</config:Configurations>

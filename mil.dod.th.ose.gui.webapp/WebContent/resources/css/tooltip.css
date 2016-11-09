@@ -1,0 +1,65 @@
+/*==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+This style sheet is for styling custom terra harvest tooltips.  
+*/
+
+/* tooltip base used to apply overall style to custom tooltip */
+.tooltip 
+{ 
+    outline:none; 
+    position: relative;
+}
+
+/*Box that forms the tooltip*/
+.tooltip span 
+{
+    z-index: 1; /*Seems to enable tooltip to appear over clickable elements*/
+    position: absolute;
+    padding: 5px;
+    line-height: 1.2em;
+    color: #fff;
+    background: #575757;
+    border-radius: 2px;
+    box-shadow: 1px 1px 2px rgba(55,55,55,.3);
+    width: 290px;
+   
+    display:none;
+}
+
+/*Style that forms the point (triangle) on the tooltip at the top of the box*/
+.tooltip span img 
+{
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent; /*creates left side of triangle*/
+    border-right: 10px solid transparent; /*creates right side of triangle*/
+    border-bottom: 10px solid #575757;
+    margin-top: 5px;
+    position: absolute;
+}
+
+/*Style that positions the box on the page.*/
+.tooltip.point span 
+{
+    margin-right: 15px;
+    right: -10%;
+    top: 100%;
+}
+
+/*Style that positions the point on the tooltip box*/
+.tooltip.point span img 
+{
+    top: -13px;
+    right: 75px;
+}

@@ -1,0 +1,25 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+Bundle-Version: 2.1.0.${tstamp}
+Bundle-Name: Terra Harvest Lexicon API
+Bundle-Description: Contains JAXB classes based on the TH lexicon
+Bundle-Vendor: UDRI
+Export-Package:  \
+    mil.dod.th.core.*;provide:=true
+# schemas are not used during runtime, but as a convenience for those referencing the bundle at build time
+Include-Resource: \
+    mil/dod/th/core=schemas/core
+    
+# This prevents the bundle from being used during runtime
+Require-Capability: noresolve; filter:="(&(a=*)(!(a=*)))

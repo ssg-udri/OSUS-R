@@ -1,0 +1,147 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+import "shared.proto";
+
+// Namespace which gives access to transport layer operations
+message TransportLayerNamespace
+{
+    // An enumeration of different requests/responses for handling remote transport layers
+    enum TransportLayerMessageType
+    {
+        // Request to see if the transport layer is receiving data, responses are contained in IsReceivingResponse
+        IsReceivingRequest = 1;
+
+        // Response for IsReceivingRequest
+        IsReceivingResponse = 2;
+
+        // Request to see if the transport layer is transmitting data, responses are contained in IsTransmittingResponse
+        IsTransmittingRequest = 3;
+
+        // Response for IsTransmittingRequest
+        IsTransmittingResponse = 4;
+
+        // Request to see if an address is reachable from the transport layer, responses are contained in
+        // IsAvailableResponse
+        IsAvailableRequest = 5;
+
+        // Response for IsAvailableRequest
+        IsAvailableResponse = 6;
+
+        // Request to get the link layer associated with this transport layer, responses are contained in
+        // GetLinkLayerResponse
+        GetLinkLayerRequest = 7;
+
+        // Response for GetLinkLayerRequest
+        GetLinkLayerResponse = 8;
+
+        // Request to shutdown the transport layer, responses are contained in ShutdownResponse
+        ShutdownRequest = 9;
+
+        // Response for ShutdownRequest
+        ShutdownResponse = 10;
+        
+        // Request to delete a transport layer, responses are contained in DeleteResponse.
+        DeleteRequest = 11;
+
+        // Response for DeleteRequest.
+        DeleteResponse = 12;
+    }
+
+    // This is the custom comms message type
+    required TransportLayerMessageType type = 1;
+
+    // serialization of the data associated with the message (may be n/a), represents a protocol buffer message where
+    // the type is the MessageType field value with "Data" appended, for this namespace this would be
+    // "TransportLayerMessageTypeData"
+    optional bytes data = 2;
+}
+
+// Request inquiring whether the specified transport layer if receiving data.
+message IsReceivingRequestData
+{
+    // UUID of the transport layer to identify which layer this is in the message
+    required UUID uuid = 1;
+}
+
+// Response that represents if the transport layer specified in the request is currently receiving data.
+message IsReceivingResponseData
+{
+    // True if the transport layer is receiving data
+    required bool isReceiving = 1;
+}
+
+// Request to get the specified transport layer's transmission state (eg. if transmitting the response will
+// contain a true value, else the response will be a false value).
+message IsTransmittingRequestData
+{
+    // UUID of the transport layer to identify which layer this is in the message
+    required UUID uuid = 1;
+}
+
+// Response containing a flag value that represents if the specified transport layer from the request is
+// transmitting data.
+message IsTransmittingResponseData
+{
+    // True if the transport layer is transmitting data
+    required bool isTransmitting = 1;
+}
+
+// Request to get the specified transport layer's availability.
+message IsAvailableRequestData
+{
+    // UUID of the transport layer to identify which layer this is in the message
+    required UUID uuid = 1;
+
+    // Address to be used to see if the transport layer can reach it, defined by getMessageAddress from the address class
+    required string address = 2;
+}
+
+// Response that represents the specified transport layer's availability.
+message IsAvailableResponseData
+{
+    // UUID of the transport layer which availability is being reported.
+    required UUID uuid = 1;
+
+    // True if the transport layer can reach the address specified
+    required bool isAvailable = 2;
+}
+
+// Request to get the UUID of the child link layer for the specified transport layer.
+message GetLinkLayerRequestData
+{
+    // UUID of the transport layer to identify which layer this is in the message
+    required UUID uuid = 1;
+}
+
+// Response to get the UUID of the link layer child of the transport layer specified in the request.
+message GetLinkLayerResponseData
+{
+    // UUID of the link layer associated with the transport layer
+    required UUID uuid = 1;
+}
+
+// Request to shutdown the specified transport layer.
+message ShutdownRequestData
+{
+    // UUID of the transport layer to identify which layer this is in the message
+    required UUID uuid = 1;
+}
+
+// Removes the given transport layer and deletes its configuration.
+message DeleteRequestData
+{
+    // UUID of the transport layer you want to remove.
+    required UUID transportLayerUuid = 1;
+}

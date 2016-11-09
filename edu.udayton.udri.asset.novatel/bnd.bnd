@@ -1,0 +1,52 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+# Terra Harvest Plug-in BND Specification
+#
+Bundle-Version: 1.0.2.${tstamp}
+Bundle-Description: Novatel IMU/GPS Asset
+Bundle-Name: Novatel Asset
+Bundle-Vendor: UDRI
+
+# Specify packages that should be accessible by other bundles (separated by commas)
+Export-Package: edu.udayton.udri.asset.novatel,\
+    edu.udayton.udri.asset.novatel.connection,\
+    edu.udayton.udri.asset.novatel.message,\
+    edu.udayton.udri.asset.novatel.timechanger
+
+# Specify packages that should NOT be accessible by other bundles (separated by commas)
+Private-Package: edu.udayton.udri.asset.novatel.impl.* 
+
+# Specify files that should be included within the JAR file. The default value for
+# "Include-Resource" will automatically include JARs found in the project lib/
+# directory.
+Include-Resource: capabilities-xml=capabilities-xml
+
+# Include BND service annotations found with the following packages.
+Service-Component: edu.udayton.udri.asset.novatel.*
+
+-buildpath:  \
+    biz.aQute.bnd.annotation,\
+    com.google.guava,\
+    osgi.cmpn,\
+    osgi.core,\
+    mil.dod.th.ose.utils;version=latest,\
+    mil.dod.th.core.api;version=latest,\
+    mil.dod.th.ose.shared;version=latest,\
+    mil.dod.th.ose.test.all;version=latest,\
+    ${junit},\
+    ${mockito},\
+    org.apache.commons.lang
+    
+# Specify configuration interfaces to be generated into metatype xml.
+-metatype: *

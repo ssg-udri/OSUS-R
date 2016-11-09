@@ -1,0 +1,28 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+Bundle-Version: 6.1.0.${tstamp}
+Bundle-Description: Terra Harvest Core API
+Bundle-Name: Terra Harvest Core API
+
+Export-Package: \
+    !mil.dod.th.core.remote.proto, \
+    mil.dod.th.core.types.*;provide:=true, \
+    mil.dod.th.core.observation.types.*;provide:=true, \
+    mil.dod.th.core.*.capability;provide:=true, \
+    mil.dod.th.core.asset.commands;provide:=true, \
+    mil.dod.th.core.mp.model;provide:=true, \
+    mil.dod.th.core.*
+
+# This prevents the bundle from being used during runtime
+Require-Capability: noresolve; filter:="(&(a=*)(!(a=*)))

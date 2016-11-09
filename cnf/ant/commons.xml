@@ -1,0 +1,69 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Common build targets for projects
+
+==============================================================================
+-->
+<project name="commons">
+
+    <property environment="env" />
+    <property file="${bp.workspace.dir}/cnf/ant/default.properties" prefix="bp"/>
+    
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+      <classpath>
+        <pathelement location="${bp.deps.dir}/ant-contrib/ant-contrib-1.0b3.jar" />
+      </classpath>
+    </taskdef>
+
+    <taskdef name="dependency-check" classname="org.owasp.dependencycheck.taskdefs.DependencyCheckTask">
+        <classpath>
+            <fileset file="${bp.deps.dir}/owasp-dep-check-ant/dependency-check-ant-1.2.3.jar" />
+        </classpath>
+    </taskdef>
+    
+    <!-- Set the name and default ID for the sub-system in the th.system.properties file -->
+    <target name="set-system-name-id">
+        <propertyfile file="${bp.data.deploy.dir}/conf/th.system.properties" >
+            <entry key="name" value="${bp.subsystem.name}-${bp.target.name}" />
+            <entry key="id" value="${bp.subsystem.id}" />
+        </propertyfile>
+    </target>
+
+    <!-- Protoc Common tasks -->
+    <condition property="is.windows">
+        <os family="windows" />
+    </condition>
+    
+    <!-- Load local build properties -->
+    <available file="${target.app.dir}/build.properties" property="app.build.props.present"/>
+    <if>
+        <equals arg1="${app.build.props.present}" arg2="true"/>
+        <then>
+            <echo>Using ${target.app.dir}/build.properties for ${ant.file}</echo>
+            <property file="${target.app.dir}/build.properties" prefix="bp"/>
+        </then>
+    </if>
+
+    <!-- Load local app properties -->
+    <available file="${target.app.dir}/default.properties" property="app.props.present"/>    
+    <if>
+        <equals arg1="${app.props.present}" arg2="true"/>
+        <then>
+            <echo>Using ${target.app.dir}/default.properties for ${ant.file}</echo>
+            <property file="${target.app.dir}/default.properties" prefix="bp"/>
+        </then>
+    </if>
+</project>

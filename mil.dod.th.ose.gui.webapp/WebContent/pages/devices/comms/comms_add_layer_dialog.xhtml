@@ -1,0 +1,324 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ 
+ This dialog is used to add a new comms stack to the system.
+ 
+==============================================================================
+ -->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:those="http://java.sun.com/jsf/composite/common">
+
+    <p:dialog resizable="false" header="Add a Comms Stack" widgetVar="addCommDlg" height="450" width="580" id="addCommsDialog">
+        <p:outputPanel layout="block" style="width:100%;height:100%" id="addCommPanel">
+            <table style="width: 100%">
+                <tr>
+                    <td style="vertical-align: top; width: 10%">
+                        <p:graphicImage library="images" name="icons/build.png" alt="Image Not Found" />
+                    </td>
+                    <td style="font-weight: bold; font-size: 1.5em">
+                        <h:outputText value="Build Stack" id="layerType"/>
+                    </td>
+                    <td style="padding-top:10px; vertical-align: top; width:15%">
+                        <p:commandButton
+                            style="margin-bottom:10px" icon="ui-icon-arrowrefresh-1-w"
+                            value="Refresh" id="refreshCommsTypes"
+                            actionListener="#{commsTypesMgr.requestLayerTypesUpdate(activeController.activeController.id)}"/>
+                        <p:tooltip for="refreshCommsTypes" value="Update the list of available types of comms layers" />
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td
+                        style="vertical-align: top; text-align: center; font-weight: bold">
+                        <h:outputText
+                            value="Click a row to select it.  To deselect a row, hold the 'Ctrl/Cmd' button while clicking a row." />
+                    </td>
+                </tr>
+            </table>
+            <h:form id="addCommsForm">
+                <table style="width: 100%">
+                    <tr>
+                        <td style="vertical-align: top">
+                            <p:outputPanel id="createStack">
+                                <ui:param name="newStackModel" value="#{addCommsHelper.getCommsCreationModel()}"/>
+                                <table style="width: 100%">
+                                    <tr>
+                                        <td>
+                                            <p:accordionPanel activeIndex="#{addCommsHelper.activeIndex}" id="addAccordion">
+                                                <p:tab title="Select Link Layer Type (required)"
+                                                    id="linkTab" rendered="#{!newStackModel.forceAdd}">
+                                                    <p:outputPanel id="linkPanel" autoUpdate="true">
+                                                        <p:dataTable styleClass="tablesNoBorderOnCells"
+                                                            id="linkData" rowKey="#{link}" var="link"
+                                                            value="#{commsTypesMgr.getLinkLayerTypes(activeController.activeController.id)}"
+                                                            selection="#{newStackModel.selectedLinkLayerType}"
+                                                            paginator="true" rows="3"
+                                                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink}"
+                                                            selectionMode="single">
+                                                            <p:ajax event="rowUnselect" update='@([id$="linkOut"])' />
+                                                            <p:ajax event="rowSelect"   update='@([id$="linkOut"])' />
+                                                            <p:column headerText="Status" style="width:100px">
+                                                                <p:graphicImage
+                                                                    styleClass="commsImage"
+                                                                    library="images"
+                                                                    name="#{commsTypesMgr.getImage(link, activeController.activeController.id)}"
+                                                                    alt="Image Not Found" />
+                                                            </p:column>
+                                                            <p:column headerText="Link Layer Type" id="linkTypeCol">
+                                                                #{link}
+                                                            </p:column>
+                                                            <p:column>
+                                                              <p:commandButton id="linkSpecs" icon="ui-icon-search"
+                                                                  value="Specs" oncomplete="commsCapDlg.show();" immediate="true" 
+                                                                  actionListener="#{addCommsHelper.setCapsKey(link)}" update='@([id$="commsTreeTable"])' />
+                                                            </p:column>
+                                                        </p:dataTable>                                                        
+                                                    </p:outputPanel>
+                                                    <p:outputPanel id="linkOut">
+                                                    <table style="width: 100%">
+                                                        <tr>
+                                                            <td>
+                                                                <p:inputText id="selectedLink" style="display:none" 
+                                                                    value="#{newStackModel.selectedLinkLayerType}"
+                                                                    required="#{!newStackModel.forceAdd}" 
+                                                                    requiredMessage="Type must be selected.">
+                                                                </p:inputText> 
+                                                                <p:message for="selectedLink" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="padding-top: 10px">
+                                                                <p:scrollPanel
+                                                                    mode="native" styleClass="commsDescription"
+                                                                    id="llDescription">
+                                                                    #{addCommsHelper.getLinkLayerDescription(activeController.activeController.id)}
+                                                                </p:scrollPanel>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                    </p:outputPanel>
+                                                    <table>
+                                                        <tr>
+                                                            <td colspan="2" class="addCommsInput">
+                                                                <p:outputLabel for="linkName"
+                                                                    value="Enter New Link Layer Name:" /> 
+                                                                <p:inputText
+                                                                    id="linkName" style="margin-left:9px"
+                                                                    value="#{newStackModel.newLinkName}" required="#{!newStackModel.forceAdd}"
+                                                                    requiredMessage="Enter a name for the new link layer.">
+                                                                </p:inputText> 
+                                                                <p:message for="linkName" />
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </p:tab>
+                                                <p:tab title="Select Physical Link (required)" id="physTab">
+                                                    <h:outputText value="Force-Add Physical Link " style="vertical-align:top"/>
+                                                    <p:selectBooleanCheckbox id="forceAddCheckBox" value="#{newStackModel.forceAdd}">
+                                                        <p:ajax listener="#{addCommsHelper.resetState()}" update="@form"/>
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:dataTable styleClass="tablesNoBorderOnCells" rendered="#{!newStackModel.forceAdd}"
+                                                        id="physicalData" var="physicalLinkName" rowKey="#{physicalLinkName}"
+                                                        emptyMessage="There are no physical links available for use."
+                                                        value="#{commsMgr.getUnusedPhysicalLinkNames(activeController.activeController.id)}"
+                                                        selection="#{newStackModel.selectedPhysicalLink}"
+                                                        paginator="true" rows="3"
+                                                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink}"
+                                                        selectionMode="single">
+                                                        <p:ajax event="rowUnselect" update='@([id$="physOut"])' />
+                                                        <p:ajax event="rowSelect" update='@([id$="physOut"])' />
+                                                        <p:column headerText="Status" style="width:100px">
+                                                            <p:graphicImage
+                                                                    styleClass="commsImage"
+                                                                    library="images"
+                                                                    name="#{commsTypesMgr.getImage(physicalLinkName, activeController.activeController.id)}"
+                                                                    alt="Image Not Found" />
+                                                        </p:column>
+                                                        <p:column headerText="Name" id="physicalNameCol">
+                                                            #{physicalLinkName}
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:commandButton id="physSpecs" icon="ui-icon-search"
+                                                                  value="Specs" oncomplete="commsCapDlg.show();" immediate="true" 
+                                                                  actionListener="#{addCommsHelper.setCapsKey(physicalLinkName)}" update='@([id$="commsTreeTable"])' />
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                    <p:outputPanel id="physPanel" autoUpdate="true">
+                                                        <p:dataTable styleClass="tablesNoBorderOnCells" rendered="#{newStackModel.forceAdd}"
+                                                            id="physicalTypesData" var="physicalLinkType" rowKey="#{physicalLinkType}"
+                                                            emptyMessage="There are no physical link types on active controller."
+                                                            value="#{commsTypesMgr.getPhysicalLinkTypes(activeController.activeController.id)}"
+                                                            selection="#{newStackModel.selectedPhysicalType}"
+                                                            paginator="true" rows="3"
+                                                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink}"
+                                                            selectionMode="single">
+                                                            <c:set var="physicalLinkClass" 
+                                                                value="#{commsTypesMgr.getPhysicalLinkClassByType(activeController.activeController.id, physicalLinkType)}"/>
+                                                            <p:ajax event="rowUnselect" update='@([id$="physOut"])' />
+                                                            <p:ajax event="rowSelect" update='@([id$="physOut"])'  />
+                                                            <p:column headerText="Status" style="width:100px">
+                                                                <p:graphicImage
+                                                                    styleClass="commsImage"
+                                                                    library="images"
+                                                                    name="#{commsTypesMgr.getImage(physicalLinkClass, activeController.activeController.id)}"
+                                                                    alt="Image Not Found" />
+                                                            </p:column>
+                                                            <p:column headerText="Type" id="physicalTypeCol">
+                                                                #{physicalLinkType}
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:commandButton id="physTypeSpecs" icon="ui-icon-search"
+                                                                  value="Specs" oncomplete="commsCapDlg.show();" immediate="true" 
+                                                                  actionListener="#{addCommsHelper.setCapsKey(physicalLinkClass)}" update='@([id$="commsTreeTable"])' />
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </p:outputPanel>
+                                                    <p:outputPanel id="physOut">
+                                                        <table style="width: 100%">
+                                                            <tr>
+                                                                <td>
+                                                                    <p:inputText id="selectedPhysType" style="display:none"
+                                                                        value="#{newStackModel.selectedPhysicalType}"
+                                                                        required="#{newStackModel.forceAdd}"
+                                                                        requiredMessage="Type must be selected."/>
+                                                                    <p:message for="selectedPhysType" />
+                                                                    <p:inputText id="selectedPhys" style="display:none"
+                                                                        value="#{newStackModel.selectedPhysicalLink}"
+                                                                        required="#{!newStackModel.forceAdd}"
+                                                                        requiredMessage="Physical link must be selected."/>
+                                                                    <p:message for="selectedPhys" />
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td style="padding-top: 10px;">
+                                                                    <p:scrollPanel
+                                                                        mode="native"
+                                                                        styleClass="commsDescription"
+                                                                        id="physDesc">
+                                                                        #{addCommsHelper.getPhysLinkDescription(activeController.activeController.id)}
+                                                                    </p:scrollPanel>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </p:outputPanel>
+                                                    <p:outputPanel rendered="#{newStackModel.forceAdd}">
+                                                    <table>
+                                                        <tr>
+                                                            <td colspan="2" class="addCommsInput">
+                                                                <p:outputLabel for="physicalName"
+                                                                    value="Enter New Physical Link Name:" /> 
+                                                                <p:inputText
+                                                                    id="physicalName" style="margin-left:9px"
+                                                                    value="#{newStackModel.newPhysicalName}" required="#{newStackModel.forceAdd}"
+                                                                    requiredMessage="Enter a name for the new physical layer.">
+                                                                    <f:validateLength minimum="1" />
+                                                                </p:inputText> 
+                                                                <p:message for="physicalName" />
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                    </p:outputPanel>
+                                                </p:tab>                                                
+                                                <p:tab title="Select Transport Type (optional)" rendered="#{!newStackModel.forceAdd}" id="transTab">
+                                                    <p:outputPanel id="transPanel" autoUpdate="true">
+                                                        <p:dataTable styleClass="tablesNoBorderOnCells"
+                                                            id="transportData" rowKey="#{transport}" var="transport"
+                                                            value="#{commsTypesMgr.getTransportLayerTypes(activeController.activeController.id)}"
+                                                            selection="#{newStackModel.selectedTransportLayerType}"
+                                                            paginator="true" rows="3"
+                                                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink}"
+                                                            selectionMode="single">
+                                                            <p:ajax event="rowUnselect" update='@([id$="transOut"])' />
+                                                            <p:ajax event="rowSelect" update='@([id$="transOut"])' />
+                                                            <p:column headerText="Status" style="width:100px">
+                                                                <p:graphicImage
+                                                                    styleClass="commsImage"
+                                                                    library="images" name="thoseIcons/comms/comms_generic.png"
+                                                                    alt="Image Not Found" />
+                                                            </p:column>
+                                                            <p:column headerText="Transport Layer Type" id="transTypeCol">
+                                                                #{transport}
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:commandButton id="transSpecs" icon="ui-icon-search"
+                                                                  value="Specs" oncomplete="commsCapDlg.show();" immediate="true" 
+                                                                  actionListener="#{addCommsHelper.setCapsKey(transport)}" update='@([id$="commsTreeTable"])' />                                                            
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </p:outputPanel>
+                                                    <p:outputPanel id="transOut">
+                                                        <table style="width: 100%">
+                                                            <tr>
+                                                                <td style="padding-top: 10px">
+                                                                    <p:scrollPanel
+                                                                        mode="native"
+                                                                        styleClass="commsDescription"
+                                                                        id="transDesc">
+                                                                        #{addCommsHelper.getTransLayerDescription(activeController.activeController.id)}
+                                                                    </p:scrollPanel>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                        <table>
+                                                            <tr>
+                                                                <td colspan="2" class="addCommsInput">
+                                                                    <p:outputLabel for="transName"
+                                                                        value="Enter New Transport Layer Name:">
+                                                                    </p:outputLabel> 
+                                                                    <p:inputText id="transName" style="margin-left:9px"
+                                                                        value="#{newStackModel.newTransportName}"
+                                                                        required="#{newStackModel.selectedTransportLayerType != null}"
+                                                                        requiredMessage="Enter a name for the new transport layer.">
+                                                                    </p:inputText> 
+                                                                    <p:message for="transName" />
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </p:outputPanel>
+                                                </p:tab>
+                                            </p:accordionPanel>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </table>
+                            </p:outputPanel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div style="width: 100%; text-align: center">
+                                <p:commandButton value="Confirm Stack" id="confirmStackButton"
+                                    update='@form @([id$="confirmStack"])'
+                                    oncomplete="if(!args.validationFailed){ confirmStackDlg.show(); addCommDlg.hide();} else commsErrDlg.show();"
+                                    disabled="false"/>                                    
+                                <p:commandButton value="Cancel" id="cancelStackButton" 
+                                    onclick="addCommDlg.hide()"/>   
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <!-- Used to refresh list of layer types upon new layer types request. 
+                Command is referenced within this file and is not part of the PUSH scripts. -->
+                <p:remoteCommand name="rcUpdateLayers" update='@([id$="physPanel,linkPanel,transPanel"])'/>
+            </h:form>
+        </p:outputPanel>
+    </p:dialog>
+  <those:capabilitiesTree capObject="#{commsTypesMgr.getCapabilities(activeController.activeController.id, addCommsHelper.capsKey)}" prefix="comms" />
+</ui:composition>

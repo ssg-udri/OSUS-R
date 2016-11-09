@@ -1,0 +1,47 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+# Terra Harvest Plug-in BND Specification
+#
+Bundle-Version: 1.0
+Bundle-Description: GPS Plug-in that receives passive observations over serial port using NMEA 0183 protocol.
+Bundle-Name: GPS Plug-in
+Bundle-SymbolicName: edu.udayton.udri.asset.gps
+Bundle-Vendor: UDRI
+
+# Specify packages that should be included in the JAR file, but not accessible
+# to other bundles.  Not needed unless new packages are added.
+#Private-Package: edu.udayton.udri.asset.gps.somepackage
+
+# Specify packages that should be accessible by other bundles (separated by commas)
+Export-Package: \
+    edu.udayton.udri.asset.gps,\
+    net.sf.marineapi.nmea.*
+
+# Specify files that should be included within the JAR file. The default value for
+# "Include-Resource" will automatically include JARs found in the project lib/
+# directory.
+Include-Resource: capabilities-xml=capabilities-xml, @lib/marineapi-0.8.1.jar, @lib/guava-19.0-rc1.jar
+
+# Include BND service annotations found with the following packages.
+Service-Component: edu.udayton.udri.asset.gps.*
+
+# Specify configuration interfaces annotated with OCD to be generated into metatype xml.
+-metatype: *
+-buildpath: \
+    osgi.cmpn,\
+    osgi.core,\
+    biz.aQute.bnd.annotation,\
+    mil.dod.th.core.api;version=latest,\
+    lib/marineapi-0.8.1.jar;version=file,\
+    lib/guava-19.0-rc1.jar;version=file

@@ -1,0 +1,163 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+    Component will display a list of observation values that have been set on
+    an observation
+==============================================================================
+ -->
+<ui:composition 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:composite="http://java.sun.com/jsf/composite"
+      xmlns:observation="http://java.sun.com/jsf/composite/observation">
+      
+      <composite:interface>
+        <!-- Gui observation model that holds the model to be displayed -->
+        <composite:attribute name="guiObservation" required="true"/>
+        <!-- Whether the data panel is being displayed within a dialog-->
+        <composite:attribute name="isOnDialog" required="true" />
+      </composite:interface>
+      
+      <composite:implementation>
+        <p:outputPanel style="width:100%;">
+               <p:outputPanel style="width:100%;">
+                    <observation:observation_general_information observation="#{cc.attrs.guiObservation.observation}" />
+               </p:outputPanel>
+
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.modalities.size() > 0}">
+                   <p:separator />
+                    <observation:observation_sensings_display
+                        observation="#{cc.attrs.guiObservation.observation}"/>
+               </p:outputPanel>
+
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.isSetStatus()}">
+                   <p:separator />
+                   <observation:individual_observation_display
+                       textHeading="Status"
+                       obsType="STATUS"
+                       data="#{cc.attrs.guiObservation.observation.status}"/>
+               </p:outputPanel>
+
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.isSetDetection()}">
+                   <p:separator />
+                    <observation:observation_detection_display
+                        observation="#{cc.attrs.guiObservation.observation}"/>
+               </p:outputPanel>
+               
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.isSetWeather()}">
+                   <p:separator />
+                   <observation:individual_observation_display
+                       textHeading="Weather"
+                       obsType="WEATHER"
+                       data="#{cc.attrs.guiObservation.observation.weather}"/>
+               </p:outputPanel>
+               
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.isSetAudioMetadata()}">
+                   <p:separator />
+                   <observation:individual_observation_display
+                       textHeading="Audio"
+                       obsType="AUDIO_METADATA"
+                       data="#{cc.attrs.guiObservation.observation.audioMetadata}"
+                       mimeType="#{cc.attrs.guiObservation.observation.digitalMedia.encoding}"/>
+               </p:outputPanel>
+               
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.isSetVideoMetadata()}">
+                   <p:separator />
+                   <observation:individual_observation_display
+                       textHeading="Video"
+                       obsType="VIDEO_METADATA"
+                       data="#{cc.attrs.guiObservation.observation.videoMetadata}"
+                       mimeType="#{cc.attrs.guiObservation.observation.digitalMedia.encoding}"/>
+               </p:outputPanel>
+               
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.isSetImageMetadata()}">
+                   <p:separator />
+                   <observation:individual_observation_display
+                       textHeading="Image"
+                       obsType="IMAGE_METADATA"
+                       data="#{cc.attrs.guiObservation.observation.imageMetadata}"
+                       mimeType="#{cc.attrs.guiObservation.observation.digitalMedia.encoding}"/>
+               </p:outputPanel>
+
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.isSetWaterQuality()}">
+                   <p:separator />
+                   <observation:individual_observation_display
+                       textHeading="Water Quality"
+                       obsType="WATER_QUALITY"
+                       data="#{cc.attrs.guiObservation.observation.waterQuality}"/>
+               </p:outputPanel>
+
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.isSetCbrneTrigger()}">
+                   <p:separator />
+                   <observation:individual_observation_display
+                       textHeading="CBRNE Trigger"
+                       obsType="CBRNE_TRIGGER"
+                       data="#{cc.attrs.guiObservation.observation.cbrneTrigger}"/>
+               </p:outputPanel>
+
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.isSetChemical()}">
+                   <p:separator />
+                   <observation:individual_observation_display
+                       textHeading="Chemical"
+                       obsType="CHEMICAL"
+                       data="#{cc.attrs.guiObservation.observation.chemical}"/>
+               </p:outputPanel>
+
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.isSetBiological()}">
+                   <p:separator />
+                   <observation:individual_observation_display
+                       textHeading="Biological"
+                       obsType="BIOLOGICAL"
+                       data="#{cc.attrs.guiObservation.observation.biological}"/>
+               </p:outputPanel>
+
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.isSetPower()}">
+                   <p:separator />
+                   <observation:individual_observation_display
+                       textHeading="Power"
+                       obsType="POWER"
+                       data="#{cc.attrs.guiObservation.observation.power}"/>
+               </p:outputPanel>
+
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.relatedObservationModels.size() > 0}">
+                    <p:separator/>
+                    <p:panelGrid styleClass="relatedLinkPanelGrid">
+                        <p:row>
+                            <p:column colspan="2" style="text-align:left">
+                                <h:outputText id="relatedHeader" style="font-size:1.1em;font-weight:bold; margin-left:10px" value="Related Observations"/>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column style="vertical-align:top;text-align:center !important;width:20%">
+                                <p:graphicImage id="linkObsImg" library="images" name="thoseIcons/observations/link.png" alt="Image Not Found"/>
+                            </p:column>
+                            <p:column style="text-align:left;width:80%">
+                                <observation:observation_relatedlink guiObservation="#{cc.attrs.guiObservation}"
+                                    relationshipType="PARENT" isDialog="#{cc.attrs.isOnDialog}"/>
+                                <observation:observation_relatedlink guiObservation="#{cc.attrs.guiObservation}"
+                                    relationshipType="CHILD" isDialog="#{cc.attrs.isOnDialog}"/>
+                                <observation:observation_relatedlink guiObservation="#{cc.attrs.guiObservation}"
+                                    relationshipType="PEER" isDialog="#{cc.attrs.isOnDialog}"/>
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+               </p:outputPanel>
+               
+           </p:outputPanel>
+      </composite:implementation>  
+</ui:composition>

@@ -1,0 +1,62 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Common build targets for target applications
+
+==============================================================================
+-->
+<project name="target-commons">
+
+    <import file="commons.xml" />
+    
+    <target name="zip">
+        <zip basedir="${bp.subsystem.deploy.dir}" destfile="${bp.bin.dir}/${bp.archive.name}.zip" />
+        <mkdir dir="${bp.report.path}" />
+        <!-- write the size of the zip file to a property file that can be used to track size -->
+        <length file="${bp.bin.dir}/${bp.archive.name}.zip" property="zip.size" />
+        <propertyfile file="${bp.report.path}/${bp.archive.name}-zip-size.properties" 
+            comment="Size of ${bp.archive.name}.zip">
+            <entry key="YVALUE" type="int" value="${zip.size}" operation="=" pattern="0" />
+        </propertyfile>
+    </target>
+    
+    <!-- target application build.xml files should define these targets -->
+    <target name="build-with-deps">
+        <fail message="build-with-deps target mission for the application" />
+    </target>
+    <target name="deploy-app">
+        <fail message="deploy-app target missing for the application" />
+    </target>
+
+    <target name="deploy" description="Deploy the already built application">
+        <mkdir dir="deploy" />
+        <antcall target="deploy-clean" />
+        <antcall target="deploy-app" />
+        <!-- zip up the deployed folder -->
+        <antcall target="zip" />
+    </target>
+            
+    <target name="deploy-clean" description="Remove all app files from the deploy directory">
+        <delete dir="${bp.subsystem.deploy.dir}" includeemptydirs="true" failonerror="true" defaultexcludes="no">
+            <include name="**/*" />
+        </delete>
+        <delete includeemptydirs="true" failonerror="false">
+            <fileset dir="${bp.bin.dir}" includes="**/*.zip" />
+            <fileset dir="${bp.bin.dir}" includes="**/*.jar" />
+        </delete>
+    </target>
+                
+    <target name="build-deploy" depends="build-with-deps,deploy" description="Builds and deploys app" />
+</project>

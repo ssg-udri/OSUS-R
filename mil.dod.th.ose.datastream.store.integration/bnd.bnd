@@ -1,0 +1,44 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+Bundle-Version: 1.0.0.${tstamp}
+Private-Package: mil.dod.th.ose.datastream.store.integration
+
+Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
+
+-buildpath: \
+    osgi.core,\
+    osgi.cmpn,\
+    ${junit},\
+    com.google.guava,\
+    biz.aQute.bnd.annotation,\
+    example.stream.profile;version=latest,\
+    mil.dod.th.core.api;version=latest,\
+    mil.dod.th.ose.integration.commons;version=latest,\
+    mil.dod.th.ose.shared;version=latest,\
+    mil.dod.th.ose.datastream.store;version=latest,\
+    mil.dod.th.ose.test.integration;version=latest,\
+    org.knowhowlab.osgi.testing.assertions;version=latest,\
+    org.knowhowlab.osgi.testing.utils;version=latest
+
+-testpath:\
+    ${junit}
+-runbundles: \
+    ${osusr.core.bundles},\
+    ${osusr.core.integration.bundles},\
+    com.sun.jna;version=latest,\
+    example.stream.profile;version=latest,\
+    mil.dod.th.ose.core;version=latest,\
+    mil.dod.th.ose.datastream;version=latest,\
+    mil.dod.th.ose.datastream.store;version=latest,\
+    mil.dod.th.ose.transcoder.vlc;version=latest,\
+    mil.dod.th.ose.archiver.vlc;version=latest

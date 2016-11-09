@@ -1,0 +1,65 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Common build targets for the Linux controller.
+
+==============================================================================
+-->
+<project name="linux-commons">
+    <condition property="target.enabled">
+        <and>
+            <os family="unix" />
+            <!-- OS X is unix family but doesn't have JAVA_INCLUDE by default so make sure that exists as well -->
+            <available file="${env.JAVA_INCLUDE}" type="dir" />
+        </and>
+    </condition>
+
+    <condition property="detect-arch.enabled">
+        <and>
+            <istrue value="${target.enabled}" />
+            <not>
+                <isset property="bp.c.arch"/>
+            </not>
+        </and>
+    </condition>
+
+    <!-- Determine whether the build is occurring on a 32 or 64 bit system and set the architecture property used 
+             when building the native platform interface library and creating the OSGi bundle -->
+    <target name="detect-arch" if="detect-arch.enabled">
+        <exec dir="." executable="/bin/sh" outputproperty="command.ouput">
+             <arg line="-c &quot;uname -m&quot;"/>
+        </exec>
+        <if>
+            <contains string="${command.ouput}" substring="_64"/>
+            <then>
+                <property name="bp.c.arch" value="x86_64" />
+            </then>
+            <else>
+                <property name="bp.c.arch" value="x86" />
+            </else>
+        </if>
+    </target>
+
+    <target name="set-arch" if="target.enabled" depends="detect-arch">
+        <property name="c.arch" value="${bp.c.arch}" />
+
+        <!-- properties are set in the bnd file so that other files can access it -->
+        <echo file="${bp.platform.bnd.file}">c.arch: ${bp.c.arch}${line.separator}</echo>
+        <echo append="true" file="${bp.platform.bnd.file}">c.options: ${bp.c.options}${line.separator}</echo>
+        <echo append="true" file="${bp.platform.bnd.file}">exe.cc: ${bp.exe.cc}${line.separator}</echo>
+        <echo append="true" file="${bp.platform.bnd.file}">exe.ln: ${bp.exe.ln}${line.separator}</echo>
+        <echo append="true" file="${bp.platform.bnd.file}">exe.strip: ${bp.exe.strip}${line.separator}</echo>
+    </target>
+</project>

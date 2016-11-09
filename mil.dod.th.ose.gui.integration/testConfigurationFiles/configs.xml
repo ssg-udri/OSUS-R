@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+-->
+<config:Configurations xmlns:config="config.model.th.dod.mil" 
+    xmlns:types="http://th.dod.mil/core/types" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" >
+    
+  <factoryObjects name="/dev/serialExample1">
+    <factoryType>PhysicalLink</factoryType>
+    <physicalLinkType>SerialPort</physicalLinkType>
+    <createPolicy>IfMissing</createPolicy>
+  </factoryObjects>
+  
+  <factoryObjects name="/dev/serialExample2">
+    <factoryType>PhysicalLink</factoryType>
+    <physicalLinkType>SerialPort</physicalLinkType>
+    <createPolicy>IfMissing</createPolicy>
+  </factoryObjects>
+  
+</config:Configurations>
+

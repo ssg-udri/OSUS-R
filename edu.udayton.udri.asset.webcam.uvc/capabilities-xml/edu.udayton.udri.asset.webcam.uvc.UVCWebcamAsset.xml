@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<ns2:AssetCapabilities xmlns="capability.core.th.dod.mil" xmlns:ns2="capability.asset.core.th.dod.mil" xmlns:ns3="capability.ccomm.core.th.dod.mil" xmlns:ns4="http://th.dod.mil/core/datastream/types" xmlns:ns5="capability.datastream.core.th.dod.mil" xmlns:ns6="capability.physical.ccomm.core.th.dod.mil" xmlns:ns7="capability.transport.ccomm.core.th.dod.mil" xmlns:ns8="capability.controller.core.th.dod.mil" xmlns:ns9="capability.link.ccomm.core.th.dod.mil" productName="UVC Webcam Asset" description="An asset to capture images from a UVC webcam connected to a Linux or Windows computer" manufacturer="">
+    <ns2:modalities value="Imager"/>
+    <ns2:supportedCameras id="0" description="UVC cameras" type="Unknown"/>
+    <ns2:digitalMediaCapabilities>
+        <ns2:encodings>image/png</ns2:encodings>
+    </ns2:digitalMediaCapabilities>
+    <ns2:imageCapabilities colorAvailable="true">
+        <ns2:minResolution width="176" height="144"/>
+        <ns2:maxResolution width="2048" height="1536"/>
+        <ns2:availableCameraIDs>0</ns2:availableCameraIDs>
+    </ns2:imageCapabilities>
+    <ns2:commandCapabilities captureData="true" performBIT="false">
+        <ns2:supportedCommands>CaptureImageCommand</ns2:supportedCommands>
+    </ns2:commandCapabilities>
+    <ns2:observationCapabilities observedTimestampAvailable="false"/>
+</ns2:AssetCapabilities>

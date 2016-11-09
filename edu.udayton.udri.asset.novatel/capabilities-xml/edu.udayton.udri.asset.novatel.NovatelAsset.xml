@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<cap:AssetCapabilities xmlns="capability.core.th.dod.mil" xmlns:cap="capability.asset.core.th.dod.mil"
+    manufacturer="NovAtel Inc." 
+    description="NovAtel SPAN-CPT, an integrated GPS and IMU receiver."
+    productName="NovAtel SPAN-CPT">
+    <cap:modalities value="INS" />
+    <cap:commandCapabilities performBIT="false" captureData="false">
+        <cap:supportedCommands>GetPositionCommand</cap:supportedCommands>
+    </cap:commandCapabilities>
+</cap:AssetCapabilities>

@@ -1,0 +1,267 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+import "shared.proto";
+import "types/ccomm/CustomCommTypes.proto";
+import "ccomm/link/capability/LinkLayerCapabilities.proto";
+import "ccomm/transport/capability/TransportLayerCapabilities.proto";
+import "ccomm/physical/capability/PhysicalLinkCapabilities.proto";
+import "types/remote/RemoteTypes.proto";
+
+// Enum of comm layer types.
+enum CommType
+{
+    // Physical Link comm type.
+    PhysicalLink = 1;
+
+    // Link layer comm type.
+    Linklayer = 2;
+
+    // Transport layer comm type.
+    TransportLayer = 3;
+}
+
+// Namespace which gives access to CustomCommService operations which include managing all communication layers.
+message CustomCommsNamespace
+{
+    // An enumeration of different requests/responses for handling remote custom comms.
+    enum CustomCommsMessageType
+    {
+        // Request to create physical link, responses are contained in CreatePhysicalLinkResponse.
+        CreatePhysicalLinkRequest = 1;
+
+        // Response for CreatePhysicalLinkRequest.
+        CreatePhysicalLinkResponse = 2;
+
+        // Request to create a link layer, responses are contained in CreateLinkLayerResponse.
+        CreateLinkLayerRequest = 3;
+
+        // Response for CreateLinkLayerRequest.
+        CreateLinkLayerResponse = 4;
+
+        // Request to create transport layer, responses are contained in CreateTransportLayerResponse.
+        CreateTransportLayerRequest = 5;
+
+        // Response for CreateTransportLayerRequest.
+        CreateTransportLayerResponse = 6;
+
+        // Request to get the types of comm layers available (FQCNs), responses are contained in
+        // GetAvailableCommTypesResponse.
+        GetAvailableCommTypesRequest = 7;
+
+        // Response for GetAvailableCommTypesRequest.
+        GetAvailableCommTypesResponse = 8;
+
+        // Request to get all the different layers this service knows, responses are contained in GetLayersResponse.
+        GetLayersRequest = 9;
+
+        // Response for GetLayersRequest.
+        GetLayersResponse = 10;
+
+        //Request to set the name of a comm layer
+        SetLayerNameRequest = 11;
+        
+        //Response for the request to set a layer's name
+        SetLayerNameResponse = 12;
+        
+        //Request to get a comm layer's name
+        GetLayerNameRequest = 13;
+        
+        //Response for the request to get a layer's name 
+        GetLayerNameResponse = 14;
+
+        //Request to get the capabilities for the specified layer type
+        GetCapabilitiesRequest = 15;
+
+        //Response for GetCapabilitiesRequest
+        GetCapabilitiesResponse = 16;
+    }
+
+    // This is the custom comms message type.
+    required CustomCommsMessageType type = 1;
+
+    // Serialization of the data associated with the message (may be n/a). This represents a protocol buffer message
+    // where the type is the MessageType field value with "Data" appended, for this namespace this would be
+    // "CustomCommsMessageTypeData".
+    optional bytes data = 100;
+}
+
+// A new instance of a physical link type is created and added to the service.
+message CreatePhysicalLinkRequestData
+{
+    // type of physical link to produce
+    required PhysicalLinkType.Enum physicalLinkType = 1;
+
+    // The name of the physical link you want to create.
+    required string physicalLinkName = 2;
+}
+
+// Returns the newly created physical link.
+message CreatePhysicalLinkResponseData
+{
+    // Factory object info of the newly created physical link.
+    required FactoryObjectInfo info = 1;
+}
+
+// A new instance of a link layer is created and added to the service.
+message CreateLinkLayerRequestData
+{
+    // product type of the factory object in fully qualified class name format as returned by
+    // mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    required string linkLayerProductType = 1;
+
+    // Physical link UUID to identify the specific physical link to be associated with this link layer. Empty if
+    // link layer does not use a physical link.
+    optional UUID physicalLinkUuid = 2;
+
+    // Name to be used when creating the new link layer.
+    required string linkLayerName = 3;
+}
+
+// Returns the newly created link layer.
+message CreateLinkLayerResponseData
+{
+    // Factory object info of the newly created link layer.
+    required FactoryObjectInfo info = 1;
+}
+
+// A new instance of a transport layer is created and added to the service.
+message CreateTransportLayerRequestData
+{
+    // product type of the factory object in fully qualified class name format as returned by
+    // mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    required string transportLayerProductType = 1;
+
+    // Name of the transport layer you want to create.
+    required string transportLayerName = 2;
+
+    // UUID to be used to get the link layer you want to use. Empty if transport layer does not use a link layer.
+    optional UUID linkLayerUuid = 4;
+}
+
+// If a TransportLayer already exists of the values given in the request message it is returned, otherwise one
+// is created.
+message CreateTransportLayerResponseData
+{
+    // Factory object info of the newly created transport layer.
+    required FactoryObjectInfo info = 1;
+}
+
+// Requests to get all of the available comms known to the service.
+message GetAvailableCommTypesRequestData
+{
+    // Type of the comm layer you want to get available comm types on.
+    required CommType commType = 1;
+}
+
+// Returns all of the comms known to this service.
+message GetAvailableCommTypesResponseData
+{
+    // Type of the comm layer requested
+    required CommType commType = 1;
+
+    // product type of the factory object in fully qualified class name format as returned by
+    // mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    repeated string productType = 2;
+}
+
+// Request to get known layers for a specific comm layer type.
+message GetLayersRequestData
+{
+    // Type of the comm layer you want to get the layers on.
+    required CommType commType = 1;
+}
+
+// Returns the layers known for a specific comm layer type.
+message GetLayersResponseData
+{
+    // Type of the comm layers contained in this response
+    required CommType commType = 1;
+
+    // details about the base factory object info for the comm layers this service knows
+    repeated FactoryObjectInfo layerInfo = 2;
+}
+
+// This message requests to set the name of the comm layer that has the specified uuid and layer type
+message SetLayerNameRequestData
+{
+    //comm layer type of the layer that has its name set
+    required CommType commType = 1; 
+    //uuid of the layer that has its name set
+    required UUID uuid = 2; 
+    //The name to set for the layer
+    required string layerName = 3; 
+}
+
+// This message requests the name of the layer that has the specified uuid and layer type
+message GetLayerNameRequestData
+{
+    //comm layer type of the layer that has its name requested
+    required CommType commType = 1; 
+    //uuid of the layer that has its name requested
+    required UUID uuid = 2; 
+}
+
+// This message returns the name of the layer that has the specified uuid and layer type
+message GetLayerNameResponseData
+{
+    //comm layer type of the layer that has its name requested
+    required CommType commType = 1; 
+    //The uuid of the layer that has its name requested
+    required UUID uuid = 2; 
+    //Name of the comm layer 
+    required string layerName = 3; 
+}
+
+//This message requests the capabilities from the factory that produces comms layers of the specified type.
+message GetCapabilitiesRequestData
+{
+    //Base comms layer type of the factory from which capabilities are being requested
+    required CommType commType = 1;
+
+    // product type of the factory object in fully qualified class name format as returned by
+    // mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    required string productType = 2;
+
+    // Indicates what data format the capabilities object should be sent as. Only NATIVE is supported at this time.
+    optional LexiconFormat.Enum capabilitiesFormat = 3 [default = NATIVE];
+}
+
+//This message returns the capabilities of the factory that produces the specified comm layer type.
+//Only one type of capabilities is expected to be returned for a given request. As such, the type of
+//capabilities can be assumed based off the base type of the layer specified by the comms
+//type returned within this response.
+message GetCapabilitiesResponseData
+{
+    //Base comms layer type of the factory from which capabilities were requested
+    required CommType commType = 1;
+
+    // product type of the factory object in fully qualified class name format as returned by
+    // mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    required string productType = 2;
+
+    //translated capabilities for the requested factory. If capabilitiesFormat field in the request is NATIVE, one of
+    // linkCapabilities, transportCapabilities and physicalCapabilities will be set based on the commType field. If XML,
+    // the capabilitiesXml field will be set.
+    oneof capabilities 
+    {
+        LinkLayerCapabilities linkCapabilities = 3;
+
+        TransportLayerCapabilities transportCapabilities = 4;
+
+        PhysicalLinkCapabilities physicalCapabilities = 5;
+
+        bytes capabilitiesXml = 6;
+    }
+}

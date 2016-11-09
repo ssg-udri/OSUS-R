@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<p:MissionProgramTemplate xmlns:p="http://th.dod.mil/core/mp/model" 
+    xmlns:shared="http://th.dod.mil/core/types"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://th.dod.mil/core/mp/model ../resources/missionProgramSchema/MissionProgramTemplate.xsd ">
+  <p:source>
+  <![CDATA[obj = 
+{
+    //execute function
+    execute: function()
+    {
+        // Main functionality
+        uuid = java.util.UUID.randomUUID();
+        value = new java.lang.Integer(arg);
+        //asking the non-primitive type binding to get its assigned value's name
+        name = dep.getName();
+        //create a persistence entity that identifies this script ran
+        prsDatStr.persist(value.getClass(), uuid, msg, value);
+    },
+    test: function()
+    {
+        return TestResult.class.static.PASSED;
+    },
+    shutdown: function()
+    {
+        logSvc.info("Immediate Execute Service script is shutting down!.", []);
+    }
+};]]>
+</p:source>
+  <p:name>immediate-exec-template-asset</p:name>
+  <p:description> Verifies that dependencies are bound correctly to the JavaScript
+      engine. These dependencies/bindings are program defined. This script tests
+      that program defined dependencies are correctly fulfilled from their original
+      string representations to their object representations via the
+      MissionProgramManager look-up services.
+  </p:description>
+
+  <p:withInterval>false</p:withInterval>
+  <p:withImageCapture>false</p:withImageCapture>
+  <p:withSensorTrigger>false</p:withSensorTrigger>
+  <p:withTimerTrigger>false</p:withTimerTrigger>
+  <p:withPanTilt>false</p:withPanTilt>
+
+  <p:supportTestExecution>true</p:supportTestExecution>
+  <p:variableMetaData>
+      <shared:name>dep</shared:name>
+      <shared:description>The asset to be bound to this mission.</shared:description>
+      <shared:humanReadableName>Asset</shared:humanReadableName>
+      <p:type>Asset</p:type>
+  </p:variableMetaData>
+  <p:variableMetaData>
+      <shared:name>msg</shared:name>
+      <shared:description>The message to be used within this script.</shared:description>
+      <shared:humanReadableName>Message</shared:humanReadableName>
+      <p:type>String</p:type>
+  </p:variableMetaData>
+  <p:variableMetaData>
+      <shared:name>arg</shared:name>
+      <shared:description>The integer to be used within this script.</shared:description>
+      <shared:humanReadableName>Number Argument</shared:humanReadableName>
+      <p:type>Integer</p:type>
+  </p:variableMetaData>
+</p:MissionProgramTemplate>

@@ -1,0 +1,25 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+# Terra Harvest Plug-in BND Specification
+#
+Bundle-Version: 1.0.2.${tstamp}
+Bundle-Description: Enables a controller to set the system time of the machine upon which it is running.
+Bundle-Name: THOSE Timeservice
+Bundle-Vendor: UDRI
+Private-Package: mil.dod.th.ose.time.*
+Main-Class:mil.dod.th.ose.time.service.TimeChangeServiceMain
+-buildpath: \
+    ${junit},\
+    ${mockito},\
+    ${powermock}

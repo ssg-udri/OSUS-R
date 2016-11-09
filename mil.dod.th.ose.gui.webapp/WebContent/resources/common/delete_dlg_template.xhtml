@@ -1,0 +1,55 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+This xhtml page acts as a template for delete confirmation dialogs.  
+
+==============================================================================
+ -->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:composite="http://java.sun.com/jsf/composite">
+
+    <composite:interface>
+        <!-- action to execute upon confirmation of delete. Action should correspond to a bean method. -->
+        <composite:attribute name="deleteAction" required="true" method-signature="void action()"/>
+        <!-- action to execute after clicking either confirm or cancel buttons.  Should be javascript 
+        function: Xdlg.hide()  -->
+        <composite:attribute name="onComplete" required="true" />
+        <!-- text describing what is about to be deleted (e.g. You are about to delete a stack containing: ) -->
+        <composite:attribute name="deletePreText" required="true" />
+        <!-- bold text for emphasis on what will be deleted or what will happen upon deletion-->
+        <composite:attribute name="deleteBoldText" required="true" />
+    </composite:interface>
+    
+    <composite:implementation>
+        <p:outputPanel id="removeDlgPanel">
+            <h:outputText value="#{cc.attrs.deletePreText}"
+                style="text-align:center;display:block;word-wrap:break-word" />
+            <h:outputText value="#{cc.attrs.deleteBoldText}"
+                style="text-align:center;display:block;font-weight:bold;margin:10px 0px;word-wrap:break-word;" />
+            <h:outputText value="Are you sure you wish to proceed?"
+                style="text-align:center;display:block;word-wrap:break-word" />
+            <div style="width: 100%; text-align: center; margin-top: 20px;">
+                <p:commandButton id="confirmDeleteButton" value="Delete" oncomplete="#{cc.attrs.onComplete}"
+                    actionListener="#{cc.attrs.deleteAction}" />
+                <p:commandButton id="deleteCancelButton" value="Cancel" oncomplete="#{cc.attrs.onComplete}" />
+            </div>
+        </p:outputPanel>
+    </composite:implementation>
+</ui:composition>

@@ -1,0 +1,190 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ -->
+<ui:composition template="../templates/mainscreenTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui">
+      
+      <ui:define name="stylesheets">
+         <h:outputStylesheet library="css" name="mission.css"/>
+      </ui:define>
+      
+      <ui:define name="content">
+        <h:outputScript library="scripts/push/pages/mp" name="pushEventMissionMessages.js"/>
+        <p:tabView widgetVar="mTab">
+            <p:tab title="Missions">
+                 <table style="width:100%">
+                     <tr>
+                         <td style="text-align:center">
+                             <h:form>
+                                 <p:selectManyButton value="#{curMissionRequest.missionFilters}" converter="missionFilterConverter">
+                                     <p:ajax update='@([id$="cMis"])'/>
+                                     <f:selectItems value="#{curMissionRequest.displayedMissionFilters}" var="status" itemLabel="#{currentMissionMgr.translateProgramStatus(status)}" itemValue="#{status}"/>
+                                 </p:selectManyButton>
+                                 <!-- Remote commands must be in form -->
+                                 <p:remoteCommand name="rcUpdateAllMissions" update='@([id$="cMis"])'/>
+                             </h:form>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td>
+                            <p:outputPanel rendered="#{!activeController.isActiveControllerSet()}">
+                                <h:outputText value="Please set an 'active' controller to view missions for a controller."/>
+                            </p:outputPanel>
+                             <p:outputPanel id="cMis" rendered="#{activeController.isActiveControllerSet()}">
+                                 <p:dataGrid value="#{curMissionRequest.getCurrentFilteredMissions((activeController.activeController).getId())}" 
+                                    styleClass="misBoard" var="mission" columns="3" style="border:none!important" emptyMessage="No mission(s) can be found for the connected controller">
+                                     <p:panel id="missionPanel" styleClass="#{mission.missionStatus}" style="width:270px;height:200px">
+                                         <f:facet name="header">
+                                            <div style="max-width:270px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden">
+                                                <h:outputText id="mName" style="font-size:1em" value="#{mission.missionName}"  />
+                                                <p:tooltip for="mName" value="#{mission.missionStatus}"/>
+                                             </div>
+                                         </f:facet>
+                                         <table style="width:100%;background:none!">
+                                             <tr>
+                                                 <td id="mStatus" style="padding-top:5px;width:50%">
+                                                     <b>#{currentMissionMgr.translateProgramStatus(mission.missionStatus)}</b>
+                                                 </td>
+                                             </tr>
+                                             <tr>
+                                                <td>
+                                                    <table style="width:100%">
+                                                        <tr>
+                                                            <td style="width:35%">
+                                                                <b>Template:</b>
+                                                            </td>
+                                                            <td style="width:65%">
+                                                                <div style="max-width:150px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden">
+                                                                    <h:outputText id="templateName" value="#{mission.templateName}"/>
+                                                                    <p:tooltip for="templateName" value="#{mission.templateName}"/>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                             </tr>
+                                             <tr>
+                                                  <td style="width:50%;text-align:center;">
+                                                    <p:outputPanel rendered="#{(mission.missionStatus == 'SCHEDULED' || mission.missionStatus == 'WAITING_UNINITIALIZED' || mission.missionStatus == 'WAITING_INITIALIZED' 
+                                                        || mission.missionStatus == 'UNSATISFIED') and mission.hasStartInterval()}">
+                                                        <table style="width:100%">
+                                                            <tr>
+                                                                <td style="text-align:left">
+                                                                     <b>Start:</b>
+                                                                </td>
+                                                                <td style="text-align:right">
+                                                                    <h:outputText id="mStartTime" converter="dateTimeConverter" value="#{mission.startInterval}"/>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                        
+                                                    </p:outputPanel>
+                                                    <p:outputPanel rendered="#{(mission.missionStatus == 'SCHEDULED' || mission.missionStatus == 'WAITING_INITIALIZED' 
+                                                        || mission.missionStatus == 'WAITING_UNINITIALIZED' || mission.missionStatus == 'UNSATISFIED') and !mission.hasStartInterval()}">
+                                                        <table style="width:100%">
+                                                            <tr>
+                                                                <td style="text-align:left">
+                                                                     <b>Start:</b>
+                                                                </td>
+                                                                <td id="mStartImmediate" style="text-align:right">
+                                                                     Immediately
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                        
+                                                    </p:outputPanel>
+                                                    <p:outputPanel rendered="#{(mission.missionStatus == 'EXECUTING' or mission.missionStatus == 'EXECUTED') and mission.hasStopInterval()}">
+                                                        <table style="width:100%">
+                                                            <tr>
+                                                                <td style="text-align:left">
+                                                                     <b>Stop:</b>
+                                                                </td>
+                                                                <td style="text-align:right">
+                                                                      <h:outputText id="mStopTime" converter="dateTimeConverter" value="#{mission.stopInterval}"/>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </p:outputPanel>
+                                                    <p:outputPanel rendered="#{(mission.missionStatus == 'EXECUTING' or mission.missionStatus == 'EXECUTED') and !mission.hasStopInterval()}">
+                                                        <table style="width:100%">
+                                                            <tr>
+                                                                <td style="text-align:left">
+                                                                     <b>Stop:</b>
+                                                                </td>
+                                                                <td id="mStopIndefinite" style="text-align:right">
+                                                                      Indefinite
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </p:outputPanel>
+                                                    <p:outputPanel rendered="#{mission.lastTestResult != null}">
+                                                        <table style="width:100%">
+                                                            <tr>
+                                                                <td style="text-align:left">
+                                                                    <b>Last Test Result:</b>
+                                                                </td>
+                                                                <td id="mLastResult" style="text-align:right">
+                                                                    #{mission.lastTestResult}
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </p:outputPanel>
+                                                    
+                                                </td>
+                                             </tr>
+                                             
+                                             <tr>
+                                                <td colspan="2" align="center">
+                                                    <h:form>
+                                                        <p:commandButton id="testButton" icon="ui-icon-signal" rendered="#{mission.missionStatus == 'WAITING_INITIALIZED' || mission.missionStatus == 'SCHEDULED'}"
+                                                            action="#{currentMissionMgr.executeTestRequest(mission.missionName, (activeController.activeController).getId())}"/>
+                                                        <p:tooltip for="testButton" value="Test Mission"/>
+                                                        <p:commandButton id="execButton" icon="ui-icon-play" rendered="#{mission.missionStatus == 'SCHEDULED' || mission.missionStatus == 'WAITING_INITIALIZED'}"
+                                                            action="#{currentMissionMgr.executeExecuteRequest(mission.missionName, (activeController.activeController).getId())}"/>
+                                                        <p:tooltip for="execButton" value="Execute Mission"/>
+                                                        <p:commandButton id="stopButton" icon="ui-icon-stop" rendered="#{mission.missionStatus == 'EXECUTING' || mission.missionStatus == 'EXECUTED'}"
+                                                            action="#{currentMissionMgr.executeShutdownRequest(mission.missionName, (activeController.activeController).getId())}"/>
+                                                        <p:tooltip for="stopButton" value="Shutdown Mission"/>
+                                                        <p:commandButton id="cancelButton" icon="ui-icon-closethick" rendered="#{mission.missionStatus == 'SCHEDULED' || mission.missionStatus == 'WAITING_INITIALIZED'}"
+                                                            action="#{currentMissionMgr.executeCancelRequest(mission.missionName, (activeController.activeController).getId())}"/>
+                                                        <p:tooltip for="cancelButton"  value="Cancel Mission"/>
+                                                        <p:commandButton id="removeButton" icon="ui-icon-trash" rendered="#{mission.missionStatus == 'SHUTDOWN' || mission.missionStatus == 'CANCELED' 
+                                                            || mission.missionStatus == 'INITIALIZATION_ERROR' || mission.missionStatus == 'SCRIPT_ERROR' || mission.missionStatus == 'VARIABLE_ERROR'
+                                                            || mission.missionStatus == 'UNSATISFIED'}"
+                                                            action="#{currentMissionMgr.executeRemoveRequest(mission.missionName, (activeController.activeController).getId())}"/>
+                                                        <p:tooltip for="removeButton" value="Remove Mission"/>
+                                                         
+                                                    </h:form>
+                                                </td>
+                                             </tr>
+                                         </table>
+                                     </p:panel>
+                                   
+                                </p:dataGrid>
+                             </p:outputPanel>
+                         </td>
+                     </tr>
+                 </table>
+            </p:tab>
+        </p:tabView>
+        
+        
+      </ui:define>
+</ui:composition>

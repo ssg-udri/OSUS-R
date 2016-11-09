@@ -1,0 +1,126 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+//
+// Description:
+// Contains messages used by multiple proto files. Any additional message placed
+// here should not depend on Generated messages.
+//
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+option java_outer_classname = "SharedMessages";
+
+//Message to store the bits of a universal unique identifier.
+message UUID 
+{
+  //the least significant bits of the universal unique identifier
+  required int64 leastSignificantBits = 1;
+  
+  //the most significant bits of the universal unique identifier
+  required int64 mostSignificantBits = 2;
+}
+
+// A type and value that can be of a base type or a standard type.
+message Multitype
+{
+    // Enumeration of the possible types of objects the object can represent.
+    enum Type
+    {
+        // Base types
+        
+        // no type
+        NULL = 1;
+        // string
+        STRING = 2;
+        // 32-bit integer
+        INT32 = 3;
+        // 64-bit integer
+        INT64 = 4;
+        // boolean
+        BOOL = 5;
+        // float
+        FLOAT = 6;
+        // double  
+        DOUBLE = 7;
+        // short
+        SHORT = 8;
+        // character 
+        CHARACTER = 9;
+        // byte 
+        BYTE = 10; 
+        //byte string
+        BYTES = 11;
+
+        // Standard classes
+        
+        // universal unique identifier
+        UUID = 100;
+
+        // a list of multitype objects
+        MULTITYPE_LIST = 200;
+    }
+
+    // The type of object the Multitype message represents.
+    required Type type = 1;
+    
+    // The value fields for the object the Multitype object represents. Only fields appropriate to the type of object
+    // represented should be set.
+    
+    // Base values
+    
+    // string value
+    optional string stringValue = 2;
+    // 32-bit integer value
+    optional int32 int32Value = 3;
+    // 64-bit integer value
+    optional int64 int64Value = 4;
+    // boolean value
+    optional bool boolValue = 5;
+    // float value
+    optional float floatValue = 6; 
+    // double value
+    optional double doubleValue = 7;
+    // short value
+    optional int32 shortValue = 8; 
+    // character value
+    optional string charValue = 9; 
+    // byte value
+    optional int32 byteValue = 10;
+    //any serializable value in the form of a byte string
+    optional bytes byteStringValue = 11;
+
+    // most significant bits of a universal unique identifier
+    optional int64 uuidMostSigBitsValue = 100;
+
+    // least significant bits of a universal unique identifier
+    optional int64 uuidLeastSigBitsValue = 101;
+
+     //List type
+    repeated Multitype list = 200;
+}
+
+// The identifying information of a factory object.
+message FactoryObjectInfo
+{
+    // uuid of the factory object
+    required UUID uuid = 1;
+
+    // pid of the factory object. This property will be set if a factory object has a valid pid. 
+    // A factory object will have a valid pid if it has configurations registered with the configuration admin. 
+    // If a configuration for the object does not exist, then this property will not be set.
+    optional string pid = 2;
+    
+    // product type of the factory object in fully qualified class name format as returned by
+    // mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    required string productType = 3;
+}

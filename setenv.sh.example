@@ -1,0 +1,35 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+
+# See README for complete instructions on using this file.
+# This file should be used to set environment variables.  You will need to
+# source this script file in a shell to set the variables (e.g., source setenv.sh).
+# Once set, you can start Eclipse or run Ant in the same shell.
+
+# installation location of Ant
+export ANT_HOME=<root of project>/deps/apache-ant-1.8.4
+
+# installation directory of the JDK 1.8
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0
+
+# location of the JDK include files
+export JAVA_INCLUDE=$JAVA_HOME/include
+
+# location of the JDK command line tools
+export JAVA_BIN=$JAVA_HOME/bin
+
+# installation location of Protocol Buffers 2.6.1
+export PROTOC_2_6_1=<install base>
+
+# update PATH to include ANT and JDK, optionally add SWIG if platform interface is required
+export PATH=$ANT_HOME/bin:$JAVA_BIN:$PATH

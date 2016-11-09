@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<xs:schema xmlns="http://th.dod.mil/core/types/detection"
+  targetNamespace="http://th.dod.mil/core/types/detection"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:shared="http://th.dod.mil/core/types"
+  elementFormDefault="qualified">
+    <xs:import namespace="http://th.dod.mil/core/types" schemaLocation="../SharedTypes.xsd" />
+ 
+ 
+    <xs:simpleType name="DetectionTypeEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Alarm">
+                <xs:annotation>
+                    <xs:documentation>
+                        A standard detection of a target.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Tamper">
+                <xs:annotation>
+                    <xs:documentation>
+                        A tamper of the sensor was detected.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Test">
+                <xs:annotation>
+                    <xs:documentation>
+                        Sensor test event produced a detection (not a valid target). Used to simulate a target for testing 
+                        purposes.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+            
+    <xs:simpleType name="TargetClassificationTypeEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Blast" />
+            <xs:enumeration value="Voice" />
+            <xs:enumeration value="Personnel" />
+            <xs:enumeration value="GroundVehicle" />
+            <xs:enumeration value="GroundVehicleLight" />
+            <xs:enumeration value="GroundVehicleMedium" />
+            <xs:enumeration value="GroundVehicleHeavy" />
+            <xs:enumeration value="Aircraft" />
+            <xs:enumeration value="AircraftFixedWing" />
+            <xs:enumeration value="AircraftRotaryWing" />
+            <xs:enumeration value="Other">
+                <xs:annotation>
+                    <xs:documentation>
+                        Use when sensor classification is not available in enum, be sure to set description string.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Handset" />
+            <xs:enumeration value="WirelessAccessPoint">
+                <xs:annotation>
+                    <xs:documentation>
+                        Device that allows wireless clients to connect to a network. This includes, but is not limited to
+                        Wi-Fi.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="WirelessClient">
+                <xs:annotation>
+                    <xs:documentation>
+                        Devices such as laptops, desktops, mobile phones that can communicate wirelessly with other clients
+                        or access points. This includes, but is not limited to Wi-Fi clients.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Animal" />
+            <xs:enumeration value="Unknown">
+                <xs:annotation>
+                    <xs:documentation>
+                        Use this value to describe a target classification algorithm's possible 
+                        result, not if an asset is not capable of classifying a target.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:complexType name="TargetClassificationType">
+      <xs:attribute name="value" type="TargetClassificationTypeEnum" use="required" />
+      <xs:attribute name="description" type="xs:string" use="optional">
+        <xs:annotation>
+            <xs:documentation>
+                Must set description if value is "Other"
+            </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+</xs:schema>

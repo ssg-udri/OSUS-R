@@ -1,0 +1,35 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<project name="mil.dod.th.ose.controller" default="build">
+    
+    <import file="../cnf/build.xml" />
+
+    <target name="create-tmp-build-file" depends="init" description="Generate a tmp.build.properties file">
+        <propertyfile file="${cnf.dir}/tmp.build.properties" comment="Generated from ${project}">
+            <entry key="build.buildnum" type="int" value="0" />
+            <entry key="build.type" type="string" value="unknown" />
+            <entry key="build.user" type="string" value="${user.name}" />
+            <entry key="build.workspace" type="string" value="${bp.workspace.dir}" />
+            <entry key="build.time" type="date" value="now" />
+            <entry key="build.comment" type="string" value="Not built as part of individual build" />
+        </propertyfile>
+    </target>
+    
+    <target name="deploy-component" depends="master.deploy-component">
+        <copy todir="${bp.data.deploy.dir}/conf">
+            <fileset file="th.system.properties" />
+        </copy>
+    </target>                
+</project>

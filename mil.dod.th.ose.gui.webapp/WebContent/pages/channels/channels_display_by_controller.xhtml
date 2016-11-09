@@ -1,0 +1,96 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ This xhtml page is used to render channels by their type when the radio option
+ on the channels.xhmtl page is set/selected to "By Controller"
+
+==============================================================================
+ -->
+ <!-- -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+
+    <ui:fragment rendered="#{controllerManager.getAllControllers().size() == 0}">
+        <h:outputText styleClass="textHeader" value="Currently there are no controllers that this GUI is connected to. Add a channel to connect to a controller."/>
+    </ui:fragment>
+    <ui:fragment rendered="#{controllerManager.getAllControllers().size() != 0}">
+        <ui:repeat value="#{controllerManager.getAllControllers()}" var="controller">
+            <p:fieldset style="margin-top:10px" toggleable="true">
+                <f:facet name="legend">
+                    #{controller.name} -
+                    <h:outputText value="#{controller.id}">
+                        <f:converter converterId="hexConverter"/>
+                    </h:outputText>
+                </f:facet>
+                 <p:fieldset id="socketByController" style="margin-top:10px" legend="Socket Channels" toggleable="true" rendered="#{channelManager.getChannelsForController(controller.id, 'Socket').size() != 0}">
+                    <p:dataTable id="sockets" styleClass="allTableStylesWithBorder" value="#{channelManager.getChannelsForController(controller.id, 'Socket')}" var="channel">
+                        <p:column headerText="Host Name">
+                            #{channel.host}
+                        </p:column>
+                        <p:column headerText="Host Port">
+                            #{channel.port}
+                        </p:column>
+                        <!--p:column headerText="Status">
+                            <div class="channelStatusDimensions channelStatus#{channel.channelStatus}"/>
+                        </p:column-->
+                        <p:column headerText="Transmitted / Received">
+                            #{channel.bytesTransmitted} / #{channel.bytesReceived} bytes
+                        </p:column>
+                        <p:column headerText="Queued Messages">
+                            #{channel.queuedMessageCount}
+                            <p:commandButton style="margin-left:2em" icon="ui-icon-circle-close" actionListener="#{channelManager.clearChannelQueue(channel)}"/>
+                        </p:column>
+                        <p:column headerText="Remove Channel">
+                            <p:commandButton icon="ui-icon-trash" actionListener="#{channelManager.removeChannel(channel)}" />
+                        </p:column>
+                        
+                    </p:dataTable>
+                 </p:fieldset>
+                 <p:fieldset id="transportsByController" style="margin-top:10px" legend="Transport Channels" toggleable="true" rendered="#{channelManager.getChannelsForController(controller.id, 'Transport').size() != 0}">
+                    <p:dataTable id="transports" styleClass="allTableStylesWithBorder" value="#{channelManager.getChannelsForController(controller.id, 'Transport')}" var="channel">
+                        <p:column headerText="Name">
+                            #{channel.name}
+                        </p:column>
+                        <p:column headerText="Local Address">
+                            #{channel.localMessageAddress}
+                        </p:column>
+                        <p:column headerText="Remote Address">
+                            #{channel.remoteMessageAddress}
+                        </p:column>
+                        <!--p:column headerText="Status">
+                           <div class="channelStatusDimensions channelStatus#{channel.channelStatus}"/>
+                        </p:column-->
+                        <p:column headerText="Transmitted / Received">
+                            #{channel.bytesTransmitted} / #{channel.bytesReceived} bytes
+                        </p:column>
+                        <p:column headerText="Queued Messages">
+                            #{channel.queuedMessageCount}
+                            <p:commandButton style="margin-left:2em" icon="ui-icon-circle-close" actionListener="#{channelManager.clearChannelQueue(channel)}"/>
+                        </p:column>
+                        <p:column headerText="Remove Channel">
+                            <p:commandButton icon="ui-icon-trash" actionListener="#{channelManager.removeChannel(channel)}" />
+                        </p:column>
+
+                    </p:dataTable>
+                 </p:fieldset>
+            </p:fieldset>
+        </ui:repeat>
+    </ui:fragment>
+</ui:composition>

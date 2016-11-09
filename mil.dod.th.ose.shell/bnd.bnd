@@ -1,0 +1,44 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+Bundle-Version: 1.0.3.${tstamp}
+Bundle-Description: THOSE Shell Commands
+Bundle-Name: THOSE Shell Commands
+Bundle-Vendor: UDRI
+Private-Package: mil.dod.th.ose.shell
+
+# org.apache.felix.service.command: won't be imported if not provisional
+# mil.dod.th.ose.remote.api: allow shell bundle to start without the remote bundle
+Import-Package: \
+    org.apache.felix.service.command;status=provisional, \
+    mil.dod.th.ose.remote.api;resolution:=optional, \
+    *
+Service-Component: *
+
+-buildpath:  \
+    biz.aQute.bnd.annotation,\
+    com.google.protobuf;version=2.6.1,\
+    com.google.guava,\
+    org.apache.felix.gogo.runtime,\
+    osgi.cmpn,\
+    osgi.core,\
+    ${junit},\
+    ${mockito},\
+    ${powermock},\
+    mil.dod.th.core.api;version=latest,\
+    mil.dod.th.core.proto.messages;version=latest,\
+    mil.dod.th.ose.utils;version=latest,\
+    mil.dod.th.ose.shared;version=latest,\
+    mil.dod.th.ose.remote;version=latest,\
+    mil.dod.th.ose.test.all;version=latest,\
+    org.apache.commons.lang;version=2.6

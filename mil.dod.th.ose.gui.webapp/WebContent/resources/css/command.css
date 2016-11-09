@@ -1,0 +1,52 @@
+/*==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+This style sheet is for the command and control tab on the asset page. 
+==============================================================================
+*/
+
+.commandTree td
+{
+    text-align:left !important;
+}
+
+.isReferencetrue
+{
+    font-weight: bold;
+}
+
+.isReferencefalse
+{
+    font-weight: normal;
+}
+
+.dropDownMenu
+{
+    text-align:left; 
+    padding-right:25px;
+}
+
+tr td .ui-accordion-content
+{
+    padding:0px !important;
+}
+
+/* Applies style to component that matches this matcher so that vertical scollbar is not shown
+   for accordion panel that holds the get command tabview if number of tabs does not go off
+   the tab view component. Scrollbar will still appear if the number of tabs in the tabview component
+   is greater than the size of the tabview component. Could be removed if upgrade to PF 4, scrollable tab
+   functionality could be used and therefore overflow:hidden could be used on the tabview.*/
+div[role="tabpanel"][class*="ui-accordion-content"][id*="getCommandPanel"]
+{
+    height:330px
+}

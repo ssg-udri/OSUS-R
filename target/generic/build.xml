@@ -1,0 +1,78 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Build components for a generic platform.
+
+==============================================================================
+-->
+<project name="those-target-generic" default="build-with-deps">
+
+    <property environment="env" />
+
+    <!-- properties cannot be overriden, imported as first right to define (common->local) -->
+    <property file="../../build.properties" prefix="bp" />
+
+    <dirname property="those-target-generic.basedir" file="${ant.file.those-target-generic}"/>
+    <dirname property="bp.workspace.dir" file="${those-target-generic.basedir}/../../build.xml"/>
+    <echo message="Build workspace.dir is: ${bp.workspace.dir}"/>
+
+    <import file="../../cnf/ant/commons.xml"/>
+    
+    <target name="build-no-deps">
+        <echo message="### Build generic (no-deps) ###" />
+        
+        <!-- build each target -->
+        <ant dir="controller-app" target="build-no-deps" />
+        <ant dir="sdk-app" target="build-no-deps" />
+        <ant dir="gui" target="build-no-deps" />
+    </target>
+    
+    <target name="build-with-deps">
+        <echo message="### Build generic (with-deps) ###" />
+        
+        <!-- build dependencies of all targets -->
+        <ant dir="${bp.ant.build.files.dir}" antfile="tools.xml" target="build" />
+        <ant dir="${bp.ant.build.files.dir}" antfile="shared.xml" target="build" />
+        <ant dir="${bp.core.dir}" target="javadoc" />
+        <ant dir="${bp.rxtxtty.dir}" target="build" />
+        
+        <antcall target="build-no-deps" />
+    </target>
+
+    <target name="clean">
+        <echo message="### Clean generic ###" />
+        <ant dir="controller-app" target="clean" />
+        <ant dir="gui" target="clean" />
+        <ant dir="sdk-app" target="clean" />
+    </target>
+
+    <target name="deploy">
+        <echo message="### Deploy generic ###" />
+        <ant dir="sdk-app" target="deploy" />
+        <ant dir="controller-app" target="deploy" />
+        <ant dir="gui" target="deploy" />
+    </target>
+
+    <target name="deploy-clean">
+        <echo message="### Deploy-Clean generic ###" />
+        <ant dir="sdk-app" target="deploy-clean" />
+        <ant dir="controller-app" target="deploy-clean" />
+        <ant dir="gui" target="deploy-clean" />
+    </target>
+
+    <target name="build-source-zip" description="Create a zip of all the source that makes up the generic target">
+        <echo message="### Build Source Zip generic ###" />
+    </target>
+</project>

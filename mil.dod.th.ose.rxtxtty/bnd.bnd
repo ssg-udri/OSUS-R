@@ -1,0 +1,43 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+Bundle-Version: 1.4.3.${tstamp}
+Bundle-Description: RXTX Serial Port Platform Interface Library for Windows and OS/X
+Bundle-Name: RXTX Serial Port Platform Interface Library
+Bundle-Vendor: UDRI
+Private-Package: mil.dod.th.ose.rxtxtty, gnu.io
+Service-Component: mil.dod.th.ose.rxtxtty.*
+
+# For some reason osname = win32 doesn't work on Server 2008R2, we need osname = win
+Bundle-NativeCode: \
+ win32/rxtxSerial.dll; osname = win32; processor = x86, \
+ win32/rxtxSerial.dll; osname = win; processor = x86, \
+ win64/rxtxSerial.dll; osname = win32; processor = x86-64, \
+ win64/rxtxSerial.dll; osname = win; processor = x86-64
+
+Include-Resource: capabilities-xml=capabilities-xml, \
+ win32/rxtxSerial.dll=../deps/rxtx/win32/rxtxSerial.dll, \
+ win64/rxtxSerial.dll=../deps/rxtx/win64/rxtxSerial.dll
+
+-buildpath:  \
+    biz.aQute.bnd.annotation,\
+    com.google.guava,\
+    osgi.core,\
+    osgi.cmpn,\
+    mil.dod.th.core.api;version=latest,\
+    ${junit},\
+    ${mockito},\
+    ../deps/rxtx/RXTXcomm.jar;version=file
+
+# Specify configuration interfaces to be generated into metatype xml.
+-metatype: *

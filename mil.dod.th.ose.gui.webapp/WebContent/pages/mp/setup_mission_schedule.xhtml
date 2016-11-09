@@ -1,0 +1,129 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ -->
+<ui:composition
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui">
+      
+      <h2>Set an execution schedule for #{missionSetUpMgr.mission.name}</h2>
+      <p:fieldset>
+          <table style="width:100%;">
+              <tr>
+                  <td style="width:35%">
+                      <h3>Schedule this mission program to start:</h3>
+                  </td>
+                  <td align="center" style="width:35%">
+                     <p:selectOneButton id="tChangerStart" value="#{missionSetUpMgr.immediate}" immediate="true">
+                         <p:ajax update="timeChoose"/>
+                         <p:ajax update="startDialog"/>
+                         <f:selectItem itemLabel="Immediately" itemValue="true"/>
+                         <f:selectItem itemLabel="Timed" itemValue="false"/>
+                     </p:selectOneButton>
+                  </td>
+                  <td>
+                    <h:form id="startDialog">
+                        <p:outputPanel rendered="#{missionSetUpMgr.schedule.isImmediately()}">
+                            This mission will execute immediately when you complete the mission setup.
+                        </p:outputPanel>
+                        <p:outputPanel rendered="#{!missionSetUpMgr.schedule.isImmediately()}">
+                            This mission will start at a specified time. Specify below when this mission should execute.
+                        </p:outputPanel>
+                    </h:form>
+                  </td>
+              </tr>
+              <tr>
+                 <td style="width:35%">
+                     <h3>Schedule this mission program to end:</h3>
+                 </td>
+                 <td align="center" style="width:35%">
+                     <p:selectOneButton id="tChangerEnd" value="#{missionSetUpMgr.indefinate}" immediate="true">
+                         <p:ajax update="timeChoose"/>
+                         <p:ajax update="stopDialog"/>
+                         <f:selectItem itemLabel="Indefinitely" itemValue="true"/>
+                         <f:selectItem itemLabel="Timed" itemValue="false"/>
+                     </p:selectOneButton>
+                 </td>
+                 <td>
+                    <h:form id="stopDialog">
+                        <p:outputPanel rendered="#{missionSetUpMgr.schedule.isIndefiniteInterval()}">
+                            This mission, once executed, will run until otherwise specified.
+                        </p:outputPanel>
+                        <p:outputPanel rendered="#{!missionSetUpMgr.schedule.isIndefiniteInterval()}">
+                            This mission will stop at a specified time. Specify below when this mission should stop.
+                        </p:outputPanel>
+                    </h:form>
+                 </td>
+              </tr>
+              <tr>
+                 <td style="width:35%">
+                     <h3>Restart mission if controller restarts:</h3>
+                 </td>
+                 <td align="center" style="width:35%">
+                     <p:selectBooleanCheckbox value="#{missionSetUpMgr.schedule.atReset}">
+                         <p:ajax update="timeChoose"/>
+                         <p:ajax update="restartDialog"/>
+                     </p:selectBooleanCheckbox>
+                 </td>
+                 <td>
+                    <h:form id="restartDialog">
+                        <p:outputPanel rendered="#{missionSetUpMgr.schedule.atReset}">
+                            This mission will restart if the controller restarts. However the mission will not restart if outside of the scheduled mission run time.
+                        </p:outputPanel>
+                        <p:outputPanel rendered="#{!missionSetUpMgr.schedule.atReset}">
+                            This mission will not restart if the controller restarts.
+                        </p:outputPanel>
+                    </h:form>
+                 </td>
+              </tr>
+              <tr>
+                  <td colspan="3" style=" width:100%;">
+                      <h:form id="timeChoose">
+                          <div  style="width:80%; margin:0 auto 0 auto;">
+                              <p:outputPanel rendered="#{(!missionSetUpMgr.schedule.isImmediately()) or (!missionSetUpMgr.schedule.isIndefiniteInterval())}">
+                                  <div style="width:100%;">
+                                    <table style="width:100%">
+                                        <tr> 
+                                            <th><h:outputText value="Start Time (UTC)" rendered="#{!missionSetUpMgr.schedule.isImmediately()}"/></th>
+                                            <th><h:outputText value="Stop Time (UTC)" rendered="#{!missionSetUpMgr.schedule.isIndefiniteInterval()}"/></th>
+                                        </tr>
+                                        <tr style="width:100%">
+                                            <td align="center" valign="top">
+                                                <p:calendar id="startTimeSelect" timeZone="UTC" value="#{missionSetUpMgr.startInterval}" pattern="MM/dd/yyyy HH:mm:ss" mode="popup" rendered="#{!missionSetUpMgr.schedule.isImmediately()}">
+                                                    <p:ajax event="dateSelect" listener="#{missionSetUpMgr.ajaxDateSelectStartInterval}"/>
+                                                    <p:ajax event="valueChange" listener="#{missionSetUpMgr.ajaxValueChangeStartInterval}"/>
+                                                </p:calendar>
+                                            </td>
+                                            <td align="center" valign="top">
+                                                <p:calendar id="stopTimeSelect" timeZone="UTC" value="#{missionSetUpMgr.stopInterval}" pattern="MM/dd/yyyy HH:mm:ss" mode="popup" rendered="#{!missionSetUpMgr.schedule.isIndefiniteInterval()}">
+                                                    <p:ajax event="dateSelect" listener="#{missionSetUpMgr.ajaxDateSelectStopInterval}"/>
+                                                    <p:ajax event="valueChange" listener="#{missionSetUpMgr.ajaxValueChangeStopInterval}"/>
+                                                </p:calendar>
+                                            </td>
+                                        </tr>
+                                    </table>  
+                                  </div>
+                              </p:outputPanel>
+                          </div>
+                      </h:form>  
+                  </td>
+              </tr>
+          </table>
+      </p:fieldset>
+      
+</ui:composition>

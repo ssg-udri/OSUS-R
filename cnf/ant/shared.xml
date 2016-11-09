@@ -1,0 +1,118 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Ant build file for the shared components that make up OSUS-R.
+
+==============================================================================
+-->
+<project name="shared" default="build">
+    <property environment="env" />
+
+    <property file="../../build.properties" prefix="bp" />
+    <import file="${bp.workspace.dir}/cnf/ant/commons.xml"/>
+
+    <target name="build" description="Build all shared components">
+        <ant dir="${bp.utils.dir}" target="build" />
+        <ant dir="${bp.metatype.dir}" target="build" />
+        <ant dir="${bp.mp.runtime.dir}" target="build" />
+        <ant dir="${bp.org.h2.dir}" target="build" />
+        <ant dir="${bp.core.lexicon.dir}" target="build" />
+        <ant dir="${bp.core.proto.dir}" target="build" />
+        <ant dir="${bp.core.dir}" target="build" />
+        <ant dir="${bp.test.dir}" target="build" />
+        <ant dir="${bp.ose.core.proto.dir}" target="build" />
+        <ant dir="${bp.shared.dir}" target="build" />
+        <ant dir="${bp.ose.core.dir}" target="build" />
+        <ant dir="${bp.logging.dir}" target="build" />
+        <ant dir="${bp.remote.proto.dir}" target="build" />
+        <ant dir="${bp.remote-interface.dir}" target="build" />
+        <ant dir="${bp.configuration.dir}" target="build" />
+        <ant dir="${bp.shell.dir}" target="build" />
+        <ant dir="${bp.controller.dir}" target="build" />
+        <ant dir="${bp.transcoder.vlc.dir}" target="build" />
+        <ant dir="${bp.datastream.service.dir}" target="build" />
+        <ant dir="${bp.archiver.vlc.dir}" target="build" />
+        <ant dir="${bp.datastream.store.dir}" target="build" />
+        
+    </target>
+
+    <target name="clean" description="Clean all shared components">
+        <ant dir="${bp.utils.dir}" target="clean" />
+        <ant dir="${bp.metatype.dir}" target="clean" />
+        <ant dir="${bp.mp.runtime.dir}" target="clean" />
+        <ant dir="${bp.org.h2.dir}" target="clean" />
+        <ant dir="${bp.core.lexicon.dir}" target="clean" />
+        <ant dir="${bp.core.proto.dir}" target="clean" />
+        <ant dir="${bp.core.dir}" target="clean" />
+        <ant dir="${bp.ose.core.dir}" target="clean" />
+        <ant dir="${bp.test.dir}" target="clean" />
+        <ant dir="${bp.ose.core.proto.dir}" target="clean" />
+        <ant dir="${bp.shared.dir}" target="clean" />
+        <ant dir="${bp.configuration.dir}" target="clean" />
+        <ant dir="${bp.logging.dir}" target="clean" />
+        <ant dir="${bp.remote.proto.dir}" target="clean" />
+        <ant dir="${bp.remote-interface.dir}" target="clean" />
+        <ant dir="${bp.shell.dir}" target="clean" />
+        <ant dir="${bp.controller.dir}" target="clean" />
+        <ant dir="${bp.transcoder.vlc.dir}" target="clean" />
+        <ant dir="${bp.datastream.service.dir}" target="clean" />
+        <ant dir="${bp.archiver.vlc.dir}" target="clean" />
+        <ant dir="${bp.datastream.store.dir}" target="clean" />
+    </target>
+
+    <target name="deploy-components" description="Deploy all shared components">
+        <ant dir="${bp.utils.dir}" target="deploy-component" />
+        <ant dir="${bp.metatype.dir}" target="deploy-component" />
+        <ant dir="${bp.mp.runtime.dir}" target="deploy-component" />
+        <ant dir="${bp.org.h2.dir}" target="deploy-component" />
+        <ant dir="${bp.core.lexicon.dir}" target="deploy-component" />
+        <ant dir="${bp.core.proto.dir}" target="deploy-component" />
+        <ant dir="${bp.core.dir}" target="deploy-component" />
+        <ant dir="${bp.ose.core.dir}" target="deploy-component" />
+        <ant dir="${bp.shared.dir}" target="deploy-component" />
+        <ant dir="${bp.configuration.dir}" target="deploy-component" />
+        <ant dir="${bp.logging.dir}" target="deploy-component" />
+        <ant dir="${bp.remote-interface.dir}" target="deploy-component" />
+        <ant dir="${bp.shell.dir}" target="deploy-component" />
+        <ant dir="${bp.controller.dir}" target="deploy-component" />
+        
+        <antcall target="set-system-name-id" />
+
+        <copy todir="${bp.bundle.deploy.dir}">
+            <fileset file="${bp.commons-lang.jar}" />
+            <fileset file="${bp.jdo.api.jar}" />
+            <fileset file="${bp.datanucleus-api-jdo.jar}" />
+            <fileset file="${bp.datanucleus-core.jar}" />
+            <fileset file="${bp.datanucleus-rdbms.jar}" />
+            <fileset file="${bp.org.apache.felix.eventadmin.jar.file}" />
+            <fileset file="${bp.org.apache.felix.scr.jar.file}" />
+            <fileset file="${bp.guava.jar.file}" />
+            <fileset file="${bp.bnd.annotation.jar.file}" />
+            <fileset file="${bp.osgi.log.jar.file}" />
+            <fileset file="${bp.osgi.config.admin.jar.file}" />
+            <fileset file="${bp.osgi.metatype.jar.file}" />
+            <fileset file="${bp.org.bouncycastle.jar.file}" />
+            <fileset file="${bp.com.google.protobuf.bundle.file}" />
+        </copy>
+        
+        <copy todir="${bp.data.deploy.dir}/encrypt-conf" >
+            <fileset dir="${bp.common.target.dir}/encrypt-conf" />
+        </copy>
+        <copy todir="${bp.data.deploy.dir}/templates" >
+            <fileset dir="${bp.common.target.dir}/templates"  />
+        </copy>
+    </target>
+
+</project>

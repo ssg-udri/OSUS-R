@@ -1,0 +1,43 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+  Dialog that displays the specified related observation.
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:common="http://java.sun.com/jsf/composite/common"
+    xmlns:observation="http://java.sun.com/jsf/composite/observation">
+    
+    <p:dialog id="relatedObsDlg" widgetVar="showRelatedObsDlg" header="Related Obeservation" modal="true" width="750" height="500" resizable="false" dynamic="true" appendToBody="true">
+       <h:form>
+           <p:outputPanel id="relatedObsDlgComponent">
+               <div>
+                   <p:commandButton id="relatedObsBack" icon="ui-icon-circle-arrow-w" disabled="#{!relatedObs.canMoveBack()}" actionListener="#{relatedObs.back()}" update='@([id$="relatedObsDlgComponent"])'/>
+                   <p:tooltip id="relatedObsForwardTooltip" for="relatedObsBack" value="Back"/>
+                   <p:commandButton id="relatedObsForward" icon="ui-icon-circle-arrow-e" disabled="#{!relatedObs.canMoveForward()}" actionListener="#{relatedObs.forward()}" update='@([id$="relatedObsDlgComponent"])'/>
+                   <p:tooltip id="relatedObsBackTooltip" for="relatedObsForward" value="Forward"/>
+               </div>
+               <p:scrollPanel style="height:460px;width:100%;margin-top:5px;margin-bottom:5px;" mode="native">
+                    <observation:observation_component rendered="#{relatedObs.getObservation() != null}" guiObservation="#{relatedObs.getObservation()}" collapsed="false" toggleable="false" isOnDialog="true" />
+                    <h:outputText rendered="#{relatedObs.getObservation() == null}" value="The observation is no longer available. It may have been removed by another user."/>
+              </p:scrollPanel>
+           </p:outputPanel>
+       </h:form>
+    </p:dialog>
+</ui:composition>
+    

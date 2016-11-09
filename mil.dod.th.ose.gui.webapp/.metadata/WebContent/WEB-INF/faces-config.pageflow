@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pageflow:Pageflow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf13408995908740" configfile="/those-gui-web-app/WebContent/WEB-INF/faces-config.xml">
+  <nodes xsi:type="pageflow:PFPage" name="*" x="122" y="1714" id="pf13467854821350" referenceLink="//@navigationRule.0/@fromViewId|" outlinks="pf13467854821351 pf13467854821356 pf13467854821357 pf13467854821358 pf13467854821359 pf13470223152120 pf13470223152121 pf13470223152122 pf13470223152123" path="*"/>
+  <nodes xsi:type="pageflow:PFPage" name="pages/welcome.xhtml" x="338" y="178" id="pf134678548213511" referenceLink="//@navigationRule.0/@navigationCase.0/@toViewId|" inlinks="pf13467854821351" path="/pages/welcome.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="pages/missionhistory.xhtml" x="122" y="2674" id="pf134678548213515" referenceLink="//@navigationRule.0/@navigationCase.4/@toViewId|" path="/pages/missionhistory.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="pages/power.xhtml" x="338" y="1714" id="pf134678548213516" referenceLink="//@navigationRule.0/@navigationCase.7/@toViewId|" inlinks="pf13467854821356" path="/pages/advanced/power.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="pages/missioneditor.xhtml" x="338" y="2098" id="pf134678548213517" referenceLink="//@navigationRule.0/@navigationCase.6/@toViewId|" inlinks="pf13467854821357" path="/pages/advanced/missioneditor.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="pages/systemconfig.xhtml" x="338" y="2482" id="pf134678548213518" referenceLink="//@navigationRule.0/@navigationCase.8/@toViewId|" inlinks="pf13467854821358" path="/pages/advanced/systemconfig.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="pages/guiconfig.xhtml" x="338" y="2866" id="pf134678548213519" referenceLink="//@navigationRule.0/@navigationCase.5/@toViewId|" inlinks="pf13467854821359" path="/pages/advanced/guiconfig.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="pages/devices/assets_comms.xhtml" id="pf13470223152124" referenceLink="//@navigationRule.0/@navigationCase.2/@toViewId|" inlinks="pf13470223152120" path="/pages/devices/assets_comms.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="pages/mp/missions.xhtml" id="pf13470223152125" referenceLink="//@navigationRule.0/@navigationCase.3/@toViewId|" inlinks="pf13470223152121" path="/pages/mp/missions.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="pages/mp/setup_mission.xhtml" id="pf13470223152126" referenceLink="//@navigationRule.0/@navigationCase.4/@toViewId|" inlinks="pf13470223152122" path="/pages/mp/setup_mission.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="pages/channels/channels.xhtml" id="pf13470223152127" referenceLink="//@navigationRule.0/@navigationCase.1/@toViewId|" inlinks="pf13470223152123" path="/pages/channels/channels.xhtml"/>
+  <links id="pf13467854821351" target="pf134678548213511" source="pf13467854821350" outcome="test" redirect="true"/>
+  <links id="pf13467854821356" target="pf134678548213516" source="pf13467854821350" outcome="adv-powerman" redirect="true"/>
+  <links id="pf13467854821357" target="pf134678548213517" source="pf13467854821350" outcome="adv-missioneditor" redirect="true"/>
+  <links id="pf13467854821358" target="pf134678548213518" source="pf13467854821350" outcome="adv-sysconfig" redirect="true"/>
+  <links id="pf13467854821359" target="pf134678548213519" source="pf13467854821350" outcome="adv-guiconfig" redirect="true"/>
+  <links id="pf13470223152120" target="pf13470223152124" source="pf13467854821350" outcome="dev-assets" redirect="true"/>
+  <links id="pf13470223152121" target="pf13470223152125" source="pf13467854821350" outcome="mp-missions" redirect="true"/>
+  <links id="pf13470223152122" target="pf13470223152126" source="pf13467854821350" outcome="mp-setupmis" redirect="true"/>
+  <links id="pf13470223152123" target="pf13470223152127" source="pf13467854821350" outcome="chan-cconn" redirect="true"/>
+</pageflow:Pageflow>

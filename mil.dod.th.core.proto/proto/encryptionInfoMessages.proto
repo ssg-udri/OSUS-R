@@ -1,0 +1,71 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+import "remote-base.proto";
+
+//Namespace for handling information about system encryption. All messages in the namespace should not be encrypted and
+//should only contain basic information about encryption.
+message EncryptionInfoNamespace
+{
+    //An enumeration of different messages for handling encryption information
+    enum EncryptionInfoMessageType
+    {
+        //Get the current encryption level of a system.
+        GetEncryptionTypeRequest = 1;
+
+        //Response for GetEncryptionTypeRequest
+        GetEncryptionTypeResponse = 2;
+
+        //Error message sent when the encryption level of the sending system is lower than that of the receiving system.
+        EncryptionInfoErrorResponse = 3;
+    }
+
+    //The encryption information message type.
+    required EncryptionInfoMessageType type = 1;
+
+    // serialization of the data associated with the message (may be n/a), represents a protocol buffer message where
+    // the type is the MessageType field value with "Data" appended, for this namespace this would be
+    // "EncryptionInfoMessageTypeData"
+    optional bytes data = 2;
+}
+
+//Possible encryption error codes for messages.
+enum EncryptionErrorCode
+{
+    //Error used when the encryption level of a message is not sufficient enough for the receiving machine.
+    INVALID_ENCRYPTION_LEVEL = 1;
+
+    //Error used when the signature key for the message is invalid.
+    INVALID_SIGNATURE_KEY = 2;
+}
+
+//This message returns the encryption type of a controller.
+message GetEncryptionTypeResponseData
+{
+    //Field that contains the encryption level of the system.
+    required EncryptType type = 1;
+}
+
+//Describes various types of encryption exceptions that may occur when processing messages.
+message EncryptionInfoErrorResponseData
+{
+    //Error code representing a specific type of error
+    required EncryptionErrorCode error= 1;
+
+    //Encryption level of the system sending the error response.
+    required EncryptType type = 2;
+
+    //Describes the error code
+    optional string errorDescription = 3;
+}

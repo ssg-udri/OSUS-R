@@ -1,0 +1,56 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ 
+ First dialog in the add channel process which displays all possible channel 
+ choices. Clicking the select button will lead to the channels_set_new_channel_
+ properties.xhtml page being shown.
+ 
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+    
+    <p:dialog widgetVar="setChannelType" header="Create a New Channel" width="500" resizable="false">
+        <h:form>
+            <p>Select the type of channel to create</p>
+            <p:outputPanel id="aInfo" style="width:100%;">
+                <p:dataTable id="chooseChannelTable" styleClass="tablesNoBorderOnCells" 
+                        value="#{channelGuiDialogHelper.channelChoices}" var="choice" rows="8" paginator="true" 
+                        paginatorTemplate="{PreviousPageLink} {PageLinks} {NextPageLink}">
+                    <p:column>
+                        <p:graphicImage  library="images" name="#{choice.getImage()}" alt="Image Not Found" />
+                    </p:column>
+                       
+                    <p:column>
+                        #{choice.channelName}
+                    </p:column>
+                   
+                    <p:column>
+                        <p:commandButton id="selectChannelType" 
+                            value="Select" 
+                            actionListener="#{channelGuiDialogHelper.setSelectedNewChannelType(choice)}" 
+                            oncomplete="setChannelType.hide();newChannelPropsDlg.show();" 
+                            update='@([id$="newChannelProps"])' />
+                    </p:column>
+                </p:dataTable>
+            </p:outputPanel>
+        </h:form>
+    </p:dialog>
+</ui:composition>

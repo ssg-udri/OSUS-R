@@ -1,0 +1,186 @@
+/*==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+*/
+body {
+    background-color: #171717;
+    font-size: 12px;
+    font-family: Verdana, "Verdana CE",  Arial, "Arial CE", "Lucida Grande CE", lucida, "Helvetica CE", sans-serif;
+    color: #000000;  
+    margin: 10px;
+}
+
+h1 {
+    font-family: Arial, "Arial CE", "Lucida Grande CE", lucida, "Helvetica CE", sans-serif;
+    border-bottom: 1px solid #AFAFAF; 
+    font-size:  16px;
+    font-weight: bold;
+    margin: 0px;
+    padding: 0px;
+    color: #D20005;
+}
+
+.navigationButtons
+{
+    width:100%;
+    text-align:center; 
+    margin-top:5px;
+}
+
+.textHeader
+{
+    font-size:1em;
+    font-weight:bold;
+}
+
+.textHeaderUnderlined
+{
+    font-size:1em;
+    font-weight:bold;
+    text-decoration:underline;
+}
+
+.allInputs
+{
+    margin-left:10px;
+}
+
+.allTableStylesWithBorder
+{
+    margin-top:10px;
+}
+
+.allTableStylesWithBorder td
+{
+    text-align:center;
+}
+
+.panelGridNoBordersOnCells tr
+{
+    border:none !important;
+}
+
+.panelGridNoBordersOnCells, .tablesNoBorderOnCells
+{
+    margin-top:10px;
+}
+
+.panelGridNoBordersOnCells td, .tablesNoBorderOnCells td
+{
+    text-align:center;
+    border-style:none !important;
+}
+
+.channelStatusDimensions
+{
+    width:10px;
+    height:10px;
+    margin:0 auto 0 auto;
+}
+
+.channelStatusActive
+{
+    background-color:green;
+}
+
+.channelStatusUnknown
+{
+    background-color:gray;
+}
+
+.channelStatusUnavailable
+{
+    background-color:red;
+}
+
+.text-input
+{
+    border:solid 1px #e0e0e0;
+}
+
+.ui-scrollpanel-content
+{
+    width:100%;
+}
+
+.ui-inplace .ui-inplace-display 
+{
+    cursor: pointer;
+    background-color:rgba(255, 255, 204, 0.5);
+    padding-right: 8px;
+    padding-left: 16px;
+    float:left;
+    text-overflow: hidden;
+}
+
+/*Currently disables the NOW button on all calendar widgets.*/
+/*TODO: TH-1336: Fix now button on calendar to return UTC and not EST*/
+button.ui-datepicker-current
+{
+    display: none;
+}
+
+/* This style is used to display the operational mode icon within controller buttons and the GUI header. */
+.iconOPERATIONAL_MODE 
+{
+    width:  16px; /* Width of image */
+    height: 16px; /* Height of image */
+    padding-left: 16px; /* Equal to width of image - force 'old' image to be pushed out of view */
+    display: block;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    background: url(#{resource['images/thoseIcons/modes:operation_16.png']}) no-repeat !important;
+}
+
+/* This style is used to display the test mode icon within controller buttons and the GUI header. */
+.iconTEST_MODE 
+{
+    width:  16px; /* Width of image */
+    height: 16px; /* Height of image */
+    padding-left: 16px; /* Equal to width of image - force 'old' image to be pushed out of view */
+    display: block;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    background: url(#{resource['images/thoseIcons/modes:test_16.png']}) no-repeat !important;
+}
+
+/*Selector for adding space between a menu item text and its icon.*/
+.ui-menuitem-text
+{
+    padding-left:4px;
+}
+
+/* Hover event that makes tooltips visible upon hovering over
+objects with hasTooltip class */
+/*TD: Figure out way to tie tooltips together by ID - remove hasTooltip style class*/
+.hasTooltip:hover + .tooltip span 
+{ 
+    display:block;
+}
+
+.ui-growl
+{
+    /* lower growl message so it doesn't hide the top row of buttons */
+    top: 60px;
+}
+
+/*Hide mini upload button for advanced view of fileUpload component*/
+.ui-fileupload .start button
+{
+    display:none;
+}
+
+/*Hide progress bar for advanced view of fileUpload component*/
+.ui-fileupload .progress div
+{
+    display:none;
+}

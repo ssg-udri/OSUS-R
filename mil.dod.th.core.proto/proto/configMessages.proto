@@ -1,0 +1,214 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+//
+// Description: Contains OSGi ConfigurationAdmin related functionality for the
+// remote interface.
+//
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+
+import "mapTypes.proto";
+import "shared.proto";
+
+//Namespace contains functions related to the OSGi ConfigurationAdmin interface to facilitate
+//the proper performance of configurable services within the THOSE remote interface.
+//Functions include those related to getting and setting keys and values of specific properties,
+//as well as getting the OSGi Configuration information of a particular service or service factory.
+message ConfigAdminNamespace
+{
+    //Enum of ConfigurationAdmin message types
+    enum ConfigAdminMessageType
+    {
+        //Request to get property map keys belonging to configurable services based on a configurable service PID within a bundle
+        //Response is contained in GetPropertyKeysResponse
+        GetPropertyKeysRequest = 1;
+        //Contains list of keys in response to GetPropertyKeysRequest
+        GetPropertyKeysResponse = 2;
+
+        //Request to get a property based on a configurable service PID and property key within a bundle
+        //Response is contained in GetPropertyResponse
+        GetPropertyRequest = 3;
+        //Returns a property based on GetPropertyRequest
+        GetPropertyResponse = 4;
+
+        //Request to set a property based on PID, key, and value content
+        //Response is contained in SetPropertyResponse
+        SetPropertyRequest = 5;
+        //Contains response to SetPropertyRequest
+        SetPropertyResponse = 6;
+
+        //Request to get a list of configurations based on a particular string filter
+        //Response is contained in GetConfigurationInfoResponse
+        GetConfigurationInfoRequest = 7;
+        //Returns list of configurations (PID, factory PID, or bundle location) matching a string filter
+        GetConfigurationInfoResponse = 8;
+
+        //Request to create a factory configuration.
+        //Note that the configuration object created will contain null for all properties until the configuration's
+        //properties are updated.
+        //Response is contained in the CreateFactoryConfigurationResponse
+        CreateFactoryConfigurationRequest = 9;
+        //Response to the CreateFactoryConfigurationRequest.
+        CreateFactoryConfigurationResponse = 10;
+
+        //Request to delete a configuration using the configuration's PID.
+        //Response is contained in the DeleteConfigurationResponse.
+        DeleteConfigurationRequest = 11;
+        //Response to the successful deletion of the requested configuration.
+        DeleteConfigurationResponse = 12;
+
+        //Error message representing that an error occurred while processing a request
+        //for this namespace.
+        ConfigAdminNamespaceError = 13;
+
+    }
+    //This is the configuration admin message type
+    required ConfigAdminMessageType type = 1;
+    //optional data to append to the message
+    optional bytes data = 2;
+}
+
+//Message that contains a request to get property keys of a configurable service based on a configurable service PID within a bundle
+message GetPropertyKeysRequestData
+{
+    //PID of configurable service
+    required string pid = 1;
+}
+
+//Message that contains the keys of the property map in response to GetPropertyKeysRequest
+message GetPropertyKeysResponseData
+{
+    //PID of configurable service
+    required string pid = 1;
+    //string of property keys
+    repeated string key = 2;
+}
+
+//Message that contains a request to get a property based on a bundle's service PID and property key
+message GetPropertyRequestData
+{
+    //PID of configurable service
+    required string pid = 1;
+    //property key
+    required string key = 2;
+}
+
+//Message that returns a property value based on GetPropertyRequest
+message GetPropertyResponseData
+{
+    //PID of configurable service
+    required string pid = 1;
+    //property key
+    required string key = 2;
+    //value of a specific property
+    required Multitype value = 3;
+}
+
+//Message that contains a request to set a property with a new value based on service PID and property key
+//Corresponds to OSGi Configuration.update() method
+message SetPropertyRequestData
+{
+    //PID of service
+    required string pid = 1;
+    //List of properties to be set
+    repeated SimpleTypesMapEntry properties = 2;
+}
+
+//Message that contains OSGi Configuration object information corresponding to a particular service
+//Information that is returned includes the service PID, and optionally a service factory
+//PID and the location of the bundle from which the service originates.
+message ConfigurationInfoType
+{
+    //Persistent ID of configurable service
+    required string pid = 1; 
+    //Persistent ID of configurable service factory
+    optional string factoryPid = 2;
+    //path of bundle location
+    optional string bundleLocation = 3;
+    //List of all properties for the configuration
+    repeated SimpleTypesMapEntry properties = 4;
+}
+
+//Message that contains a request to get list of Configuration objects based on a string filter
+//Filter string syntax is defined in the OSGi Filter interface and can be used to test PID,
+//factory PID, or bundle location properties.
+//This message corresponds to the OSGi ConfigurationAdmin.listConfigurations method
+//Not sending a filter will return all configurations known. See ConfigurationAdmin.listConfigurations(null).
+message GetConfigurationInfoRequestData
+{
+    //used to determine if configuration property values should be returned with the configurations
+    required bool includeProperties = 1;
+
+    //used to filter various configuration objects within a bundle
+    optional string filter = 2;
+}
+
+//Message that returns a list of configurations corresponding based on the given filter
+//in the GetConfigurationInfoRequest
+message GetConfigurationInfoResponseData
+{
+    //list of configuration objects
+    repeated ConfigurationInfoType configurations = 1;
+}
+
+//Message that handles the creation of a factory configuration.
+message CreateFactoryConfigurationRequestData
+{
+    //the pid of the factory
+    required string factoryPid = 1;
+    // the property map entry of the factory
+    repeated SimpleTypesMapEntry factoryProperty = 2;
+}
+
+//Message that contains the pid of the newly created factory configuration.
+message CreateFactoryConfigurationResponseData
+{
+    //the pid of the new configuration
+    required string pid = 1;
+}
+
+//Message that handles the removal of a configuration using it's pid.
+message DeleteConfigurationRequestData
+{
+    //the pid of the configuration to remove
+    required string pid = 1;
+}
+
+//Message that contains the response to a successful removal of the configuration requested.
+message DeleteConfigurationResponseData
+{
+    //the pid of the configuration that was removed
+    required string pid = 1;
+}
+
+//Message that contains the response that is sent if an error happens while processing any
+//request specific to the ConfigAdmin namespace.
+message ConfigAdminNamespaceErrorData
+{
+    // ConfigAdmin error describing an exception occurred while processing a message specific to
+    // this namespace.
+    required ConfigAdminErrorCode error = 1;
+
+    // Describes the error code contained in this message.
+    optional string errorDescription = 2;
+}
+
+// Possible error codes for messages specific to this namespace.
+enum ConfigAdminErrorCode
+{
+    //This error occurs as a java.io.IOException
+    ConfigurationPersistentStorageError = 1;
+    //This error occurs when factory configuration properties list is empty
+    MissingPropertyError = 2;
+}

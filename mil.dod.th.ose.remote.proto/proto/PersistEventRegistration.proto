@@ -1,0 +1,30 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.ose.remote.proto";
+option java_outer_classname = "PersistEventRegistration";
+import "eventMessages.proto";
+import "remote-base.proto";
+
+//Message used to store remote event registrations.
+message PersistentEventRegistrationMessage
+{
+    //the system ID from which this remote event request originated
+    required int32 systemId = 1;
+
+    //the remote EventRegistrationRequestData message that contains the original registration message
+    required EventRegistrationRequestData regMessage = 2;
+
+    //the mode of encryption to use when sending event messages in response to this registration
+    required EncryptType encryptionType = 3;
+}

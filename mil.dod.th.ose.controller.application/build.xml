@@ -1,0 +1,39 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<project name="mil.dod.th.ose.controller.application" default="setup">
+    
+    <import file="../cnf/build.xml" />
+    
+    <target name="setup" depends="init" description="Copy in common configuration files">
+        <copy todir="${projectdir}/encrypt-conf" >
+            <fileset dir="${common.target.dir}/encrypt-conf" />
+        </copy>
+    </target>
+    
+    <target name="deploy" depends="init" description="Copy bundles from bndrun into a folder">
+        <delete dir="${target}/sdk-bundles" />
+        
+        <bnddistribute rootDir="${workspacedir}" allowsnapshots="true" 
+            bndFile="sdk.bndrun" outputDir="${target}/sdk-bundles" />
+        
+        <!-- bnddistribute will ignore projects ending in .test -->
+        <copy todir="${target}/sdk-bundles">
+            <fileset file="${osus.license.file}" />
+            <fileset file="${test.dir}/${target-dir}/mil.dod.th.ose.test.all.jar" />
+        </copy>
+        <zip basedir="${target}/sdk-bundles" destfile="${target}/sdk-bundles.zip" />
+    </target>
+    
+</project>

@@ -1,0 +1,170 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Default build rules for the THOSE SDK
+
+==============================================================================
+-->
+<project name="th-build-rules" default="build">
+
+    <!-- Define the default directory properties -->
+    <property name="src.dir" value="src" />
+    <property name="bin.dir" value="bin" />
+    <property name="test.dir" value="test" />
+    <property name="test.bin.dir" value="test-bin" />
+    <property name="lib.dir" value="lib" />
+    <property name="gen.dir" value="generated" />
+
+    <!-- Define the default build properties -->
+    <property name="th.debug" value="true" />
+    <property name="th.classpath" value="" />
+    <property name="th.junit.report.path" value="reports" />
+
+    <!-- Define properties for commonly used files -->
+    <property name="bnd.annotation.jar.file" value="${th.sdk.dir}/lib/biz.aQute.bnd.annotation-2.4.0.jar" />
+    <property name="bnd.jar.file" value="${th.sdk.dir}/lib/biz.aQute.bnd-2.4.0.jar" />
+    <property name="hamcrest.jar.file" value="${th.sdk.dir}/lib/hamcrest-all-1.3.jar" />
+    <property name="mockito.jar.file" value="${th.sdk.dir}/lib/mockito-core-1.9.5.jar" />
+    <property name="objenesis.jar.file" value="${th.sdk.dir}/lib/com.springsource.org.objenesis-1.0.0.jar" />
+    <property name="junit.jar.file" value="${th.sdk.dir}/lib/junit-4.11.jar" />
+
+    <!-- Build for Java 1.8 -->
+    <property name="ant.build.javac.target" value="1.8" />
+    <property name="ant.build.javac.source" value="1.8" />
+
+    <!-- Define the default source/test files and directories used for compiling project source code -->
+    <path id="src.dir" path="${src.dir}" />
+    <path id="test.dir" path="${test.dir}" />
+    <path id="src.lib">
+        <pathelement location="${bnd.annotation.jar.file}" />
+        <pathelement path="${th.classpath}" />
+        <fileset dir="${th.sdk.dir}/api">
+            <include name="*.jar" />
+        </fileset>
+        <fileset dir="${lib.dir}">
+            <include name="*.jar" />
+        </fileset>
+    </path>
+    <path id="test.lib">
+        <path refid="src.lib" />
+        <pathelement location="${hamcrest.jar.file}" />
+        <pathelement location="${mockito.jar.file}" />
+        <pathelement location="${junit.jar.file}" />
+        <pathelement location="${bin.dir}" />
+        <pathelement location="${test.bin.dir}" />
+    </path>
+    <fileset id="test.files" dir="${test.dir}" includes="**/Test*.java" />
+
+    <!-- Define the user library classpath used for generating the bundle with BND -->
+    <path id="bnd.lib">
+        <fileset dir="${lib.dir}">
+            <include name="*.jar" />
+        </fileset>
+    </path>
+
+    <!-- Define the BND Ant task -->
+    <taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="${bnd.jar.file}" />
+
+    <target name="build" depends="compile-src">
+        <pathconvert property="bnd.include.libs" pathsep="," description="Convert bnd.lib to BND Include-Resource format">
+            <map from="${basedir}${file.separator}${lib.dir}${file.separator}" to="@${lib.dir}/" />
+            <path refid="bnd.lib" description="Original user library path" />
+        </pathconvert>
+        <echo level="info">
+    ##############################
+      Create the plug-in JAR
+
+        ${gen.dir}
+
+        bnd.include.libs=${bnd.include.libs}
+    ##############################
+        </echo>
+        <mkdir dir="${gen.dir}"/>
+        <bnd classpath="${bin.dir}" output="${gen.dir}" failok="false" exceptions="true" files="bnd.bnd" />
+    </target>
+
+    <target name="test" depends="compile-src, compile-test" description="Run all unit tests">
+        <echo level="info">
+    ##############################
+      Execute plug-in tests
+
+        Report Directory: ${th.junit.report.path}
+    ##############################
+        </echo>
+        <junit haltonfailure="no" fork="yes" forkmode="once">
+            <formatter type="xml" />
+            <formatter type="brief" usefile="false" />
+            <classpath refid="test.lib" />
+            <batchtest todir="${th.junit.report.path}">
+                <fileset refid="test.files" />
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="clean" description="Remove all build files">
+        <echo level="info">
+    ##############################
+      Clean compiled files
+    ##############################
+        </echo>
+        <delete quiet="true" includeemptydirs="true">
+            <fileset dir="${bin.dir}" includes="**/*" />
+            <fileset dir="${test.bin.dir}" includes="**/*" />
+        </delete>
+    </target>
+
+    <target name="compile-src">
+        <property name="src.classpath" refid="src.lib" />
+        <echo level="info">
+    ##############################
+      Compile the plug-in source
+
+        src.classpath=${src.classpath}
+    ##############################
+        </echo>
+        <javac destdir="${bin.dir}" debug="${th.debug}" includeAntRuntime="false" fork="true">
+            <src refid="src.dir" />
+            <classpath refid="src.lib" />
+            <compilerarg value="-Xlint" />
+        </javac>
+    </target>
+
+    <target name="compile-test">
+        <echo level="info">
+    ##############################
+      Compile the plug-in tests
+    ##############################
+        </echo>
+        <javac destdir="${test.bin.dir}" debug="${th.debug}" includeAntRuntime="false" fork="true">
+            <src refid="test.dir" />
+            <classpath refid="test.lib" />
+            <compilerarg value="-Xlint" />
+        </javac>
+    </target>
+
+    <target name="help">
+        <echo level="info">
+    ##############################
+    Terra Harvest Plug-in Build Targets
+
+      build (Compiles and generates the plug-in JAR)
+
+      test (Executes the plug-in JUnit tests)
+
+      clean (Removes all built files)
+    ##############################
+        </echo>
+    </target>
+</project>

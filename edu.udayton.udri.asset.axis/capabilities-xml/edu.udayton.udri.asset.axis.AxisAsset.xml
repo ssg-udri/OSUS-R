@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<AssetCapabilities xmlns="capability.asset.core.th.dod.mil" 
+productName="Axis Camera" 
+description="Plug-in that allows for the operation of Axis Cameras with VAPIX firmware V5.20 and above." 
+manufacturer="Axis Communications">
+    <modalities value="Imager" description="none"/>
+    <digitalMediaCapabilities>
+        <encodings>image/jpeg</encodings>
+    </digitalMediaCapabilities>
+    <commandCapabilities captureData="true" performBIT="false">
+        <supportedCommands>GetPanTiltCommand</supportedCommands>
+        <supportedCommands>SetPanTiltCommand</supportedCommands>
+        <panTilt azimuthSupported="true" elevationSupported="true" bankSupported="false">
+            <minAzimuth>-179.99999</minAzimuth>
+            <maxAzimuth>180.0</maxAzimuth>
+            <minElevation>-20.0</minElevation>
+            <maxElevation>90.0</maxElevation>
+        </panTilt>
+    </commandCapabilities>
+</AssetCapabilities>

@@ -1,0 +1,201 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+import "controller/capability/ControllerCapabilities.proto";
+import "mapTypes.proto";
+import "types/remote/RemoteTypes.proto";
+
+// the base namespace contains any basic system information like name, version, id, etc.
+message BaseNamespace
+{
+    // message types that this namespace can process
+    enum BaseMessageType
+    {
+        // request controller info of the destination, expect ControllerInfo as a response
+        RequestControllerInfo = 1;
+
+        // sent as response to request or sent as needed
+        ControllerInfo = 2;
+
+        // Sent in response to a request when there is a generic error that occurred.  Instead of the expected response,
+        // this message will be sent with the same message id.
+        GenericErrorResponse = 3;
+
+        // request the system to shutdown by stopping the OSGi framework, expect ReceivedShutdownRequest as a response
+        ShutdownSystem = 4;
+
+        // message will be sent when the ShutdownSystem message is received, but before shutdown is initiated
+        ReceivedShutdownRequest = 5;
+
+        //Request to set the receiving controller in operational or test mode. When a system is in test mode any
+        //data captured (observations, statuses, etc.) will be denoted as 'test' data.
+        SetOperationModeRequest = 6;
+
+        //Response sent when the controller operation mode has been successfully set.
+        SetOperationModeResponse = 7;
+
+        //Request to get the operational mode of the receiving controller.
+        GetOperationModeRequest = 8;
+
+        //Response containing the identified controller's operation mode.
+        GetOperationModeResponse = 9;
+
+        // Request to get the capabilities of a controller. Note that this request will send back a GenericErrorResponse
+        // message with an INVALID_REQUEST error code if the request is to a Terra Harvest system which is not a
+        // controller instance.
+        GetControllerCapabilitiesRequest = 10;
+
+        //Response for GetCapabilitiesRequest
+        GetControllerCapabilitiesResponse = 11;
+    }
+
+    // specific type of the message
+    required BaseMessageType type = 1;
+
+    // serialization of the data associated with the message (may be n/a), represents a protocol buffer message where
+    // the type is the MessageType field value with "Data" appended, for example, if the type is "SystemInfo", the
+    // message type should be "SystemInfoData"
+    optional bytes data = 2;
+}
+
+    // Possible generic error codes for messages.
+    enum ErrorCode
+    {
+        // This error code is the default error code used when there has not been a generic error experienced
+        // while processing a message.
+        NO_ERROR = 1;
+
+        // If the version field of a received message contains a different major version than the local system.  Only
+        // send this error code three times for a single system id.  If message is always sent, you will end up with a
+        // ping-pong scenario where an INVALID_VERSION message is repeatedly sent back and forth.  Send the message more
+        // than once in case a message is lost.
+        INVALID_VERSION = 2;
+
+        // A protocol message being parsed is invalid in some way,
+        // e.g. it contains a malformed varint or a negative byte length.
+        // Exception: com.google.protobuf.InvalidProtocolBufferException
+        INVALID_REQUEST = 3;
+
+        // A message service could not be found for the namespace.
+        NO_MESSAGE_SERVICE = 4;
+
+        // A method has been invoked at an illegal or inappropriate time.
+        // Exception: java.lang.IllegalStateException
+        ILLEGAL_STATE = 5;
+
+        // A message has been passed an illegal or inappropriate argument.
+        INVALID_VALUE = 6;
+
+        // An invalid sequence id was given for a message where the optional sequence id was specified.
+        INVALID_SEQUENCE_ID = 7;
+
+        // A timeout occurred during sequencing of messages where a message waited too long to respond.
+        SEQUENCE_TIMEOUT = 8;
+
+        // This error represents that data within a  message could not be properly converted to the proper type.
+        // Exception: mil.dod.th.core.remote.objectconverter.ObjectConverterException
+        CONVERTER_ERROR = 9;
+
+        // This error represents that information contained in a message failed to persist within its proper service.
+        // Exception: mil.dod.th.core.persistence.PersistenceFailedException
+        PERSIST_ERROR = 10;
+
+        // An error has occurred that is specific to the message's namespace, and the error code known to that namespace
+        // should be used.
+        NAMESPACE_ERROR = 11;
+
+        // This error occurs when an asset fails to create an observation from a specific operation.
+        ASSET_ERROR = 12;
+
+        // This error occurs when a remote object cannot successfully be marshalled or unmarshalled.
+        JAXB_ERROR = 13;
+
+        // This error code is used when a mil.dod.th.core.ccomm.CCommException is thrown
+        CCOMM_ERROR = 14;
+
+        // Any non-specific error that happened in the system
+        INTERNAL_ERROR = 15;
+    };
+
+//enum representing the mil.dod.th.core.controller operation mode
+enum OperationMode
+{
+    //Controller is in operational mode, data collected is considered real unless otherwise marked.
+    OPERATIONAL_MODE = 1;
+
+    //Controller is in test mode data collected is assumed test data.
+    TEST_MODE = 2;
+}
+
+// contains information about a Terra Harvest controller
+message ControllerInfoData
+{
+    // see TerraHarvestController interface for relevant fields, id of controller is excluded as that is part of the
+    // base message
+    required string name = 1;
+
+    //current version of the Terra Harvest controller
+    optional string version = 2;
+    
+    //Current time of the Terra Harvest controller. This variable is in 64-bit UTC time.
+    // The 64bit integer form of the date is calculated by the number of milli-seconds since 1 January 1970.
+    optional int64 currentSystemTime = 3;
+
+    // build info of the Terra Harvest controller
+    repeated SimpleTypesMapEntry buildInfo = 4;
+}
+
+// Generic Error Response Data describes various types of exceptions when processing messages
+// that when generic error occurs. it would provide the error code as defined above and may also provide
+// error description
+message GenericErrorResponseData
+{
+    // Error code representing a specific type of error
+    required ErrorCode error = 1;
+
+    // Describes the error code
+    optional string errorDescription = 2;
+}
+
+// Set the mode of operation on the receiving controller.
+message SetOperationModeRequestData
+{
+    //The desired status to set for the controller.
+    required OperationMode mode = 1;
+}
+
+//Response to get the mode of operation on the receiving controller.
+message GetOperationModeReponseData
+{
+    //The current mode of operation for the controller.
+    required OperationMode mode = 1;
+}
+
+// Get the controller capabilities on the receiving controller.
+message GetControllerCapabilitiesRequestData
+{
+    // Indicates what data format the capabilities object should be sent as. Only NATIVE is supported at this time.
+    optional LexiconFormat.Enum controllerCapabilitiesFormat = 1 [default = NATIVE];
+}
+
+//This message returns the capabilities of the remote Terra Harvest controller which received the request.
+message GetControllerCapabilitiesResponseData
+{
+    //The requested controller capabilities
+    oneof controllerCapabilities
+    {
+        ControllerCapabilities controllerCapabilitiesNative = 1;
+        bytes controllerCapabilitiesXml = 2;
+    }
+}

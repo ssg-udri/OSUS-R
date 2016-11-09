@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<beans xmlns="http://java.sun.com/xml/ns/javaee" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xmlns:weld="http://jboss.org/schema/weld/beans" 
+       xsi:schemaLocation="
+          http://java.sun.com/xml/ns/javaee http://docs.jboss.org/cdi/beans_1_0.xsd
+          http://jboss.org/schema/weld/beans http://jboss.org/schema/weld/beans_1_1.xsd">
+     <weld:scan>
+        <!--  TD: The Guava package com.google.common.* needs to be excluded when weld is scanning classes due to a bug 
+        with the version of weld within Glassfish 3.1.2 or else an index out of bounds exception will be thrown when
+        attempting to start the web-app.  
+        Link to Guava issue: https://code.google.com/p/guava-libraries/issues/detail?id=1527-->
+        <weld:exclude name="com.google.common.**"/>
+    </weld:scan>
+</beans>

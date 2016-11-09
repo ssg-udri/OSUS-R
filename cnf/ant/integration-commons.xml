@@ -1,0 +1,54 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Common build targets for running integration tests
+
+==============================================================================
+-->
+<project name="integration-commons">
+
+    <import file="kill-controller.xml" />
+    <import file="../build.xml" />
+    
+    <target name="deploy-target" depends="init" description="Deploys the target being tested to the integration project folder">
+        <delete dir="${target-dir}/deploy" includeemptydirs="true" />
+        <unzip dest="${target-dir}/deploy">
+            <fileset dir="${target.app.dir}/${bin}" includes="*.zip"  />
+        </unzip>
+    </target>
+    
+    <target name="check-for-test-results" depends="master.init">
+        <if>
+            <resourcecount when="eq" count="0">
+                <fileset dir="${target-dir}" includes="TEST-*.xml" />
+            </resourcecount>
+            <then>
+                <echo>No test results found, integration tests did not run!!!</echo>
+                <junit haltonfailure="no" showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' 
+                       fork="true" dir="${basedir}" forkmode="once">
+                    <formatter type="xml" />
+                    <classpath path="${project.buildpath}" />
+                    <test name="mil.dod.th.ose.junit4xmltestrunner.UnableToStartTestFramework" todir="${target-dir}" />
+                </junit>
+            </then>
+        </if>
+        
+        <!-- collect reports into a single file that can be opened in Eclipse -->
+        <junitreport tofile="${target-dir}/ALLTESTS.xml">
+            <fileset dir="${target-dir}" includes="TEST-*.xml" />
+        </junitreport>
+    </target>
+</project>
+

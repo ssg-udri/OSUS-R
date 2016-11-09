@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<AssetCapabilities xmlns="capability.asset.core.th.dod.mil"
+    productName="ExampleCommandAsset" description="An example asset that does commands."
+    xmlns:p="capability.core.th.dod.mil"
+    manufacturer="ExampleManufacturer">
+    
+    <p:primaryImage encoding="image/png">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</p:primaryImage>
+    
+    <modalities description="none" value="Magnetic"/>
+    <modalities description="none" value="Acoustic"/>
+    <nominalFov>100.0</nominalFov>
+    <supportedCameras id="0" type="IR"/>
+    <supportedCameras id="1" type="Visible"/>
+    <supportedCameras id="2" type="Unknown"/>
+    
+    <detectionCapabilities directionOfTravel="false" targetFrequency="true" targetId="true" targetLOB="true"
+        targetLocation="true" targetOrientation="true" targetRange="false" targetSpeed="false" trackHistory="true" >
+        <typesAvailable>Alarm</typesAvailable>
+        <typesAvailable>Tamper</typesAvailable>
+        <typesAvailable>Test</typesAvailable>
+    </detectionCapabilities>
+    <digitalMediaCapabilities>
+        <encodings>video/h.264</encodings>
+    </digitalMediaCapabilities>
+    <audioCapabilities>
+        <recorders description="none" value="Microphone"/>
+        <sampleRatesKHz>0.0</sampleRatesKHz>
+    </audioCapabilities>   
+    <videoCapabilities colorAvailable="false">
+        <minResolution height="0" width="0"/>
+        <maxResolution height="0" width="0"/>
+        <availableCameraIDs>1</availableCameraIDs>
+        <framesPerSecond>30.0</framesPerSecond>
+    </videoCapabilities>
+    <commandCapabilities captureData="true" performBIT="true">
+        <supportedCommands>CaptureImageCommand</supportedCommands>
+        <supportedCommands>ConfigureProfileCommand</supportedCommands>
+        <supportedCommands>CreateActionListCommand</supportedCommands>
+        <supportedCommands>DetectTargetCommand</supportedCommands>
+        <supportedCommands>GetCameraSettingsCommand</supportedCommands>
+        <supportedCommands>GetModeCommand</supportedCommands>
+        <supportedCommands>GetPanTiltCommand</supportedCommands>
+        <supportedCommands>GetPositionCommand</supportedCommands>
+        <supportedCommands>GetVersionCommand</supportedCommands>
+        <supportedCommands>GetPointingLocationCommand</supportedCommands>
+        <supportedCommands>GetProfilesCommand</supportedCommands>
+        <supportedCommands>GetTuneSettingsCommand</supportedCommands>
+        <supportedCommands>SetCameraSettingsCommand</supportedCommands>
+        <supportedCommands>SetModeCommand</supportedCommands>
+        <supportedCommands>SetPanTiltCommand</supportedCommands>
+        <supportedCommands>SetPositionCommand</supportedCommands>
+        <supportedCommands>SetPointingLocationCommand</supportedCommands>
+        <supportedCommands>SetTuneSettingsCommand</supportedCommands>
+        <supportedCommands>StartRecordingCommand</supportedCommands>
+        <supportedCommands>StopRecordingCommand</supportedCommands>
+        <supportedCommands>TargetRefinementCommand</supportedCommands>
+        <supportedModes value="Auto" description="Auto description." />
+        <panTilt azimuthSupported="true" elevationSupported="true" bankSupported="false">
+            <minAzimuth>-50.0</minAzimuth>
+            <maxAzimuth>50.0</maxAzimuth>
+            <minElevation>-50.0</minElevation>
+            <maxElevation>50.0</maxElevation>
+        </panTilt>
+        <cameraSettings minFocus="0.0" maxFocus="0.0" maxNumAutoFocusWindow="0" maxAutoFocusWindowArea="0" minExposureTimeInMs="0" maxExposureTimeInMs="0" minExposureIndex="0" maxExposureIndex="0" minAperture="0.0" maxAperture="0.0" autoFocusSupported="true" exposureModeSupported="true" whiteBalanceSupported="true"/>
+        <captureImage minimumImageCompressionRatio="0" maximumImageCompressionRatio="0" minBurstIntervalInMs="0" maxBurstIntervalInMs="0" maximumBurstNumber="0">
+            <availableCameraIDs>0</availableCameraIDs>
+            <availableCameraIDs>1</availableCameraIDs>
+            <availableCameraIDs>2</availableCameraIDs>
+            <supportedPictureTypes>AreaOfInterest</supportedPictureTypes>
+            <supportedPictureTypes>FullFieldOfView</supportedPictureTypes>
+        </captureImage>
+        <detectTarget minimumDetectionDuration="0" maximumDetectionDuration="0" minimumImageCaptureInterval="0" maximumImageCaptureInterval="0" minimumImageCompressionRatio="0" maximumImageCompressionRatio="0" minBurstIntervalInMs="0" maxBurstIntervalInMs="0" maximumBurstNumber="0">
+            <availableCameraIDs>0</availableCameraIDs>
+            <availableCameraIDs>1</availableCameraIDs>
+            <availableCameraIDs>2</availableCameraIDs>
+            <supportedPictureTypes>AreaOfInterest</supportedPictureTypes>
+            <supportedPictureTypes>FullFieldOfView</supportedPictureTypes>
+        </detectTarget>
+    </commandCapabilities>
+</AssetCapabilities>

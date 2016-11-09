@@ -1,0 +1,28 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+
+Bundle-Version: 1.0.3.${tstamp}
+Bundle-Name: THOSE Mission Programming Runtime
+Bundle-Description: \
+    Mission programs will run using this bundle's classloader to dynamically import any needed packages. \
+    As Javascript is dynamically loaded and mission programs should be capable of accessing all exported \
+    packages, it is necessary to dynamically load all import packages as well.
+Export-Package: mil.dod.th.ose.mp.runtime
+Private-Package: mil.dod.th.ose.mp.runtime.impl
+DynamicImport-Package: *
+Service-Component: *
+-buildpath:  \
+    osgi.core,\
+    osgi.cmpn,\
+    biz.aQute.bnd.annotation,\
+    mil.dod.th.ose.utils;version=latest

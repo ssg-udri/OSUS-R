@@ -1,0 +1,123 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+    This component will display general gui observation data.
+===============================================================================
+ -->
+<ui:composition 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:composite="http://java.sun.com/jsf/composite">
+      
+      <composite:interface>
+        <composite:attribute name="observation" required="true" />
+      </composite:interface>
+      
+      <composite:implementation>
+            <p:panelGrid id="generalPanel" styleClass="generalObsInfoPanelGrid">
+                <p:row>
+                    <p:column style="text-align:left;padding-bottom:10px;" colspan="2">
+                        <h:outputText id="genHeader" style="font-weight:bold" value="General Information"/>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column style="text-align:left" colspan="2">
+                        <h:outputText id="genHeaderUuid" style="font-weight:bold" value="UUID"/>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column style="padding-bottom:10px;text-align:center;">
+                        <h:outputText id="genObsUuid" value="#{cc.attrs.observation.uuid}"/>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column style="text-align:left" colspan="2">
+                        <h:outputText id="genHeaderSysId" style="font-weight:bold" value="System Id"/>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column style="padding-bottom:10px;text-align:center;">
+                        <h:outputText id="genSysId" value="#{cc.attrs.observation.systemId}">
+                            <f:converter converterId="hexConverter"/>
+                        </h:outputText>
+                    </p:column>
+                </p:row>
+                <p:row rendered="#{cc.attrs.observation.isSetAssetLocation()}">
+                    <p:column style="text-align:left" colspan="2">
+                        <h:outputText id="genHeaderAssetLoc" style="font-weight:bold" value="Asset Location"/>
+                    </p:column>
+                </p:row>
+                <p:row rendered="#{cc.attrs.observation.isSetAssetLocation()}">
+                    <p:column style="padding-bottom:10px;text-align:left;">
+                        <div style="white-space: pre-wrap">
+                            <h:outputText id="genInfoAssetLoc" value="#{cc.attrs.observation.assetLocation}" />
+                        </div>
+                    </p:column>
+                </p:row>
+                <p:row rendered="#{cc.attrs.observation.isSetAssetOrientation()}">
+                    <p:column style="text-align:left" colspan="2">
+                        <h:outputText id="genHeaderAssetOrient" style="font-weight:bold" value="Asset Orientation"/>
+                    </p:column>
+                </p:row>
+                <p:row rendered="#{cc.attrs.observation.isSetAssetOrientation()}">
+                    <p:column style="padding-bottom:10px;text-align:left;">
+                        <div style="white-space: pre-wrap">
+                            <h:outputText id="genInfoAssetOrient" value="#{cc.attrs.observation.assetOrientation}" />
+                        </div>
+                    </p:column>
+                </p:row>
+                <p:row rendered="#{cc.attrs.observation.isSetPlatformOrientation()}">
+                    <p:column style="text-align:left" colspan="2">
+                        <h:outputText id="genHeaderPltOrient" style="font-weight:bold" value="Platform Orientation"/>
+                    </p:column>
+                </p:row>
+                <p:row rendered="#{cc.attrs.observation.isSetPlatformOrientation()}">
+                    <p:column style="padding-bottom:10px;text-align:left;">
+                        <div style="white-space: pre-wrap">
+                            <h:outputText id="genInfoPltOrient" value="#{cc.attrs.observation.platformOrientation}" />
+                        </div>
+                    </p:column>
+                </p:row>
+                <p:row rendered="#{cc.attrs.observation.isSetPointingLocation()}">
+                    <p:column style="text-align:left" colspan="2">
+                        <h:outputText id="genHeaderPointingLoc" style="font-weight:bold" value="Pointing Location"/>
+                    </p:column>
+                </p:row>
+                <p:row rendered="#{cc.attrs.observation.isSetPointingLocation()}">
+                    <p:column style="padding-bottom:10px;text-align:left;">
+                        <div style="white-space: pre-wrap">
+                            <h:outputText id="genInfoPointingLoc" value="#{cc.attrs.observation.pointingLocation}" />
+                        </div>
+                    </p:column>
+                </p:row>
+                <p:row rendered="#{cc.attrs.observation.isSetReserved()}"> 
+                    <p:column style="text-align:left" colspan="2"> 
+                        <h:outputText id="genHeaderReserved" style="font-weight:bold" value="Reserved Fields"/> 
+                    </p:column> 
+                </p:row> 
+                <p:row rendered="#{cc.attrs.observation.isSetReserved()}"> 
+                    <p:column style="padding-bottom:10px;text-align:left;">
+                        <div style="white-space: pre-wrap"> 
+                            <h:outputText id="genInfoReserved" value="#{cc.attrs.observation.getReserved().toString()}" />
+                        </div> 
+                    </p:column> 
+                </p:row> 
+            </p:panelGrid>
+      </composite:implementation>
+      
+</ui:composition>

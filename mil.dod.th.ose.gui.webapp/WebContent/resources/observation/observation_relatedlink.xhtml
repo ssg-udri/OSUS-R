@@ -1,0 +1,82 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+    This component will display related observation links for a given gui observation.
+===============================================================================
+ -->
+<ui:composition 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:composite="http://java.sun.com/jsf/composite">
+      
+       <composite:interface>
+            <!-- The gui observation model -->
+            <composite:attribute name="guiObservation" required="true"/>
+            <!-- The type which applies to the the data being passed in -->
+            <composite:attribute name="relationshipType" required="true"/>
+            <!-- Whether or not this is being displayed on a dialog -->
+            <composite:attribute name="isDialog" required="true"/>
+       </composite:interface>
+       
+       <composite:implementation>
+            <ui:param name="observationList" value="#{cc.attrs.guiObservation.findRelatedObservationOfRelation(cc.attrs.relationshipType)}"/>
+            <p:outputPanel id="relatedObs" rendered="#{observationList.size() > 0}">
+                <h:outputText id="relationHeader" style="font-size:1.1em;font-weight:bold; margin-left:10px;" value="#{cc.attrs.relationshipType}"/>
+                <p:dataGrid styleClass="relatedLinkDataGrid" style="text-align:left" value="#{observationList}" var="index" columns="1">
+                   <ui:param name="relatedObservation" value="#{cc.attrs.guiObservation.observation.relatedObservations.get(index)}"/>
+                   <ui:param name="relatedObservationIdentity" value="#{cc.attrs.guiObservation.relatedObservationModels.get(index)}"/>
+                   <p:column>
+                        <p:panelGrid id="relatedObsGrid">
+                            <p:row>
+                                <p:column style="text-align:center !important;width:10%;">
+                                    <p:graphicImage id="miniImage" library="images" name="#{obsImageService.tryGetMiniObservationImage(cc.attrs.guiObservation, index)}"/>
+                                </p:column>
+                                <p:column style="width:90%">
+                                    <p:outputPanel rendered="#{!relatedObservationIdentity.isFoundInObsStore()}">
+                                        <table style="width:100%;padding:0 !important;">
+                                            <tr>
+                                                <td style="width:5%;">
+                                                    <p:outputPanel styleClass="ui-icon ui-icon-alert" id="alertIcon"/>
+                                                    <p:tooltip for="alertIcon" value="Observation cannot be found!"/>
+                                                </td>
+                                                <td style="width:95%;">
+                                                    <p:commandLink disabled="true" style="opacity:1 !important;" 
+                                                        value="#{relatedObservation.relationship.description} (#{relatedObservation.uuid})"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </p:outputPanel>
+                                    <p:outputPanel rendered="#{relatedObservationIdentity.isFoundInObsStore()}">
+                                        <p:commandLink rendered="#{!cc.attrs.isDialog}" value="#{!empty relatedObservation.relationship.description ? 
+                                            relatedObservation.relationship.description 
+                                            : relatedObservation.uuid }" actionListener="#{relatedObs.initialize(relatedObservation.uuid)}" 
+                                            oncomplete="showRelatedObsDlg.show()" update='@([id$="relatedObsDlgComponent"])'/>
+                                        <p:commandLink rendered="#{cc.attrs.isDialog}" value="#{!empty relatedObservation.relationship.description ? 
+                                            relatedObservation.relationship.description 
+                                            : relatedObservation.uuid }" actionListener="#{relatedObs.setCurrentNode(relatedObservation.uuid)}" 
+                                            update='@([id$="relatedObsDlgComponent"])'/>
+                                    </p:outputPanel>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid>
+                   </p:column>
+                </p:dataGrid>
+            </p:outputPanel>
+       </composite:implementation>
+
+</ui:composition>

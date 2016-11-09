@@ -1,0 +1,41 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+Bundle-Version: 1.0.0.${tstamp}
+Bundle-Description: Remote Interface Client for sending and receiving of THOSE messages
+Bundle-Name: THOSE Remote Client
+Bundle-Vendor: UDRI
+
+Export-Package: mil.dod.th.remote.client, mil.dod.th.remote.client.generate,\
+    aQute.bnd.annotation.metatype,\
+    mil.dod.th.core.*,\
+    mil.dod.th.remote.lexicon.*
+Private-Package: mil.dod.th.remote.client.*
+Import-Package: org.apache.felix.service.command;status=provisional;resolution:=optional, *
+
+Conditional-Package: com.google.common.*, org.apache.commons.*
+
+Service-Component: *
+
+-buildpath:  \
+    osgi.core;version=5.0.0,\
+    osgi.cmpn;version=5.0.0,\
+    com.google.guava;version=15.0.0,\
+    com.google.protobuf;version=2.6.1,\
+    biz.aQute.bnd.annotation;version=2.4.0,\
+    org.apache.commons.lang;version=2.6.0,\
+    org.apache.felix.gogo.runtime;version=0.12.0,\
+    ${junit},\
+    ${mockito},\
+    mil.dod.th.core.api;version=latest,\
+    mil.dod.th.core.proto.messages;version=latest

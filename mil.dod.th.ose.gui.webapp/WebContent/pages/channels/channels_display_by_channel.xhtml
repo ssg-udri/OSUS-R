@@ -1,0 +1,91 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ This xhtml page is used to render channels by their type when the radio option
+ on the channels.xhmtl page is set/selected to "By Channel"
+ 
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+
+    <p:fieldset id="channelByChannel" style="margin-top:10px" legend="Socket Channels" toggleable="true">
+        <p:dataTable widgetVar="socketTbl" id="tcps" styleClass="allTableStylesWithBorder" value="#{channelManager.getAllSocketChannels()}" var="channel">
+               <p:column headerText="Controller">
+                    #{controllerManager.getController(channel.controllerId).name} - 
+                    <h:outputText id="hexId" value="#{controllerManager.getController(channel.controllerId).id}">
+                        <f:converter converterId="hexConverter"/>
+                    </h:outputText>
+               </p:column>
+                <p:column headerText="Host Name">
+                    #{channel.host}
+                </p:column>
+                <p:column headerText="Host Port">
+                    #{channel.port}
+                </p:column>
+                <!-- p:column headerText="Status">
+                    <div class="channelStatusDimensions channelStatus#{channel.channelStatus}"/>
+                </p:column -->
+                <p:column headerText="Transmitted / Received">
+                    #{channel.bytesTransmitted} / #{channel.bytesReceived} bytes
+                </p:column>
+                <p:column headerText="Queued Messages">
+                    #{channel.queuedMessageCount}
+                    <p:commandButton id="clearSocketQueue" style="margin-left:2em" icon="ui-icon-circle-close" actionListener="#{channelManager.clearChannelQueue(channel)}"/>
+                </p:column>
+                <p:column headerText="Remove Channel">
+                    <p:commandButton id="removeSocketButton" icon="ui-icon-trash" actionListener="#{channelManager.removeChannel(channel)}"/>
+                </p:column>
+        </p:dataTable>
+    </p:fieldset>
+    <p:fieldset id="transportByChannel" style="margin-top:10px" legend="Transport Channels" toggleable="true">
+         <p:dataTable widgetVar="transportTbl" id="transTable" styleClass="allTableStylesWithBorder" value="#{channelManager.getAllTransportLayerChannels()}" var="channel">
+            <p:column headerText="Controller">
+               #{controllerManager.getController(channel.controllerId).name} - 
+               <h:outputText id="hexId" value="#{controllerManager.getController(channel.controllerId).id}">
+                   <f:converter converterId="hexConverter"/>
+               </h:outputText>
+            </p:column>
+            <p:column headerText="Name">
+                #{channel.name}
+            </p:column>
+            <p:column headerText="Local Address">
+                #{channel.localMessageAddress}
+            </p:column>
+            <p:column headerText="Remote Address">
+                #{channel.remoteMessageAddress}
+            </p:column>
+            <!--p:column headerText="Status">
+                <div class="channelStatusDimensions channelStatus#{channel.channelStatus}"/>
+            </p:column-->
+            <p:column headerText="Transmitted / Received">
+                #{channel.bytesTransmitted} / #{channel.bytesReceived} bytes
+            </p:column>
+            <p:column headerText="Queued Messages">
+                #{channel.queuedMessageCount}
+                <p:commandButton id="clearTransportQueue" style="margin-left:2em" icon="ui-icon-circle-close" actionListener="#{channelManager.clearChannelQueue(channel)}"/>
+            </p:column>
+            <p:column headerText="Remove Channel">
+                <p:commandButton id="removeTransportButton" icon="ui-icon-trash" actionListener="#{channelManager.removeChannel(channel)}" />
+            </p:column>
+        </p:dataTable>
+    </p:fieldset>
+
+</ui:composition>

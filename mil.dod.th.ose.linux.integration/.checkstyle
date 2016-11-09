@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<fileset-config file-format-version="1.2.0" simple-config="false" sync-formatter="false">
+  <fileset name="all" enabled="true" check-config-name="THOSE Test Checkstyle" local="false">
+    <file-match-pattern match-pattern=".java$" include-pattern="true"/>
+  </fileset>
+  <fileset name="all" enabled="true" check-config-name="THOSE All Base Checkstyle" local="false">
+    <file-match-pattern match-pattern="." include-pattern="true"/>
+    <file-match-pattern match-pattern="generated/|bin/|.settings/" include-pattern="false"/>
+    <file-match-pattern match-pattern=".checkstyle|.classpath|.project|.pmd|.DS_Store" include-pattern="false"/>
+  </fileset>
+  <filter name="NonSrcDirs" enabled="false"/>
+</fileset-config>

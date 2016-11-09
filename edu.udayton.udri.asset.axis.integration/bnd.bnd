@@ -1,0 +1,38 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+
+Bundle-Version: 1.0.2.${tstamp}
+Private-Package:  \
+    edu.udayton.udri.asset.axis.integration
+    
+Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
+
+-buildpath:  \
+    osgi.core;version='[5,6)',\
+    osgi.cmpn,\
+    biz.aQute.bnd.annotation,\
+    biz.aQute.bndlib,\
+    com.google.guava,\
+    ${junit},\
+    mil.dod.th.core.api;version=latest,\
+    mil.dod.th.ose.test.integration;version=latest,\
+    mil.dod.th.ose.integration.commons;version=latest,\
+    org.knowhowlab.osgi.testing.assertions,\
+    org.knowhowlab.osgi.testing.utils
+# override libraries provided by bnd test runner JAR
+-testpath:  \
+    ${junit}
+-runbundles:  \
+    ${osusr.core.bundles},\
+    ${osusr.core.integration.bundles},\
+    edu.udayton.udri.asset.axis;version=latest

@@ -1,0 +1,83 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Top level Ant build file for the target platforms.
+
+==============================================================================
+-->
+<project name="those-targets" default="build-with-deps">
+
+    <!-- 
+        This target will call on each target environment to build all applications, but only the pieces that are unique
+        to the target (why it is called build-no-deps).  Therefore, for this build target to actually work, the build 
+        files must be run in a certain order as windows/linux depend on generic and the others depend on linux.  Other 
+        targets in this file have no dependencies so the subant task can be used to gather the build files.
+    --> 
+    <target name="build-no-deps">
+        <subant target="build-no-deps">
+            <fileset dir="generic" includes="build.xml" />
+        </subant>
+        <subant target="build-no-deps">
+            <fileset dir="windows" includes="build.xml" />
+        </subant>
+        <subant target="build-no-deps">
+            <fileset dir="linux" includes="build.xml" />
+        </subant>
+        <subant target="build-no-deps">
+            <fileset dir="beaglebone-black" includes="build.xml" />
+        </subant>
+    </target>
+
+    <target name="build-with-deps">
+        <subant target="build-with-deps">
+            <fileset dir="." includes="*/build.xml" />
+        </subant>
+    </target>
+
+    <target name="clean">
+        <subant target="clean">
+            <fileset dir="." includes="*/build.xml" />
+        </subant>
+    </target>
+
+    <target name="deploy">
+        <subant target="deploy">
+            <fileset dir="generic" includes="build.xml" />
+        </subant>
+        <subant target="deploy">
+            <fileset dir="windows" includes="build.xml" />
+        </subant>
+        <subant target="deploy">
+            <fileset dir="linux" includes="build.xml" />
+        </subant>
+        <subant target="deploy">
+            <fileset dir="beaglebone-black" includes="build.xml" />
+        </subant>
+    </target>
+
+    <target name="deploy-clean">
+        <subant target="deploy-clean">
+            <fileset dir="." includes="*/build.xml" />
+        </subant>
+    </target>
+    
+    <target name="build-source-zip">
+        <subant target="build-source-zip">
+            <fileset dir="." includes="*/build.xml" />
+        </subant>
+    </target>
+    
+    <target name="junit" /> <!-- junit not supported here -->
+</project>

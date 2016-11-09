@@ -1,0 +1,129 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ This page holds the template which represents/displays individual controllers
+ in the controller side bar (east layout unit in the mainscreenTemplate.xhtml).
+ 
+==============================================================================
+ -->
+<ui:composition 
+    xmlns="http://www.w3.org/1999/xhtml" 
+    xmlns:h="http://java.sun.com/jsf/html" 
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets" 
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions" 
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:common="http://java.sun.com/jsf/composite/common">
+    
+  <h:outputStylesheet library="css" name="controller.css"/>
+  <h:form>
+  <p:outputPanel id="controllerSideBar">
+   <div style="text-align:center">
+       <h:panelGrid columns="1" styleClass="controllerHistoryPanel">
+           <p:selectOneMenu value="#{controllerHistHelper.selectedController}" style="width:80% !important">
+               <f:selectItems value="#{controllerHistHelper.getControllerHistoryList()}"/>
+           </p:selectOneMenu>
+       </h:panelGrid>
+       <p:commandButton id="quickConnectBtn" value="Connect" styleClass="controllerQuickConnectButton" actionListener="#{channelManager.createSocketChannel(controllerHistHelper.getSelectedControllerHistory().controllerId, controllerHistHelper.getSelectedControllerHistory().hostName, controllerHistHelper.getSelectedControllerHistory().port)}"/>
+   </div>
+   <p:dataList id="controllerList" style="width:100%" var="controllerVar" value="#{controllerFilter.filterList}" 
+        paginator="false" type="none">   
+        <p:column>
+            <table class="controller">     
+                <tr>
+                    <td width="35%">
+                        <p:panel id="active" rendered="#{controllerVar.ready and (controllerVar == activeController.activeController)}">
+                            <h:graphicImage styleClass="activeButton" library="images" name="icons/icon-check-active.png" 
+                            alt="Image Not Found" title="This controller is the active controller"/>
+                        </p:panel> 
+                        <p:panel rendered="#{controllerVar.ready and (controllerVar != activeController.activeController)}">
+                            <p:commandButton id="inactive" immediate="true" styleClass="inactiveButton" 
+                                actionListener="#{activeController.setActiveController(controllerVar)}" value="" 
+                                title="Make this controller the active controller" /> 
+                        </p:panel>
+                        <p:panel rendered="#{!controllerVar.ready}">
+                            <p:graphicImage library="images" name="thoseIcons/default/waiting.gif" />
+                        </p:panel>
+
+                        <!-- set the class of the table to be the status for the controller with controllerStatusBox prepended -->
+                        <table class="controllerImageBox">
+                            <tr>
+                                <td>
+                                    <p:graphicImage width="70" height="70" library="images" name="#{controllerVar.image}" 
+                                    alt="Image Not Found"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td width="65%">
+                        <p:panel style="height:100%">
+                            <f:facet name="header">
+                                <div style="display:inline;float:left">   
+                                    <h:outputText style="font-weight:bold;" rendered="#{!controllerVar.ready}" value="Initializing..."/>
+                                    <h:outputText rendered="#{controllerVar.ready}" id="controllerName" value="#{controllerVar.name}"/>
+                                </div>                                 
+                                <div style="display:inline;float:right;">
+                                    <p:menuButton value="" id="controllerMenu">
+                                        <p:menuitem id="controllerMode" value="Change Mode" icon="icon#{controllerVar.operatingMode}" rendered="#{controllerVar.ready}" 
+                                            update='@([id$="controllerModePanel"])' actionListener="#{controllerStatusDialogHelper.setController(controllerVar)}" 
+                                            oncomplete="controllerModeDlg.show()"/>
+                                        <p:menuitem id="controllerInfo" value="Information" icon="ui-icon-info" update='@([id$="controllerInfoTab"])' 
+                                            actionListener="#{controllerInfoDialogHelper.setInfoController(controllerVar)}" 
+                                            oncomplete="controllerInfoDlg.show()" />                                            
+                                    </p:menuButton>
+                                    <p:tooltip for="controllerMenu" value="Controller Menu" />
+                                </div>
+                            </f:facet>
+                            <table style="border-width: 2px; border-color: black">
+                                <tr>
+                                    <td class="observQueued">
+                                        <p:outputPanel rendered="#{controllerVar.ready}">
+                                            <common:pushUpdateOutputText for="controllerObsCnt" 
+                                                pushTopic="window.thTopic.observationCountUpdated"                                                
+                                                uniqueId="#{controllerVar.id}"
+                                                pushFilter="controller.id=#{controllerVar.id}"
+                                                pushValueProp="obs.count"
+                                                cleanupFilter="controllerRemovedFilter"
+                                                cleanupTopic="window.thTopic.controllerRemoved"/>
+                                            <h:outputText id="controllerObsCnt" styleClass="controllerObsCnt" value="#{observationCountMgr.getObservationCount(controllerVar.id)}"/>
+                                            <a class="observName">Observations</a>
+                                        </p:outputPanel>
+                                        <p:graphicImage id="attention" rendered="#{!controllerVar.ready}" library="images" name="thoseIcons/default/attention.png" styleClass="hasTooltip"/>
+                                        <common:tooltip value="The system is currently waiting for a Controller response. The issue could be due to a bad channel,
+                                                a delay in receiving the Controller's encryption information, or incompatible system-controller encryption types.  
+                                                If the problem persists, verify that the system and/or Controller has been configured appropriately."/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </p:panel>
+                    </td>       
+                </tr>     
+            </table>
+        </p:column>
+  </p:dataList>
+  </p:outputPanel>
+   
+       <!-- Here are all the remote commands used by the Push API, 
+            commands are called from the commonPushEventFunctions.js -->
+      <p:remoteCommand name="rcUpdateSidebar" update='@([id$="controllerSideBar"])'/>      
+  </h:form>
+  
+  <h:form>
+    <ui:include src="/pages/templates/controller_template_info_dialog.xhtml"/>
+  </h:form>
+  <h:form>
+    <ui:include src="controller_mode_dlg.xhtml"/>
+  </h:form>
+</ui:composition>

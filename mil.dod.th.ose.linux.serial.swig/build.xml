@@ -1,0 +1,48 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<project name="mil.dod.th.ose.linux.serial.swig" default="build">
+    
+    <import file="../cnf/build.xml" />
+        
+    <target name="compile" depends="init,swig">
+        <!-- must do ant call so property are re-initialized and swig generated source is detected and compiled -->
+        <antcall target="template.compile" inheritall="no" />
+    </target>
+    
+    <target name="clean" depends="template.clean" description="Remove all build files">
+        <delete failonerror="false">
+            <fileset dir="${linux.serial.dir}/src/c">
+                <include name="*Wrap.c" />
+            </fileset>
+            <fileset dir="${src}">
+                <include name="**/*.java" />
+            </fileset>
+        </delete>
+    </target>
+        
+    <target name="swig" depends="init">
+        <property name="swig.opts" 
+            value="-java -outdir ${src}/mil/dod/th/ose/linux/gnu_c -Iinclude -I${linux.serial.dir}/src/c/include -package" />
+        <property name="package.gnu-c" value="mil.dod.th.ose.linux.gnu_c" />
+        <mkdir dir="${src}/mil/dod/th/ose/linux/gnu_c" />
+        <apply executable="swig" failonerror="true">
+            <arg line="${swig.opts} ${package.gnu-c} -o" />
+            <targetfile/>
+            <srcfile/>
+            <fileset dir="swig" includes="*.i" excludes="Types.i" />
+            <mapper type="glob" from="*.i" to="${linux.serial.dir}/src/c/*Wrap.c"/>
+        </apply>
+    </target>
+</project>

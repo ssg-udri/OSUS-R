@@ -1,0 +1,145 @@
+/*==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+This style sheet is for the controller sidebar where all the controllers known to the system are displayed. This 
+contains various styles for the different statuses of the controllers and styles based on if a controller is the 
+currently active controller or not.
+
+*/
+
+/* This style is used for the button that shows that a controller is not the active controller. */
+.inactiveButton 
+{
+    background-image: url(#{resource['images/icons:icon-check-inactive.png']}) !important;
+    background-position: center;
+    background-color: transparent !important;
+    background-repeat: no-repeat !important;
+    border: none !important;
+    width: 100%;
+    height: 20px;
+    cursor: pointer;
+}
+
+/* This style is used for the button that shows that a controller is the active controller. */
+.activeButton 
+{
+    background-position: center;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border: none;
+    height: 20px;
+}
+
+/* This style is used for the controller quick connect button displayed on the controller sidebar.*/
+.controllerQuickConnectButton
+{
+    margin: 3px 3px 3px 3px;
+    width: 80% !important;
+}
+
+/* This style is used for the boxed area of each controller that shows it's primary or default image. */
+.controllerImageBox 
+{
+    margin-top:5px;
+    width:70px;
+    height:70px;
+    border-style:solid;
+    border-color:black;
+    border-width:thin;
+}
+
+/* This style is used for the boxed area of each controller that shows it is in good status. */
+.controllerStatusBoxGood 
+{
+    margin-top:5px;
+    width:70px;
+    height:70px;
+    border-style:solid;
+    border-color:green;
+}
+
+/* This style is used for the boxed area of each controller that shows it is in bad status. */
+.controllerStatusBoxBad 
+{
+    margin-top:5px;
+    width:70px;
+    height:70px;
+    border-style:solid;
+    border-color:red;
+}
+
+/* This style is used for the boxed area of each controller that shows it is in degraded status. */
+.controllerStatusBoxDegraded 
+{
+    margin-top:5px;
+    width:70px;
+    height:70px;
+    border-style:solid;
+    border-color:yellow;
+}
+
+/* This style is used for general styling of each controller. */
+.controller 
+{
+    text-align: center; 
+    width: 100%
+}
+
+/* This style is used for the main table for each controller. */
+.controller table {
+    width: 100%;
+}
+
+/* This style is used for the observation and queued information area for the controller. */
+.observQueued 
+{
+    text-align: center;
+    border-width: 7px;
+    border-color: red;
+    width: 40%
+}
+
+/* This style is used for the observation and queued information area and is a row */
+.observQueued td
+{
+    vertical-align: top;
+}
+
+/* This style is used for the observation and queued area where the actual data number is displayed. */
+.controllerObsCnt 
+{
+    font-weight: bold; 
+    font-size: 2em;
+    display: block;
+}
+
+/* This style is used for the observation and queued area where the name is displayed. */
+.observName 
+{
+    font-weight: bold;
+    display: block;
+}
+
+/*Selector for styling the controller drop down menu button*/
+[id$=controllerMenu_button]
+{
+    height:25px;
+    width:35px;
+}
+
+/* Style for the controller history panel that displays the list of previous controllers and the quick connect button.*/
+.controllerHistoryPanel
+{
+    margin: 0 auto;
+    width: 100%;
+}

@@ -1,0 +1,25 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+
+Bundle-Version: 1.1.0.${tstamp}
+Bundle-Description: Linux x86_64 Serial Port Library
+Bundle-Name: Linux x86_64 Serial Port Library
+Bundle-NativeCode: libserialport.so; osname = Linux; processor = x86_64
+Include-Resource: \
+    capabilities-xml=capabilities-xml, \
+    =lib/x86_64
+
+# Allow failure of the bundle in case the native library is not available, will try to build all
+-failok=true
+-fixupmessages: \
+    'Native library not found in JAR: libserialport.so|Input file does not exist: lib/x86_64'

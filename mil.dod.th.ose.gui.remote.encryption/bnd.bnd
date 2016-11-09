@@ -1,0 +1,30 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+Bundle-Version: 1.0.2.${tstamp}
+Bundle-Description: THOSE Web GUI Remote System Encryption
+Bundle-Name: THOSE Web GUI Remote System Encryption Service
+Bundle-Vendor: UDRI
+Service-Component: *
+Private-Package: mil.dod.th.ose.gui.remotesystemencryption.*
+-buildpath:  \
+    com.google.protobuf;version=2.6.1,\
+    biz.aQute.bnd.annotation,\
+    osgi.cmpn,\
+    osgi.core,\
+    mil.dod.th.ose.gui.api;version=latest,\
+    mil.dod.th.core.api;version=latest,\
+    mil.dod.th.core.proto.messages;version=latest,\
+    ${junit},\
+    ${mockito}
+    

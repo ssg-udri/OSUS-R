@@ -1,0 +1,74 @@
+/*==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+This style sheet is for the statuses of plugins. 
+NOTE: box-shadow is not supported in IE8
+==============================================================================
+*/
+/* Style class used for BAD status. */
+.led-BAD 
+{
+    margin: 15px auto;
+    width: 13px;
+    height: 13px;
+    background-color: #994400; /** Color is close to Sienna (dark brown-red). */
+    border-radius: 50%;
+    box-shadow: #000 0 -1px 5px 1px, inset #600 0 -1px 6px, #F00 0 2px 9px;
+}
+
+/* Style class used for DEGRADED status. */
+.led-DEGRADED
+{
+    margin: 15px auto;
+    width: 13px;
+    height: 13px;
+    background-color: #AA9900; /**  Color is close to GoldenRod (medium green-yellow).*/
+    border-radius: 50%;
+    box-shadow: #000 0 -1px 5px 1px, inset #f90 0 -1px 6px, #DD0 0 2px 9px;
+}
+
+/* Style class used for GOOD status. */
+.led-GOOD
+{
+    margin: 15px auto;
+    width: 13px;
+    height: 13px;
+    background-color: #669900; /** Color is close to LimeGreen (green).*/
+    border-radius: 50%;
+    box-shadow: #000 0 -1px 5px 1px, inset #460 0 -1px 6px, #7D0 0 2px 9px;
+}
+
+/* Style class used for OFF status. */
+.led-OFF 
+{
+    margin: 15px auto;
+    width: 13px;
+    height: 13px;
+    background-color: #000000; /** Black */
+    border-radius: 50%;
+    box-shadow: #000 0 -1px 5px 1px, inset #666 0 -1px 9px, #888 0 2px 9px;
+}
+
+/* Style class used for UNKNOWN status, or if the status is not known at all. */
+.led-UNKNOWN
+{
+    margin: 15px auto;
+    padding-right: 0.9em;
+    padding-left: 0.1em;
+    padding-top: 0.1em;
+    padding-bottom: 0.7em;
+    border-radius: 50%;
+    width: 2px;
+    height: 2px;
+    box-shadow: #000 0 -1px 5px 1px, inset #666 0 -1px 6px, #666 0 2px 9px;
+}

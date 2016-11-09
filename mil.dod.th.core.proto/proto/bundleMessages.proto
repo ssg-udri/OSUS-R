@@ -1,0 +1,242 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+//
+// Description: Contains OSGi Bundle related functionality for the remote
+// interface.
+//
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+
+//Namespace contains functions related to the OSGi Bundle interface to facilitate
+//the proper performance of configurable services within the THOSE remote interface.
+//Functions include those related to starting, stopping, installing, uninstalling,
+//and updating bundles.  Functions also include getting a list of all installed
+//bundles and bundle information.
+message BundleNamespace
+{
+    //Enumeration of possible bundle message types.
+    enum BundleMessageType
+    {
+        //Request to start a bundle based on its id
+        //Response is contained in StartResponse
+        StartRequest = 1;
+        //Contains response to StartRequest
+        StartResponse = 2;
+
+        //Request to stop a bundle based on its id
+        //Response is contained in StopResponse
+        StopRequest = 3;
+        //Contains response to StopRequest
+        StopResponse = 4;
+
+        //Request to get the list of installed bundles
+        //Response is contained in GetBundlesResponse
+        GetBundlesRequest = 5;
+        //Contains list of ids associated with installed bundles
+        //Message is called in response to GetBundlesRequest
+        GetBundlesResponse = 6;
+
+        //Request to get information on a particular bundle based on a bundle's id
+        //Response is contained in GetBundleInfoResponse
+        GetBundleInfoRequest = 7;
+        //Response containing information on a bundle
+        //Returned in response to a GetBundleInfoRequest
+        GetBundleInfoResponse = 8;
+
+        //Request to install a bundle based on bundle location and content
+        //Response is contained in InstallResponse
+        InstallRequest = 9;
+        //Contains response to InstallRequest
+        InstallResponse = 10;
+
+        //Request to update the content of a bundle based on its symbolic name
+        UpdateRequest = 11;
+        //Contains response to UpdateRequest
+        UpdateResponse = 12;
+
+        //Request to uninstall a bundle based on its id
+        //Response is contained in UninstallResponse
+        UninstallRequest = 13;
+        //Contains response to UninstallRequest
+        UninstallResponse = 14;
+
+        //Response sent when an error occurred while processing a request from this namespace.
+        //The error code that will be appended will be, a code defined specifically for the Bundle
+        //namespace.
+        BundleNamespaceError = 15;
+    }
+
+    //This is the bundle message type
+    required BundleMessageType type = 1;
+
+    //optional data to append to the message
+    optional bytes data = 100;
+}
+
+//Message that contains a request to start a specific bundle based on the bundle's id
+message StartRequestData
+{
+    //bundle id
+    required int64 bundleId = 1;
+}
+
+//Message that contains a request to stop a specific bundle based on the bundle's id
+message StopRequestData
+{
+    //bundle id
+    required int64 bundleId = 1;
+}
+
+//Message that contains a list of installed bundles in response to a GetBundlesRequest
+message GetBundlesResponseData
+{
+    //bundle id
+    repeated int64 bundleId = 1;
+}
+
+//Message that contains a request to get information on a particular bundle based on the bundle's id
+message GetBundleInfoRequestData
+{
+
+    //The optional bundle id specifies if info for a specified bundle should be returned or if all 
+    //known bundles and their info should be returned. Specifying a bundle id will cause only the info
+    //for that bundle to be returned. Leaving the bundle id empty will return all known bundles. Other 
+    // fields represent if it is desired that the particular field is returned. For example, true for 
+    //the symbolic name means that in the response the bundle name will be returned for the specified bundle
+    //or all bundles, depending on if an id is specified or not, if available.
+    optional int64 bundleId = 1;
+    
+    //State of the bundle
+    optional bool bundleState = 2;
+    //The bundle's symbolic name
+    optional bool bundleSymbolicName = 3;
+    //The bundle's description
+    optional bool bundleDescription = 4;
+    //The vendor of the bundle
+    optional bool bundleVendor = 5;
+    //The bundle's version
+    optional bool bundleVersion = 6;
+    //The bundle's imports
+    optional bool packageImports = 7;
+    //The bundle's exports
+    optional bool packageExports = 8;
+    //The bundle's location
+    optional bool bundleLocation = 9;
+    //The bundle's name
+    optional bool bundleName = 10;
+    //The date that the bundle was last modified
+    optional bool bundleLastModified = 11;
+}
+
+//Message that contains the information of bundle(s) in response to a GetBundleInfoRequestData
+message GetBundleInfoResponseData
+{
+    //Holds a list of bundle info data.
+    repeated BundleInfoType infoData = 1;
+}
+
+//Message that contains status information of a single bundle
+message BundleInfoType
+{
+    //State describes one of six potential bundle states:
+    //UNINSTALLED - value is 0x00000001
+    //INSTALLED - value is 0x00000002
+    //RESOLVED - value is 0x00000004
+    //STARTING - value is 0x00000008
+    //STOPPING - value is 0x00000010
+    //ACTIVE - value is 0x00000020
+    optional uint32 bundleState = 1;
+    
+    //The bundle information is from the manifest, the manifest keys are(the values for the keys are just an example):
+    //Bundle-Description: Terra Harvest Core API
+    //Bundle-ManifestVersion: 2
+    //Bundle-Name: Terra Harvest Core API
+    //Bundle-SymbolicName: mil.dod.th.core
+    //Bundle-Version: 1.12
+    //More information can be found at http://www.osgi.org/Specifications/ReferenceHeaders
+    
+    //The bundle's symbolic name
+    optional string bundleSymbolicName = 2;
+    //The bundle's description
+    optional string bundleDescription = 3;
+    //The vendor of the bundle
+    optional string bundleVendor = 4;
+    //The bundle's version
+    optional string bundleVersion = 5;
+    //Packages that this bundle imports
+    repeated string packageImport = 6;
+    //Packages that this bundle exports
+    repeated string packageExport = 7;
+    //The location of the bundle
+    optional string bundleLocation = 8;
+    //This is the bundle's name
+    optional string bundleName = 9;
+    //The date represented as a long, of the last modification to the bundle
+    optional int64 bundleLastModified = 10;
+    //The bundle's id for which the other fields represent
+    required int64 bundleId = 11;
+}
+
+//Message that contains a request to install a bundle with a certain location identifier and content specific to that bundle
+message InstallRequestData
+{
+    //Persistent bundle location identifier used specifically for bundle installation
+    required string bundleLocation = 1;
+    //bundle content contained in GZIP compressed JAR file
+    required bytes bundleFile = 2;
+    //whether to start the bundle after installation
+    required bool startAtInstall = 3; 
+}
+
+//Message that contains the response to install a bundle request
+message InstallResponseData
+{
+    //bundle id of the bundle just installed
+    required int64 bundleId = 1;
+}
+
+//Message that contains a request to update a bundle with new content based on its id
+message UpdateRequestData
+{
+    //bundle id
+    required int64 bundleId = 1;
+    //new bundle content contained in GZIP compressed JAR file
+    required bytes bundleFile = 2;
+}
+
+//Message that contains a request to uninstall a particular bundle based on its id
+message UninstallRequestData
+{
+    //bundle id
+    required int64 bundleId = 1;
+}
+
+//Message that contains the response that is sent if an error happens while processing any
+//request specific to the Bundle namespace.
+message BundleNamespaceErrorData
+{
+    // Bundle error describing an exception occurred when processing messages specific to
+    // this namespace.
+    optional BundleErrorCode error = 1;
+
+    // Describes the error code if the ErrorCode message is used.
+    optional string errorDescription = 2;
+}
+
+// Possible error codes for messages specific to this namespace.
+enum BundleErrorCode
+{
+    //This error is from org.osgi.framework.BundleException.
+    OSGiBundleException = 1;
+}

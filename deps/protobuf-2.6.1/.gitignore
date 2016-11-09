@@ -1,0 +1,35 @@
+# generated files
+## specific files
+autom4te.cache
+config.h
+config.log
+config.status
+stamp-h1
+gtest-config
+libtool
+Makefile
+src/protobuf-lazy-descriptor-test
+src/protobuf-lite-test
+src/protobuf-test
+src/test_plugin
+src/protoc
+src/testzip.*
+src/unittest_proto_middleman
+src/zcgunzip
+src/zcgzip
+
+## extensions
+*.Po
+*.Plo
+*.lo
+*.la
+*.TPo
+*.pc
+*.pb.*
+*.trs
+*.o
+
+## folders
+.libs
+.dirstamp
+ 

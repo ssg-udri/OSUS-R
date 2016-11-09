@@ -1,0 +1,68 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ Component used to display command properties in a tree format.
+ 
+==============================================================================
+ -->  
+<ui:composition 
+    xmlns:composite="http://java.sun.com/jsf/composite"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+    
+    <composite:interface>
+        <!-- This is JAXB command object that the tree is to be displayed for. -->
+        <composite:attribute name="commandObject" required="true"/>
+        <!-- This is the uuid for the asset the command object pertains to. -->
+        <composite:attribute name="assetUuid" required="true"/>
+    </composite:interface>
+      
+    <p:treeTable id="commandTable" styleClass="commandTree" value="#{commandBuilder.getTree(cc.attrs.assetUuid, cc.attrs.commandObject)}" var="command">
+        <p:column>
+            <f:facet name="header">
+                Parameter
+            </f:facet>
+            <div>
+              <h:outputText styleClass="isReference#{command.isReference().toString()}" style="float:left" value="#{command.getName()}"/>
+            </div>
+        </p:column>
+        <p:column>
+            <f:facet name="header">
+                Type
+            </f:facet>
+            <h:outputText value="#{command.getType().getSimpleName()}"/>
+        </p:column>
+        <p:column>  
+            <f:facet name="header">
+                Value
+            </f:facet>
+            <p:inputText id="treeInput" rendered="#{!command.isReference() and !command.getType().isEnum()}" value="#{command.value}" validator="#{command.validateValue}">
+              <p:ajax update="treeInputMsg"/>
+            </p:inputText>
+            <p:message id="treeInputMsg" for="treeInput"/>
+            <p:selectOneMenu id="enumDropDown" rendered="#{!command.isReference() and command.getType().isEnum()}" value="#{command.value}" styleClass="dropDownMenu">
+               <f:selectItem itemLabel="NOT SET" itemValue=""/>
+               <f:selectItems value="#{command.getType().getEnumConstants()}" var="enumConstant" itemLabel="#{enumConstant}" itemValue="#{enumConstant}"/>
+            </p:selectOneMenu>
+            <p:commandButton rendered="#{command.isAddSupported()}" value="Add" actionListener="#{commandBuilder.addField(command)}" update="@form"/>
+            <p:commandButton rendered="#{command.isDeleteSupported()}" value="Delete" actionListener="#{commandBuilder.removeField(command)}" update="@form"/>
+        </p:column>
+    </p:treeTable>
+
+</ui:composition>

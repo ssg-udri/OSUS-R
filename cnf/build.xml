@@ -1,0 +1,186 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<project name="master" default="none">
+
+    <import file="build-template.xml" />
+    <property environment="env" />
+
+    <dirname property="master.basedir" file="${ant.file.master}"/>
+    <dirname property="bp.workspace.dir" file="${master.basedir}/../build.xml"/>
+
+    <!--
+        Use this file to provide your workspace-specific tasks.
+
+        Important:
+        Make sure that all defined targets depend on the template.init target.
+
+        1. To execute tasks before and/or after compilation:
+
+        <target name="compile" depends="template.init">
+            <echo message="This message is printed before compilation..."/>
+            <antcall target="template.compile"/>
+            <echo message="This message is printed AFTER compilation."/>
+        </target>
+
+        2. Insert a build target:
+
+        <target name="build" dependencies="template.init,template.build,findbugs"/>
+        <target name="findbugs">
+            ...
+        </target>
+    -->
+    
+    <target name="init" depends="template.init">
+        <path id="cobertura-classpath">
+            <fileset dir="${cobertura.dir}">
+                <include name="cobertura.jar" />
+                <include name="lib/**/*.jar" />
+            </fileset>
+        </path>
+        <taskdef resource="tasks.properties" classpathref="cobertura-classpath" />
+        
+        <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+          <classpath>
+            <pathelement location="${deps.dir}/ant-contrib/ant-contrib-1.0b3.jar" />
+          </classpath>
+        </taskdef>
+        
+        <if>
+            <os family="windows" />
+            <then>
+                <property name="protoc" value="${deps.dir}/protoc-2.6.1-win32/protoc.exe" />
+            </then>
+            <else>
+                <!-- property can be overridden in cnf/custom.bnd, otherwise environment variable will be used -->
+                <property name="protoc.path" value="${env.PROTOC_2_6_1}" />
+                <if>
+                    <!-- use override of protoc.file if available, otherwise try to use command on PATH -->
+                    <available file="${protoc.path}/bin/protoc" />
+                    <then>
+                        <property name="protoc" value="${protoc.path}/bin/protoc" />
+                    </then>
+                    <else>
+                        <property name="protoc" value="protoc" />
+                    </else>
+                </if>
+            </else>
+        </if>
+        
+        <!-- Only enable the deploy target if the destination directory exists -->
+        <available file="${bp.subsystem.deploy.dir}" type="dir" property="deploy.component.enabled" />
+    </target>
+    
+    <target name="deploy-component-check" depends="init">
+        <fail unless="${deploy.component.enabled}" message="Must execute target from subsystem build file" />
+    </target>
+    
+    <!-- Override this target if project needs specific deployment actions -->
+    <target name="deploy">
+    </target>
+    
+    <!-- Deploy the component's file to the subsystem's deploy directory -->
+    <target name="deploy-component" depends="deploy-component-check">
+        <echo>Deploying component for ${projectdir}</echo>
+        <fileset id="gen-jars" dir="${target}" includes="*.jar" />
+        <pathconvert property="component-found" setonempty="false"> 
+            <fileset refid="gen-jars" /> 
+        </pathconvert> 
+        <fail message="No JAR files found for ${ant.file}" unless="component-found"/> 
+        <copy todir="${bp.bundle.deploy.dir}">
+            <fileset refid="gen-jars" />
+        </copy>
+    </target>
+        
+    <target name="test" depends="init,compile">
+        <trycatch>
+            <try>
+                <bndtest/>
+            </try>
+            <catch>
+                <echo>bndtest task failed, but it is assumed it is because a test failed and don't want the build to fail in
+                    this case.</echo>
+            </catch>
+        </trycatch>
+        <pathconvert property="files" setonempty="false"> 
+            <fileset dir="${target}/test-reports" includes="TEST-*.xml"/> 
+        </pathconvert> 
+        <fail message="No test results found, something is wrong" unless="files"/>
+    </target>
+    
+    <target name="junit" depends="init,compileTests" if="testjavafiles.present" unless="no.junit">
+        <antcall target="cc.instrument" />
+        <junit haltonfailure="no" showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' 
+            fork="true" dir="${basedir}" forkmode="once">
+            <assertions>
+                <enable />
+            </assertions>
+            <classpath>
+                <pathelement location="cc-bin" />
+                <pathelement location="${cobertura.dir}/cobertura.jar" />
+                <fileset dir="${cobertura.dir}/lib">
+                    <include name="*.jar" />
+                </fileset>
+            </classpath>
+            <classpath path="${project.buildpath}:${testbin}" />
+            <formatter type="xml" />
+            <sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser.file}" />
+            <batchtest todir="${target}">
+                <fileset dir="${testsrc}">
+                    <include name="**/Test*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+    
+    <target name="cc.instrument" depends="init" unless="${cc.disabled}">
+        <fail unless="${javac.debug}" message="Debug must be enabled when compiling code in order to instrument"/>
+        <cobertura-instrument todir="cc-bin" datafile="${cobertura.ser.file}" ignoreTrivial="true" failonerror="true">
+            <fileset dir="${bin}">
+                <include name="**/*.class" />
+            </fileset>
+            <auxClasspath path="${project.buildpath}" />
+            <ignoreMethodAnnotation annotationName="mil.dod.th.ose.utils.CoverageIgnore"/>
+        </cobertura-instrument>
+    </target>
+
+    <target name="javadoc" depends="init,build" if="srcjavafiles.present">
+        <javadoc
+            sourcepath="${src}"
+            destdir="${target}/javadoc"
+            maxmemory="256M"
+            classpath="${project.buildpath}"
+            bootclasspath="${project.bootclasspath}"
+            access="private"
+            version="true"
+            use="true"
+            author="true"
+            splitindex="true"
+            windowtitle="${project.name}"
+            doctitle="${project.name}"
+            nodeprecated="false"
+            nodeprecatedlist="false"
+            notree="false"
+            noindex="false"
+            nohelp="false"
+            nonavbar="false"
+            source="${javac.source}"
+            additionalparam="-Xdoclint:-missing"> <!-- Missing comments or tags validated by Checkstyle -->
+            <link offline="true" packagelistloc="${javadoc.package.list.dir}/java8" href="http://docs.oracle.com/javase/8/docs/api/" />
+            <link offline="true" packagelistloc="${javadoc.package.list.dir}/osgi4-core" href="https://osgi.org/javadoc/r4v43/core/" />
+            <link offline="true" packagelistloc="${javadoc.package.list.dir}/osgi4-residential" href="https://osgi.org/javadoc/r4v43/residential/" />
+            <link offline="true" packagelistloc="${javadoc.package.list.dir}/osgi4-cmpn" href="https://osgi.org/javadoc/r4v43/cmpn/" />
+        </javadoc>
+    </target>
+</project>

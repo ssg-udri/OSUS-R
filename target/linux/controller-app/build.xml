@@ -1,0 +1,63 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Ant build file for the entire controller subsystem.  This will build all 
+ units using their Ant build file and allows for deploying the files to the 
+ target.  Deployment requires an RSA key to be created for the user/host
+ machine and the public key to be appended to the target's authorized keys 
+ file.  The different builds can be performed from here as well: individual,
+ development, incremental and release (see SW development plan).
+
+==============================================================================
+-->
+<project name="linux-controller" default="build-deploy">
+    <property environment="env" />
+
+    <property file="../../../build.properties" prefix="bp" />
+    <property file="build.properties" prefix="bp" />
+    <property file="default.properties" prefix="bp" />
+    <property name="target.app.dir" value="${bp.workspace.dir}/target/linux/controller-app"/>
+
+    <import file="${bp.workspace.dir}/cnf/ant/target-commons.xml" />
+
+    <target name="build-no-deps">
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.serial.swig" target="build" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.serial" target="clean" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.serial" target="build" />
+    </target>
+
+    <target name="build-with-deps">
+        <!-- Use the generic controller build for platform independent components -->
+        <ant dir="../../generic/controller-app" target="build-with-deps" />
+        <antcall target="build-no-deps" />
+    </target>
+    
+    <target name="clean" description="Clean all files generated from build including units">
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.serial" target="clean" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.serial.swig" target="clean" />
+
+        <!-- Use the generic controller build for platform independent components -->
+        <ant dir="../../generic/controller-app" target="clean" />
+    </target>
+
+    <target name="deploy-app">
+        <!-- Use the generic controller build for platform independent components -->
+        <ant dir="../../generic/controller-app" target="deploy-app" />
+        <antcall target="set-system-name-id" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.serial.swig" target="deploy-component" />
+        <ant dir="${bp.workspace.dir}/mil.dod.th.ose.linux.serial" target="deploy-component" />
+    </target>
+
+</project>

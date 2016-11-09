@@ -1,0 +1,89 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ -->
+<ui:composition
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui">
+        <table>
+           <tr>
+               <td>
+                   <h:outputText value="Select a Mission to Run" style="font-weight:bold;font-size:1.25em;"/>
+               </td>
+               <td style="padding-left:15px;">
+                   <p:toolbar>
+                       <p:toolbarGroup>
+                           <p:commandButton value="Import" id="importButton" icon="ui-icon-folder-open" onclick="importDlg.show();" style="margin-top:auto; margin-bottom:auto;"/>
+                           <p:commandButton value="Sync Missions" id="syncButton" icon="ui-icon-arrowrefresh-1-w" actionListener="#{missionProgMgr.requestSyncingOfTemplates((activeController.getActiveController()).getId())}" style="margin-top:auto; margin-bottom:auto;"/>
+                       </p:toolbarGroup>
+                   </p:toolbar>
+               </td>
+           </tr>
+        </table>
+        <p:dataGrid value="#{missionRequest.missions}" id="missionGrid" var="mission" columns="2" rows="4" paginator="true" style="margin-top:20px"
+         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
+                 <p:panel id="missionPanel">
+                   <f:facet name="header">
+                    <table style="width:100%">
+                        <tr>
+                            <td style="width:75%;overflow:hidden;text-overflow:ellipsis">
+                                <div style="max-width:300px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden">
+                                    <h:outputText id="missionName" value="#{mission.name}" style="font-size:1.25em;"/>
+                                </div>
+                            </td>
+                            <td style="width:25%;text-align:center">
+                                <p:commandButton id="selectInfo" style="margin-left:15px;font-size:1em;height:26px;" value="Info" ajax="true" update='@([id="mInfo"])' actionListener="#{missionSetUpMgr.setMission(mission)}" oncomplete="infoDlg.show();"/>
+                            </td>
+                        </tr>
+                    </table>
+                   </f:facet>
+                     <table style="width:100%;">
+                         <tr>
+                           <td style="width:100px;">
+                               <div><h:graphicImage rendered="#{(mission.location.value().equals('Local'))}" style="margin:0 auto 0 auto" value="/resources/images/icons/local-mission.png" alt="Huh?"/></div>
+                               <div><h:graphicImage rendered="#{(mission.location.value().equals('Synced'))}" style="margin:0 auto 0 auto" value="/resources/images/icons/controller-mission.png" alt="Huh?"/></div>
+                               <div>#{mission.location.value()}</div>
+                           </td>
+                           <td colspan="2" style="width:500px;">
+                               <ui:include src="setup_mission_icon_ribbon.xhtml">
+                                   <ui:param name="justify" value="right"/>
+                               </ui:include>
+                           </td>
+                         </tr>
+                         <tr>
+                             <td style="width:100px;">
+                                 <p:graphicImage value="#{missionRequest.streamPrimaryImage}" alt="Image not found">
+                                     <f:param name="primeImageMissionName" value="#{mission.name}"/>
+                                 </p:graphicImage>
+                             </td>
+                             <td colspan="2" style="width:500px;height:200px;">
+                                 <div style="width:100%;overflow:auto;text-overflow:ellipsis;max-height:200px;">
+                                     <h:outputText style="word-wrap: break-word;" value="#{mission.description}" />
+                                 </div>
+                             </td>
+                         </tr>
+                         <tr>
+                           <td colspan="3" align="right">
+                               <br/>
+                               <p:commandButton id="selectMission" value="Select Mission" actionListener="#{missionSetUpMgr.setMission(mission)}" oncomplete='clickWizardNext();'/>
+                           </td>
+                         </tr>
+                     </table>
+                 </p:panel>
+         </p:dataGrid>
+</ui:composition>

@@ -1,0 +1,69 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Build components for the Linux platform.
+
+==============================================================================
+-->
+<project name="those-target-linux" default="build-with-deps">
+
+    <property environment="env" />
+
+    <dirname property="those-target-linux.basedir" file="${ant.file.those-target-linux}"/>
+    <dirname property="bp.workspace.dir" file="${those-target-linux.basedir}/../../build.xml"/>
+    <echo message="Build workspace.dir is: ${bp.workspace.dir}"/>
+
+    <property file="build.properties" prefix="bp" />
+    <property file="default.properties" prefix="bp" />
+
+    <import file="../../cnf/ant/commons.xml"/>
+    <import file="../../cnf/ant/linux-commons.xml"/>
+
+    <target name="build-no-deps" if="target.enabled" depends="set-arch">
+        <echo message="### Build linux (no deps) ###" />
+       
+        <!-- build each target -->
+        <ant dir="controller-app" target="build-no-deps" />
+    </target>
+   
+    <target name="build-with-deps" if="target.enabled">
+        <echo message="### Build linux (with deps) ###" />
+       
+        <!-- build dependencies for each target -->
+        <ant dir="../generic/controller-app" target="build-with-deps" />
+               
+        <antcall target="build-no-deps" />
+    </target>
+
+    <target name="clean" if="target.enabled" depends="set-arch">
+        <echo message="### Clean linux ###" />
+        <ant dir="controller-app" target="clean" />
+    </target>
+
+    <target name="deploy" if="target.enabled" depends="set-arch">
+        <echo message="### Deploy linux ###" />
+        <ant dir="controller-app" target="deploy" />
+    </target>
+
+    <target name="deploy-clean" if="target.enabled" depends="set-arch">
+        <echo message="### Deploy-Clean linux ###" />
+        <ant dir="controller-app" target="deploy-clean" />
+    </target>
+    
+    <target name="build-source-zip" description="Create a zip of all the source that makes up the linux target">
+        <echo message="### Build Source Zip linux ###" />
+    </target>
+
+</project>

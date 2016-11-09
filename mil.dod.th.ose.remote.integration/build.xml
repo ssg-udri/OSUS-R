@@ -1,0 +1,152 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+DESCRIPTION:
+Build and execute remote interface integration tests.
+
+==============================================================================
+-->
+<project name="mil.dod.th.ose.remote.integration" default="setup">
+
+    <import file="../cnf/ant/integration-commons.xml"/>
+
+    <target name="init" depends="master.init">
+        <property name="target.app.dir" value="${workspacedir}/target/generic/controller-app"/>
+    </target>
+        
+    <target name="setup" depends="init" description="moves example asset and example platform to the controller-app"  >
+        <delete failonerror="false">
+           <fileset dir="${target-dir}" includes="TEST-*.xml" />
+           <fileset dir="${target-dir}" includes="ALLTESTS.xml" />
+       </delete>
+       
+        <antcall target="deploy-target" />
+        <copy todir="${target-dir}/deploy/bundle">
+            <fileset dir="${integration.dir}/${target-dir}" includes="*.example.*.jar" />
+            <fileset dir="${example.asset.dir}/${target-dir}" includes="*.main.jar" />
+            <fileset dir="${example.asset.dir}/${target-dir}" includes="*.lexicon.jar" />
+            <fileset dir="${example.ccomm.dir}/${target-dir}" includes="*.main.jar" />
+            <fileset dir="${example.stream.profile.dir}/${target-dir}" includes="*.jar" />
+            <fileset dir="${datastream.service.dir}/${target-dir}" includes="*.jar" />
+            <fileset dir="${transcoder.vlc.dir}/${target-dir}" includes="*.jar" /> 
+            <fileset dir="${datastream.store.dir}/${target-dir}" includes="*.jar" />
+            <fileset dir="${archiver.vlc.dir}/${target-dir}" includes="*.jar" />
+            <fileset file="${com.sun.jna.file}" />
+        </copy>
+        <!-- replace the encrypt configuration directory -->
+        <copy todir="${target-dir}/deploy/encrypt-conf" overwrite="true" >
+            <fileset dir="resources/encrypt-conf" includes="*.properties*" />
+        </copy>
+        <!-- Replace configs.xml -->
+        <copy todir="${target-dir}/deploy/conf" overwrite="true" >
+            <fileset file="resources/conf/configs.xml" />
+        </copy>
+    </target>
+    
+    <target name="run-1st-run-tests" depends="init" description="Just run tests, don't start/stop controller or do setup">
+        <junit haltonfailure="no" showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' 
+                   fork="true" dir="${basedir}" forkmode="once">
+            <formatter type="xml" />
+            <classpath path="${project.buildpath}:${testbin}" />
+            <batchtest todir="${target-dir}">
+                <!-- run initialize test class first for anything that needs to be set up -->
+                <fileset dir="${src}" includes="**/InitializeController.java" />
+                <fileset dir="${src}">
+                    <include name="**/base/Test*.java" />
+                    <include name="**/namespace/Test*.java" />
+                </fileset>
+                <!-- leave as separate fileset so test runs last (after all tests run, this will stop the controller -->
+                <fileset dir="${src}" includes="**/ShutdownController.java" />
+            </batchtest>
+        </junit>
+    </target>
+    
+    <target name="run-2nd-run-tests" depends="init" description="Just run integration tests that require restart">
+        <junit haltonfailure="no" showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' 
+                   fork="true" dir="${basedir}" forkmode="once">
+            <formatter type="xml" />
+            <classpath path="${project.buildpath}:${testbin}" />
+            <batchtest todir="${target-dir}">
+                <fileset dir="${src}">
+                    <include name="**/secondrun/Test*.java" />
+                </fileset>
+                <!-- leave as separate fileset so test runs last (after all tests run, this will stop the controller -->
+                <fileset dir="${src}" includes="**/ShutdownController.java" />
+            </batchtest>
+        </junit>
+    </target>
+    
+    <target name="run-encryption-tests" depends="init" description="Just run integration tests change the encryption level">
+        <junit haltonfailure="no" showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' 
+                    fork="true" dir="${basedir}" forkmode="once">
+            <formatter type="xml" />
+            <classpath path="${project.buildpath}:${testbin}" />
+            <batchtest todir="${target-dir}">
+                <fileset dir="${src}">
+                    <include name="**/encryption/Test*.java" />
+                </fileset>
+                <!-- leave as separate fileset so test runs last (after all tests run, this will stop the controller -->
+                <fileset dir="${src}" includes="**/ShutdownController.java" />
+            </batchtest>
+        </junit>
+    </target>
+
+    <!-- 
+      this target should only need to be run by an automated tool to start THOSE, run tests then stop THOSE, if running
+      test manually, start controller yourself then run tests that need to be run just like unit tests 
+    -->
+    <target name="test" depends="compile,build,setup" 
+        description="Run all integration tests, target is for continuous integration only"> 
+        <test-run runtarget="run-1st-run-tests" />
+        <test-run runtarget="run-2nd-run-tests" />
+        <test-run runtarget="run-encryption-tests" />
+        <antcall target="check-for-test-results" />
+    </target>
+    
+    <macrodef name="test-run">
+        <attribute name="runTarget" />
+        <sequential>
+            <antcall target="try-kill-controller-processes" />
+            <!-- change log level to DEBUG for testing to make it easier to debug afterwards -->
+            <replace file="${target-dir}/deploy/conf/config.properties">
+                <replacefilter token="mil.dod.th.ose.logging.level=INFO" value="mil.dod.th.ose.logging.level=DEBUG" />
+            </replace>
+            <parallel>
+                <!-- run controller as daemon so it stops when Ant is done even if the shutdown command doesn't work -->
+                <daemons> 
+                    <java fork="true" 
+                          classname="org.apache.felix.main.Main" 
+                          dir="${target-dir}/deploy"
+                          failonerror="true">
+                        <jvmarg value="-ea" />
+                        <classpath>
+                            <pathelement location="${target-dir}/deploy/${bin}/felix.jar"/>
+                        </classpath>
+                        <sysproperty key="gosh.args" value="--noi" />
+                    </java>
+                </daemons>
+                <sequential>
+                    <!-- give controller a chance to start before running examples and tests -->
+                    <sleep seconds="35" />
+                    <antcall target="@{runTarget}" />
+                    <!-- give controller a chance to stop before continuing -->
+                    <sleep seconds="10" />
+                    <!-- make sure the controller is killed -->
+                    <antcall target="try-kill-controller-processes" />
+                </sequential>
+            </parallel>
+        </sequential>
+    </macrodef>
+
+</project>

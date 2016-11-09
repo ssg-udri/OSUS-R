@@ -1,0 +1,25 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+Bundle-Version: 1.1.0.${tstamp}
+Bundle-Name: All Example Comm Bundles
+Bundle-Description: Contains all of the examples comm bundles except duplicates
+Bundle-Vendor: UDRI
+Export-Package: \
+    !example.ccomms.duplicates, \
+    example.ccomms.*
+Include-Resource: \
+    capabilities-xml=capabilities-xml/exception, \
+    capabilities-xml=capabilities-xml/main, \
+    capabilities-xml=capabilities-xml/serial
+Service-Component: *

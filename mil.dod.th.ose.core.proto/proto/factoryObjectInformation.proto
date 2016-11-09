@@ -1,0 +1,73 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+//
+// Description:
+// Contains a proto message used only inside the core API this message is not intended for
+// use outside of the core.
+//
+// IMPORTANT
+// It's very important to make sure that two messages don't add extensions to the same message type using the same
+// numeric tag, data corruption can result if an extension is accidentally interpreted as the wrong type.
+//
+// Extensions by factory object type:
+// Assets : 100 to 199
+// StreamProfiles : 200 to 299
+// TransportLayer : 300 to 399
+// LinkLayer : 400 to 499
+// PhysicalLink : 500 to 599
+// Address : 600 to 699
+//
+//==============================================================================
+
+option java_package = "mil.dod.th.ose.core.factory.proto";
+option java_outer_classname = "FactoryObjectInformation";
+import "types/spatial/SpatialTypes.proto";
+
+// Factory object information for Assets that is stored in the persistent datastore.
+message AssetObjectData
+{
+    //Extensions for assets to the factory object data message
+    extend FactoryObjectData
+    {
+        //the coordinates of the object
+        optional Coordinates coordinates = 102;
+
+        //the orientation of the object
+        optional Orientation orientation = 103;
+    }
+}
+
+// Factory object information for StreamProfiles that is stored in the persistent datastore.
+message StreamProfileObjectData
+{
+    //Extension for stream profiles to the factory object data message
+    extend FactoryObjectData
+    {
+        // String representation of URI for stream port of the object.
+        optional string streamPort = 200;
+    }
+
+}
+
+// Factory object information base message that is stored in the persistent datastore.
+message FactoryObjectData
+{
+    //the name of the object
+    required string name = 1;
+
+    //the pid of the object's configuration if it has one
+    optional string pid = 2;;
+
+    //extension field numbers
+    extensions 100 to max;
+}

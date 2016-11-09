@@ -1,0 +1,73 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+
+// the remote channel namespace 
+message RemoteChannelLookupNamespace
+{
+    // message types that this namespace can process
+    enum RemoteChannelLookupMessageType
+    {
+        //Request to synchronize a transport channel
+        SyncTransportChannelRequest = 1;
+        //Response to the request to synchronize a transport channel
+        SyncTransportChannelResponse = 2;
+    }
+
+    // specific type of the message
+    required RemoteChannelLookupMessageType type = 1;
+    
+    // serialization of the data associated with the message (may be n/a), represents a protocol buffer message where
+    // the type is the MessageType field value with "Data" appended, for example, if the type is
+    // "SyncTransportChannelRequest", the message type should be "SyncTransportChannelRequestData"
+    optional bytes data = 2;
+}
+
+//Request to synchronize a transport channel.
+message SyncTransportChannelRequestData
+{
+    // name of the transport layer that the local system (receiving this message) will use to receive/send messages for 
+    // the channel
+    required string transportLayerName = 1;
+    
+    // address that the remote system will use to receive/send messages for the channel, remote system will usually be
+    // the requester of this message, but could be that someone else is requesting on behalf of another system
+    required string remoteSystemAddress = 2;
+    
+    // address that the destination system will use to receive/send messages for the channel
+    required string destSystemAddress = 3;
+    
+    // remote system that the destination system will communicate with, usually will be the same as the source id of 
+    // this message, but it could be that someone else is requesting on behalf of another system
+    required int32 remoteSystemId = 4;
+}
+
+//Response containing a synchronize transport channel.
+message SyncTransportChannelResponseData
+{
+    // name of the transport layer that the system sending this message will use to receive/send messages for the 
+    // channel
+    required string transportLayerName = 1;
+    
+    // address that the remote system will use to receive/send messages for the channel, remote system will usually be
+    // the receiver of this message, but could be that someone else is requesting on behalf of another system
+    required string remoteSystemAddress = 2;
+    
+    // address that the source system (one sending this message) will use to receive/send messages for the channel
+    required string sourceSystemAddress = 3;
+    
+    // remote system that the source system will communicate with, usually will be the same as the destination id of 
+    // this message, but it could be that someone else is requesting on behalf of another system
+    required int32 remoteSystemId = 4;
+}

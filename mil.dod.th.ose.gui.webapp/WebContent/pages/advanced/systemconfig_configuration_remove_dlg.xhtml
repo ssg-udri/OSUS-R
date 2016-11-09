@@ -1,0 +1,43 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+This xhtml page renders the configuration remove dialog box. This dialog box
+alerts the user that they are about to remove a configuration and gives them the
+opportunity to cancel their action.
+
+==============================================================================
+ -->
+<ui:composition
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui">
+      <p:dialog id="removeDialog" widgetVar="removeDlg" header="Remove Configuration" resizable="false" height="150" width="350">
+        <p:outputPanel id="removePanel">
+            <h:form>
+                <ui:param name="pid" value="#{controllerConfigMgr.getRemoveConfigPid()}"/>
+                <h:outputText value="You are about to delete configuration with PID:" styleClass="confirmDialogText"/>
+                <h:outputText value="#{pid}" styleClass="confirmDialogTextImportant"/>
+                <h:outputText value="Are you sure you wish to proceed?" styleClass="confirmDialogText"/>
+                <div class="confirmDialogButtons">
+                    <p:commandButton id="removeButton" value="Delete" oncomplete="removeDlg.hide()" actionListener="#{configAdminMgr.removeConfigurationAsync(activeController.activeController.id, pid)}"/>
+                    <p:commandButton id="cancelButton" value="Cancel" oncomplete="removeDlg.hide()"/>
+                </div>
+            </h:form>
+        </p:outputPanel>
+      </p:dialog>
+</ui:composition>

@@ -1,0 +1,104 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ This page contains the linkages to all rendered information within the asset
+ feature.
+===============================================================================
+ -->
+<ui:composition template="../../templates/mainscreenTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:factory="http://java.sun.com/jsf/composite/factory">
+    
+    <ui:define name="stylesheets">
+        <h:outputStylesheet library="css" name="observation.css"/>
+        <h:outputStylesheet library="css" name="command.css"/>
+        <h:outputStylesheet library="css" name="asset.css"/>
+    </ui:define>
+    
+    
+    <ui:define name="content">
+        <h:outputScript library="scripts/push/pages/devices" name="pushEventAssetMessages.js"/>
+        <h:form>
+            <div style="text-align:right;">
+                <p:commandButton id="scanForAssets" icon="ui-icon-signal-diag" value="Scan For Assets" actionListener="#{scanForAssetsHelper.requestScanForAssets(activeController.activeController.id)}" 
+                    disabled="#{!activeController.isActiveControllerSet()}"/>
+                <p:commandButton id="addAsset" style="margin-bottom:10px" icon="ui-icon-plus" value="Add Asset" actionListener="#{addAssetHelper.init()}" 
+                    onclick="newAssetDlg.show();" disabled="#{!activeController.isActiveControllerSet()}"/>
+                <p:commandButton icon="ui-icon-folder-open" value="Import Asset Config" onclick="importAssetDlg.show();" disabled="true"/>
+                <p:commandButton icon="ui-icon-folder-open" value="Export Asset Config" onclick="exportAssetDlg.show();" disabled="true"/>
+            </div>
+        </h:form>
+            <table style="width:100%">
+                <tr>
+                    <td style="vertical-align:top;width:25%">
+                        <h:form>
+                           <p:outputPanel id="assetNameList">
+                               <factory:factory_datalist
+                                   dataTableValue="#{assetDisplay.getFactoryObjectListAsync()}"
+                                   featureName="#{assetDisplay.getFeatureTitle()}" 
+                                   setSelected="#{assetDisplay.setSelectedFactoryObject(factObj)}" 
+                                   unSetSelected="#{assetDisplay.setSelectedFactoryObject(null)}"
+                                   tagAttrib="tabView"/>
+                           </p:outputPanel>
+                        </h:form>
+                    </td>
+                    <td style="width:75%;text-align: left; vertical-align: top;">
+                        <p:tabView id="tabView" dynamic="true" activeIndex="#{assetPageDisplayHelper.assetPageIndex}">
+                            <p:ajax event="tabChange" listener="#{assetPageDisplayHelper.assetTabViewChange}"/>
+                            <!-- defined tabs -->
+                            <p:tab id="assetConfig" title="Configuration">
+                                
+                                    <ui:include src="asset_configuration_tab.xhtml"/>
+                                
+                            </p:tab>
+                            <p:tab id="assetObsTab" title="Observations">
+                                <ui:include src="asset_display_observations_tab.xhtml"/>
+                            </p:tab>
+                            <p:tab id="assetCommandTab" title="Command/Control">
+                                <ui:include src="asset_command_control_tab.xhtml"/>
+                            </p:tab>
+                        </p:tabView>
+                    </td>
+                </tr>
+            </table>
+            
+        <h:form>
+            <!-- this is all the asset remote commands used by the Push API.. commands are called from the 
+            pushEventAssetMessages.js -->
+            <p:remoteCommand name="rcUpdateAssetCommandControl" update='@([id$="assetCommandControl"])'/>
+            <p:remoteCommand name="rcUpdateAssetsList" update='@([id$="assetObjData"])'/>
+            <p:remoteCommand name="rcUpdateAssetsLocation" update='@([id$="locationFieldset"])'/>
+            <p:remoteCommand name="rcUpdateObservations" update='@([id$="obsTable"])'/>
+            <p:remoteCommand name="rcUpdateAssetTypes" update='@([id$="createAssetPanel"])'/>
+            <p:remoteCommand name="rcUpdateAssetsSideList" update='@([id$="assetNameList"])'/>
+            <p:remoteCommand name="rcUpdateConfigDialog" update='@([id$="assetEditConfigPanel"])'/>
+            <p:remoteCommand name="rcUpdateGetCommandWithResponse" update='@([id$="getCommandPanel"])'/>
+        </h:form>
+        
+        <ui:include src="asset_create_config_dialog.xhtml"/>
+        <ui:include src="asset_edit_config_dialog.xhtml"/>
+        <ui:include src="asset_confirmation_dialog.xhtml"/>
+        <ui:include src="asset_observation_confirmation_dialog.xhtml"/>
+        <ui:include src="digital_media_viewer.xhtml"/>
+        <ui:include src="asset_new_asset_dialog.xhtml"/>
+        <ui:include src="asset_observation_remove_all_dialog.xhtml"/>
+        <ui:include src="asset_observation_related_obs_dialog.xhtml"/>
+    </ui:define>
+</ui:composition>

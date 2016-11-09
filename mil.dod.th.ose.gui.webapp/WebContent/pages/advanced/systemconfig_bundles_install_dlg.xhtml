@@ -1,0 +1,44 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+This xhtml page renders the install/update dialog box for bundles. This dialog
+box handles installing or updating a bundle on the currently active controller.
+
+==============================================================================
+ -->
+<ui:composition
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui">
+    
+    <p:dialog id="installDialog" widgetVar="installDlg" header="Install/Update Bundle" resizable="false" height="160" width="315">
+        <p:outputPanel style="width:100%;height:100%">
+            <h:form enctype="multipart/form-data">
+                <p>Select an appropriate bundle file to install.</p>
+                <div style="padding-top:5px;padding-bottom: 10px;">
+                    <h:outputText value="Start Bundle:" style="vertical-align:top;padding-right:5px;"/>
+                    <p:selectBooleanCheckbox id="startBundle" value="#{bundleImportMgr.startBundle}"/>
+                </div>
+                <p:fileUpload style="margin:0 auto" value="#{bundleImportMgr.file}" mode="simple" allowTypes="/(\.|\/)(jar)$/"/>
+                <div style="width:100%;text-align:center;margin-top:12px;">
+                    <p:commandButton id="importButton" value="Install/Update" ajax="false" actionListener="#{bundleImportMgr.handleImportBundle(activeController.getActiveController().getId())}"/>
+                </div>
+            </h:form>
+        </p:outputPanel>
+    </p:dialog>
+</ui:composition>

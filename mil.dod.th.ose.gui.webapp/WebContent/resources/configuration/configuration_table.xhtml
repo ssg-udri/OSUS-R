@@ -1,0 +1,72 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ This page will display a datatable using the properties from the configuration property list
+ passed into it.
+ 
+===============================================================================
+ -->
+<ui:composition 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:composite="http://java.sun.com/jsf/composite"
+      xmlns:configuration="http://java.sun.com/jsf/composite/configuration">
+      
+      <composite:interface>
+          <!-- This is the list of configuration properties -->
+          <composite:attribute name="configList" required="true"/>
+          <!-- Whether the list is being displayed for the creation of a factory object. -->
+          <composite:attribute name="creationDialog" required="true"/>
+      </composite:interface>
+        
+      <composite:implementation>
+        <p:dataTable value="#{cc.attrs.configList}" var="configProperty" id="compositeConfigTable" editable="true">
+          <ui:param name="options" value="#{configProperty.options}"/>
+           
+          <p:column headerText="Name">
+             <h:outputText id="compositeConfigName" value="#{configProperty.name}"/>
+             <h:outputText id="requiredAsterisk" value="*" style="color:red;" rendered="#{cc.attrs.creationDialog and configProperty.isRequired()}"/>
+          </p:column>
+          
+          <p:column headerText="Value" width="165">
+              <p:inputText rendered="#{options.isEmpty() and !configProperty.booleanType}" id="compositeConfigInput" value="#{configProperty.value}" validator="#{configProperty.validateValue}" 
+                    required="#{configProperty.isRequired()}" requiredMessage="Property must be set!">
+                <p:ajax update="compositeConfigInputMsg"/>
+              </p:inputText>
+              
+              <!-- selectOneMenu width will be too small when it is nested in panel due to: 
+                https://code.google.com/p/primefaces/issues/detail?id=7649, therefore list box is used -->
+              <p:selectOneListbox rendered="#{!options.isEmpty()}" value="#{configProperty.value}" id="compositeConfigSelectOne">
+                <f:selectItems value="#{options}" var="option" itemLabel="#{option.label}" itemValue="#{option.value}"/>
+              </p:selectOneListbox>
+              
+              <p:selectBooleanButton rendered="#{configProperty.booleanType}" value="#{configProperty.value}" id="compositeConfigBoolean"
+                onLabel="Yes" offLabel="No" />
+              
+              <p:message id="compositeConfigInputMsg" for="compositeConfigInput" rendered="#{cc.attrs.readonly != configProperty.name}"/>
+          </p:column>
+          
+          <p:column headerText="Description">
+             <h:outputText id="compositeConfigDescription" 
+                value="#{configProperty.description} (#{configProperty.type.simpleName})" style="word-wrap:break-word;"/>
+          </p:column>
+        </p:dataTable>
+     </composite:implementation>
+      
+</ui:composition>

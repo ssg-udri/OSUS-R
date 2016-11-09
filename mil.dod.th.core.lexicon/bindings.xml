@@ -1,0 +1,190 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<jaxb:bindings version="1.0" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+    xmlns:ci="http://jaxb.dev.java.net/plugin/code-injector" 
+    xmlns:shared="http://th.dod.mil/core/types"
+    jaxb:extensionBindingPrefixes="xjc">
+    <jaxb:globalBindings
+        fixedAttributeAsConstantProperty="true" typesafeEnumBase="xs:string"
+        typesafeEnumMemberName="generateName" generateIsSetMethod="true">
+        <xjc:javaType name="java.lang.Long" xmlType="xs:dateTime"
+            adapter="mil.dod.th.core.converter.DateXmlConverter" />
+        <xjc:javaType name="java.util.UUID" xmlType="shared:UUID"
+            adapter="mil.dod.th.core.converter.UUIDXmlConverter" />
+        <jaxb:serializable uid="1" />
+    </jaxb:globalBindings>
+
+    <jaxb:bindings schemaLocation="schemas/core/observation/types/Observation.xsd">
+        <jaxb:bindings node="//xs:element[@name='Observation']/xs:complexType">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="schemas/core/types/SharedTypes.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='DigitalMedia']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="schemas/core/observation/types/Audio.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='AudioMetadata']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="schemas/core/types/spatial/SpatialTypes.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='Coordinates']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='Orientation']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="schemas/core/observation/types/Detection.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='Detection']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+        </jaxb:bindings>        
+       <jaxb:bindings schemaLocation="schemas/core/observation/types/Image.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='ImageMetadata']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="schemas/core/observation/types/Status.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='Status']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="schemas/core/observation/types/Video.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='VideoMetadata']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="schemas/core/observation/types/Weather.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='Weather']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="schemas/core/observation/types/Biological.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='Biological']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="schemas/core/observation/types/Chemical.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='Chemical']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="schemas/core/observation/types/CbrneTrigger.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='CbrneTrigger']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="schemas/core/observation/types/WaterQuality.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='WaterQuality']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="schemas/core/observation/types/Power.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='Power']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+</jaxb:bindings>

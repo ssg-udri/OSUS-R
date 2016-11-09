@@ -1,0 +1,52 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+Bundle-Version: 1.0
+Bundle-Description: Starts a websocket server to handle incoming websocket messages from smartphones returning data such as GPS coordinates and battery level, and starts an HTTP server to serve the web content that the phone uses.
+Bundle-Name: Smartphone Websocket Server, HTTP Server, and Asset
+Bundle-SymbolicName: edu.udayton.udri.smartphone
+Bundle-Vendor: UDRI
+Bundle-Activator: edu.udayton.udri.smartphone.ServerActivator
+
+Private-Package: edu.udayton.udri.smartphone
+
+Include-Resource: \
+    @lib/org.java_websocket-1.3.0.jar,\
+    @lib/json-20140107.jar,\
+    @lib/grizzly-httpservice-bundle-2.3.23.jar,\
+    capabilities-xml=capabilities-xml,\
+    WebContent=WebContent
+
+Service-Component: edu.udayton.udri.smartphone.*
+
+-metatype: *
+
+-buildpath: \
+    osgi.core,\
+    osgi.cmpn,\
+    biz.aQute.bnd.annotation,\
+    lib/org.java_websocket-1.3.0.jar;version=file,\
+    lib/json-20140107.jar;version=file,\
+    lib/grizzly-httpservice-bundle-2.3.23.jar;version=file,\
+    mil.dod.th.core.api;version=latest,\
+    ${junit},\
+    ${mockito},\
+    mil.dod.th.ose.test.all
+
+Export-Package: \
+    org.osgi.service.http,\
+    javax.servlet,\
+    javax.servlet.http,\
+    javax.servlet.descriptor,\
+    javax.servlet.annotation,\
+    org.java_websocket.*

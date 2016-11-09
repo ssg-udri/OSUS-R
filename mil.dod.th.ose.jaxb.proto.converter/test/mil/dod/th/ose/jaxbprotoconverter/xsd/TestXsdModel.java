@@ -1,0 +1,38 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+package mil.dod.th.ose.jaxbprotoconverter.xsd;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+
+import org.junit.Test;
+
+/**
+ * @author cweisenborn
+ */
+public class TestXsdModel
+{
+    private XsdModel m_SUT;
+    
+    /**
+     * Verify that the getTypesMap returns a map.
+     */
+    @Test
+    public void testGetNamespacesMap()
+    {
+        m_SUT = new XsdModel();
+        
+        assertThat(m_SUT.getNamespacesMap(), is(notNullValue()));
+    }
+}

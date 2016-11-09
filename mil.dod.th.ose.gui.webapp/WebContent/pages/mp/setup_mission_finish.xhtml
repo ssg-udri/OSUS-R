@@ -1,0 +1,98 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ -->
+<ui:composition
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui">
+    <p:fieldset>
+         <table style="width:100%">
+             <tr>
+                 <td>
+                     <h2>#{missionSetUpMgr.mission.name}</h2>
+                 </td>
+                 <td style="text-align:right">
+                      <b>Schedule:</b>
+                      <h:outputText style="margin-left:5px" value="Restart" rendered="#{missionSetUpMgr.schedule.atReset}"></h:outputText>
+                      <h:outputText value="," rendered="#{(missionSetUpMgr.schedule.atReset and missionSetUpMgr.schedule.isImmediately()) or (missionSetUpMgr.schedule.atReset and !missionSetUpMgr.schedule.isImmediately())}"></h:outputText>
+                      <h:outputText style="margin-left:5px" value="Immediately" rendered="#{missionSetUpMgr.schedule.isImmediately()}"></h:outputText>
+                      <h:outputText value="," rendered="#{(missionSetUpMgr.schedule.isImmediately() and missionSetUpMgr.schedule.isIndefiniteInterval())}"></h:outputText>
+                      <h:outputText style="margin-left:5px" value="Indefintitely" rendered="#{missionSetUpMgr.schedule.isIndefiniteInterval()}"></h:outputText>
+                      <h:outputText value="," rendered="#{(!missionSetUpMgr.schedule.isIndefiniteInterval() and missionSetUpMgr.schedule.isImmediately()) or (!missionSetUpMgr.schedule.isImmediately() and missionSetUpMgr.schedule.isIndefiniteInterval())}"></h:outputText>
+                      <h:outputText style="margin-left:5px" value="Timed" rendered="#{!missionSetUpMgr.schedule.isImmediately() or !missionSetUpMgr.schedule.isIndefiniteInterval()}"></h:outputText>
+                 </td>
+             </tr>
+             <tr>
+                <td style="width:100%;margin-left:15px" colspan="2">
+                      <h:outputText value="#{missionSetUpMgr.mission.description}"></h:outputText>
+                </td>
+             </tr>
+             <tr>
+                <td style="width:50%">
+                  <p:dataTable value="#{missionSetUpMgr.mission.arguments}" var="arg" style="margin-top:5px" scrollable="true" scrollHeight="150">
+                     <p:column headerText="Variable" width="200">
+                         
+                         <h:outputText value="#{arg.name}"></h:outputText>
+                     </p:column>
+                     <p:column headerText="Value" style="width:50%">
+                        <h:outputText value="#{arg.currentValue}"></h:outputText>
+                     </p:column>
+                  
+                   </p:dataTable>
+
+                </td>
+                <td align="center">
+                  <h:outputText></h:outputText>
+                  <table style="height:100%;width:100%;">
+                      <tr>
+                           <td style="text-align:center">
+                               <b>Mission Program Name: </b>
+                               <p:selectOneMenu id="programName" editable="true" style="width:40%" value="#{missionSetUpMgr.programName}" >
+                                   <f:selectItems value="#{missionProgMgr.getLocalMissionNames()}" var="name" itemLabel="#{name}" itemValue="#{name}"/>
+                               </p:selectOneMenu>
+                               <p:tooltip for="programName" value="Choose the name of the mission program to update, or enter a new name." />
+                           </td>
+                      </tr>
+                      <tr>
+                          <td align="center">
+                              <p:commandButton disabled="true" id="saveMission" value="Save As New Mission" style="width:50%;" ></p:commandButton>
+                              <p:tooltip for="saveMission" value="Save the selected mission setup information as a new mission." />
+                          </td> 
+                      </tr>
+                      <tr>
+                          <td align="center">
+                              <p:commandButton id="loadMission" value="Load Mission to Controller" style="width:50%;"
+                                  action="#{missionLoadSelected.loadMission()}" 
+                                  onclick="if (!#{activeController.isActiveControllerSet()}) {missionUnableLoadDlg.show()}"
+                                  oncomplete="if (#{activeController.isActiveControllerSet()}) { misWiz.loadStep('mission'); }"></p:commandButton>
+                              <p:tooltip for="loadMission" value="Load mission to the 'active' controller. Requires that an 'active' controller is set." />
+                          </td>
+                      </tr>
+                      <tr>
+                          <td align="center">
+                              <p:commandButton id="clearMission" value="Clear Mission Information" onclick="clearDlg.show();" style="width:50%;"></p:commandButton>
+                              <p:tooltip for="clearMission" value="Clear all setup information for the selected mission." immediate="true" process="@this" />
+                          </td>
+                      </tr>
+                  </table>
+                </td>
+             </tr>
+         </table>
+    </p:fieldset>
+    <ui:include src="mission_unable_to_load_dialog.xhtml"/>
+</ui:composition>

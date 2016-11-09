@@ -1,0 +1,41 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ 
+ This dialog is presented when an attempt to remove an asset is initiated.
+ 
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+    
+    <p:dialog id="confirmDialog" widgetVar="assetConfirmationDlg" header="Confirm" width="275" resizable="false" >
+        <h:form>
+            <div style="width:100%" align="center" >
+                <p>Are you sure you want to remove this asset?</p>
+                <p>Once an asset is removed there will be no record of the configuration.</p>
+                <br/>
+                <p:commandButton id="removeAsset" value="Confirm"
+                    actionListener="#{selectedAsset.requestRemoval(selectedAsset.getSelectedAssetForDialog())}"
+                    oncomplete="assetConfirmationDlg.hide();"/>
+                <p:commandButton id="cancelRemoveAsset" value="Cancel" onclick="assetConfirmationDlg.hide();"/>
+            </div>
+        </h:form>
+    </p:dialog>
+</ui:composition>

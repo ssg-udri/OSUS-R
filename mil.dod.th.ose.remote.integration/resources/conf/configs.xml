@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+-->
+<config:Configurations xmlns:config="config.model.th.dod.mil" 
+    xmlns:types="http://th.dod.mil/core/types" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" >
+
+   <!--  StreamProfile objects require a valid asset instance to be associated with
+   so that stream profiles from the same asset/sensorId combination can be grouped accordingly. --> 
+   <factoryObjects name="doNotRemoveStreamingAsset">
+      <factoryType>Asset</factoryType>
+      <properties key="th.activate.on.startup" value="true" />
+      <productType>example.asset.ExampleAsset</productType>
+      <createPolicy>IfMissing</createPolicy>
+  </factoryObjects>
+  
+  <factoryObjects name="streamProfile1">
+      <factoryType>StreamProfile</factoryType>
+      <properties key="th.asset.name" value="doNotRemoveStreamingAsset" />
+      <properties key="th.bitratekbps" value="0.1" />
+      <properties key="th.data.source" value="http://networkhost/axis-cgi/mjpg/video.cgi" />
+      <properties key="th.format" value="video/mp4" />
+      <properties key="th.sensor.id" value="" />
+      <productType>example.stream.profile.ExampleStreamProfile</productType>
+      <createPolicy>IfMissing</createPolicy>
+  </factoryObjects>
+  
+  <factoryObjects name="streamProfile2">
+      <factoryType>StreamProfile</factoryType>
+      <properties key="th.asset.name" value="doNotRemoveStreamingAsset" />
+      <properties key="th.bitratekbps" value="10.0" />
+      <properties key="th.data.source" value="http://networkhost/axis-cgi/mjpg/video.cgi" />
+      <properties key="th.format" value="video/mp4" />
+      <properties key="th.sensor.id" value="" />
+      <productType>example.stream.profile.ExampleStreamProfile</productType>
+      <createPolicy>IfMissing</createPolicy>
+  </factoryObjects>
+  
+  <osgiConfigs>
+      <pid>mil.dod.th.ose.datastream.DataStreamService</pid>
+      <properties key="multicast.host" value="239.2.3.4" />
+      <properties key="start.port" value="20000" />
+  </osgiConfigs>
+  
+  <osgiConfigs>
+      <pid>mil.dod.th.ose.datastream.store.DataStreamStore</pid>
+      <properties key="filestore.top.dir" value="/home/osus/data" />
+  </osgiConfigs>
+  
+  <eventRegs canQueueEvent="false" eventFilter="(obj.name=remoteConfigTestAsset)" objectFormat="NATIVE" 
+    systemId="1">
+    <eventTopics>mil/dod/th/core/persistence/ObservationStore/OBSERVATION_PERSISTED_WITH_OBS</eventTopics>
+  </eventRegs>
+
+  <eventRegs canQueueEvent="false" eventFilter="(obj.name=remoteConfigTestAssetXml)" objectFormat="XML" 
+    systemId="1">
+    <eventTopics>mil/dod/th/core/persistence/ObservationStore/OBSERVATION_PERSISTED_WITH_OBS</eventTopics>
+  </eventRegs>
+  
+  
+  
+</config:Configurations>

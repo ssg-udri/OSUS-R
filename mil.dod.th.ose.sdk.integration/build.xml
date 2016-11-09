@@ -1,0 +1,77 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+-->
+
+<project name="mil.dod.th.ose.sdk.integration" default="setup">
+    
+    <import file="../cnf/build.xml" />
+    
+    <target name="init" depends="master.init">    
+        <if>
+            <os family="windows" />
+            <then>
+                <property name="exe.sdk" value="${workspacedir}/target/generic/sdk-app/deploy/those.bat" />
+            </then>
+            <else>
+                <property name="exe.sdk" value="${workspacedir}/target/generic/sdk-app/deploy/those.sh" />
+            </else>
+        </if>
+    </target>
+    
+    <target name="clean" depends="template.clean" description="Remove all build files">
+        <delete failonerror="false" includeemptydirs="true" >
+            <fileset dir="${target-dir}" >
+                <include name="sdk*/**" />
+            </fileset>
+        </delete>
+    </target>
+    
+    <target name="setup" depends="init" description="setup integration tests">
+        <ant dir="../target/generic/sdk-app" target="deploy" />
+        
+        <sdk-create-build-plugin type="-a" classname="SdkAsset" package="example.sdk.asset" />
+        <sdk-create-build-plugin type="-p" classname="SdkI2C" package="example.sdk.i2c" additional.args="-b I2C" />
+        <sdk-create-build-plugin type="-p" classname="SdkSpi" package="example.sdk.spi" additional.args="-b SPI" />
+        <sdk-create-build-plugin type="-p" classname="SdkSerialPort" package="example.sdk.serialport" additional.args="-b SerialPort" />
+        <sdk-create-build-plugin type="-p" classname="SdkGpio" package="example.sdk.gpio" additional.args="-b GPIO" />
+        <sdk-create-build-plugin type="-l" classname="SdkLinkLayer" package="example.sdk.link" />
+        <sdk-create-build-plugin type="-t" classname="SdkTransLayer" package="example.sdk.transport" />
+    </target>
+    
+    <!-- TD: should create a integration test class that runs the SDK and builds the project so there is less 
+         depedencies on Ant and tests could be run from Eclipse only -->
+    <macrodef name="sdk-create-build-plugin" description="use the sdk to create a plug-in, then build that plug-in">
+        <attribute name="type" />
+        <attribute name="classname" />
+        <attribute name="package" />
+        <attribute name="additional.args" default="" />
+        <sequential>
+            <delete dir="${target-dir}/@{package}" includeemptydirs="true" />
+            <exec executable="${exe.sdk}" failonerror="true">
+                <arg value="create" /> 
+                <arg value="@{type}" />
+                <arg value="@{classname}" /> 
+                <arg value="-d" /> <!-- use defaults -->
+                <arg line="-k @{package}" />
+                <arg line="@{additional.args}" />
+                <arg value="${projectdir}/${target-dir}/@{package}" /> <!-- destination folder -->
+            </exec>
+            <ant antfile="build.xml" target="build" dir="${target-dir}/@{package}" inheritAll="false" />
+        </sequential>
+    </macrodef>
+    
+    <target name="test" depends="setup,master.test" />
+        
+</project>

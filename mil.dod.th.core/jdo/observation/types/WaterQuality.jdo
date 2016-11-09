@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<!DOCTYPE jdo PUBLIC
+    "-//Sun Microsystems, Inc.//DTD Java Data Objects Metadata 2.0//EN"
+    "http://java.sun.com/dtd/jdo_2_0.dtd">
+<jdo>
+    <package name="mil.dod.th.core.observation.types">
+        <class
+              name="WaterQuality"
+              detachable="true">
+            <inheritance strategy="new-table"/>
+            <field name="id" primary-key="true" value-strategy="native" />
+            <field
+                  name="ph"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
+            <field
+                  name="dissolvedOxygen"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
+            <field
+                  name="electricalConductivity"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
+            <field
+                  name="oxydationReductionPotential"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
+            <field
+                  name="turbidity"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
+            <field
+                  name="temperature"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
+            <field
+                  name="chlorine"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
+            <field
+                  name="totalDisolvedSolid"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
+            <field
+                  name="salinity"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
+            <field
+                  name="specificGravity"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
+            <field
+                  name="waterFlowPressure"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
+            <field
+                  name="langelierSaturationIndex"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
+        </class>
+    </package>
+</jdo>

@@ -1,0 +1,255 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+
+import "observation/types/Observation.proto";
+import "types/observation/ObservationTypes.proto";
+import "shared.proto";
+import "types/remote/RemoteTypes.proto";
+
+//Namespace for proper handling of remote observation store interactions
+message ObservationStoreNamespace
+{
+    //An enumeration of different requests/responses for handling remote observation store processes
+    enum ObservationStoreMessageType
+    {
+        //Request to get observations from the mil.dod.th.core.persistence.ObservationStore instance
+        //on the receiving remote system.
+        //Response is contained in GetObservationResponse
+        GetObservationRequest = 1;
+
+        //Response to GetObservationRequest
+        GetObservationResponse = 2;
+        
+        //Request to remove an observation or observations by criteria from the
+        //mil.dod.th.core.persistence.ObservationStore instance on the receiving remote system.
+        //Response is contained in RemoveObservationResponse
+        RemoveObservationRequest = 3;
+
+        //Response to the RemoveObservationRequest
+        RemoveObservationResponse = 4;
+
+        //Request to remove an observation or observations by UUID from the mil.dod.th.core.persistence.ObservationStore
+        //instance on the receiving remote system.
+        //Response is contained in RemoveObservationByUUIDResponse
+        RemoveObservationByUUIDRequest = 5;
+
+        //Response to the RemoveObservationByUUIDRequest
+        RemoveObservationByUUIDResponse = 6;
+
+        //Request to find particular observations by UUID from the mil.dod.th.core.persistence.ObservationStore instance
+        //on the receiving remote system.
+        //Response contained in FindObservationByUUIDResponse
+        FindObservationByUUIDRequest = 7;
+
+        //Response to FindObservationByUUIDRequest
+        FindObservationByUUIDResponse = 8;
+        
+        //Request to get the count of observations based on the given query criteria.
+        GetObservationCountRequest = 9;
+        
+        //Response to GetObservationCountRequest. Contains the number of observations based on the given query in the request
+        //message.
+        GetObservationCountResponse = 10;
+    }
+    
+    //This is the observation store message type
+    required ObservationStoreMessageType type = 1;
+
+    // serialization of the data associated with the message (may be n/a), represents a protocol buffer message where
+    // the type is the MessageType field value with "Data" appended, for this namespace this would be
+    // "[ObservationStoreMessageType]Data"
+    optional bytes data = 100;
+}
+
+//Message that contains a query for an observation or observations.
+message GetObservationRequestData
+{
+    //the query that is to be used to retrieve observations
+    required Query obsQuery = 1; 
+
+    // Indicates what data format the observation(s) should be sent as. Only NATIVE is supported at this time.
+    optional LexiconFormat.Enum observationFormat = 2 [default = NATIVE];
+}
+
+//Message that contains the response to a query request for an observation or observations
+message GetObservationResponseData
+{
+    // Indicates what data format the observation(s) are in. Only NATIVE is supported at this time.
+    optional LexiconFormat.Enum observationFormat = 1 [default = NATIVE];
+
+    // A list of UUIDs of observations that match the query. The list may be empty if no observations were found.
+    repeated UUID observationUuid = 2;
+
+    // A list of observations that match the query. The list may be empty if no observations were found.
+    repeated Observation observationNative = 3;
+
+    // A list of observations in XML format that match the query. The list may be empty if no observations were found.
+    repeated bytes observationXml = 4;
+}
+
+//Message that contains the request for removal of an observation or observations.
+message RemoveObservationRequestData
+{
+    //the query that is to be used to delete observations
+    required Query obsQuery = 1;
+}
+
+//Message that contains the number of observations removed due to the remove request.
+message RemoveObservationResponseData
+{
+    //the number of observations that have been removed
+    required int64 numberOfObsRemoved = 1;
+}
+
+//Message for removing particular observations by UUID
+message RemoveObservationByUUIDRequestData
+{
+    //The UUIDs of observations
+    repeated UUID uuidOfObservation = 1;
+}
+
+//Message for finding particular observations by UUID
+message FindObservationByUUIDRequestData
+{
+    //The UUIDs of observations
+    repeated UUID uuidOfObservation = 1;
+
+    // Indicates what data format the observation should be sent as. Only NATIVE is supported at this time.
+    optional LexiconFormat.Enum observationFormat = 2 [default = NATIVE];
+}
+
+//Message for the response to FindObservationByUUIDRequest
+message FindObservationByUUIDResponseData
+{
+    // Indicates what data format the observation(s) are in. Only NATIVE is supported at this time. UUID_ONLY will never
+    // be supported as the requester has sent a list of UUIDs.
+    optional LexiconFormat.Enum observationFormat = 1 [default = NATIVE];
+
+    // A list of observations that have the requested UUIDs. The list may be empty if no observations were found.
+    repeated Observation observationNative = 2;
+
+    // A list of observations in XML format that have the requested UUIDs. The list may be empty if no observations were
+    // found.
+    repeated bytes observationXml = 3;
+}
+
+//Message that contains the query that is to be used when gathering the count of observations.
+//If count of all observations is desired, use a default instance of the Query message. Setting
+//the sort order on the query does not have any affect on results.
+message GetObservationCountRequestData
+{
+    //the query that is to be used when retrieving the count of observations.
+    required Query obsQuery = 1;
+}
+
+//Message for the response to GetObservationCountRequest which contains the total count
+//of observations based on the query sent in the request message.
+message GetObservationCountResponseData
+{
+    //the count of observations based on the query given in the request.
+    required int64 count = 1;
+}
+
+//Message that represent time constraints by which to query or remove observations. The start/stop time
+//values are expected to be UTC time. When observations are created they use a date time format which is
+//converted to a java.util.Calendar Date. For the purpose of messages the
+//java.util.Calendar Date is converted to a 64bit integer, this is the same storage format used in XML. The
+//64bit integer form of the date is calculated by the number of milliseconds since 1 January 1970.
+message TimeConstraintData
+{
+    //Start time for the query
+    required int64 startTime = 1;
+
+    //Stop time for the query
+    required int64 stopTime = 2;
+}
+
+//Message to limit the range of the observations from the given query based on sorting order.
+message Range
+{
+    //Zero based inclusive index of the first observation to retrieve
+    required int32 fromInclusive = 1;
+    
+    //Zero based exclusive index of the last observation to retrieve
+    required int32 toExclusive = 2;
+}
+
+//Sorting field used to determine which observation field the returned observations are sorted by.
+enum SortField
+{
+    //Sort by the created timestamp field.
+    CreatedTimestamp = 1;
+
+    //Sort by the observed timestamp field.
+    ObservedTimestamp = 2;
+}
+
+//Sorting order used for setting the order of the queried items retrieved from the store.
+enum SortOrder
+{
+    //Sort ascending (e.g., 0, 1, 2, 3 or A, B, C).
+    Ascending = 1;
+
+    //Sort descending (e.g., 9, 8, 7, 6 or Z, Y, X).
+    Descending = 2;
+}
+
+//This message assists with interactions to the remote observation store. 
+//A valid Query message can be composed of multiple optional fields. If no fields are set then all observations
+//will be retrieved or removed.
+//Retrieving Example: if an asset UUID is set in this message then observations relating to that asset's UUID will be
+//returned in the response message.
+//Removal/Delete Example: ObservationType is set in this message then all observations in the remote observation store
+//corresponding to that type will be deleted.
+message Query
+{
+    //The UUID of an asset. Do not specify if an asset type has already been set.
+    optional UUID assetUuid = 1;
+
+    //Fully Qualified Class Name of a type of asset. Do not specify if an UUID for an asset has been set.
+    optional string assetType = 2;
+
+    //Enum describing supported observation types.
+    repeated ObservationSubType.Enum observationSubType = 3;
+
+    //The creation time range to narrow the observation data by, creation time is always set by the system when the
+    //observation is submitted for persisting. Can be used in combination with observedTimeRange if both ranges should
+    //be used.
+    optional TimeConstraintData createdTimeRange = 4;
+    
+    //The maximum number observations to retrieve. The maximum should not be set if Query is used for a remove
+    //request.
+    optional int32 maxNumberOfObs = 5;
+    
+    //A range of observations to retrieve based on the SortOrder. The range should not be specified when creating
+    //a Query for a remove request.
+    optional Range range = 6;
+    
+    //The mil.dod.th.core.persistence.ObservationQuery.SortOrder which specifies the order that observations
+    //will be returned. Must be set in combination with sortField, otherwise it will be ignored.
+    optional SortOrder sortOrder = 7;
+
+    //The mil.dod.th.core.persistence.ObservationQuery.SortField which specifies the attribute of an observation used
+    //to perform ordering. Must be set in combination with sortOrder, otherwise it will be ignored.
+    optional SortField sortField = 8;
+
+    //The observed time range to narrow the observation data by, observed time is set by plug-ins and may not be
+    //available. Observations that do not have observed time set will not be returned. Can be used in combination with
+    //createdTimeRange if both ranges should be used.
+    optional TimeConstraintData observedTimeRange = 9;
+    
+    //The system ID to filter the returned observations on.
+    optional int32 systemId = 10;
+}

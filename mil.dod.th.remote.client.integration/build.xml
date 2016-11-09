@@ -1,0 +1,79 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+
+<project name="mil.dod.th.remote.client.integration" default="setup">
+    
+    <import file="../cnf/build.xml" />
+    <import file="../cnf/ant/kill-controller.xml" />
+    
+    <target name="init" depends="master.init">
+        <property name="deploy.dir" value="${target}/deploy/controller" />
+    </target>
+        
+    <target name="setup" depends="init" description="Deploy needed files to run controller">
+
+        <!-- put in necessary location for running controller.bnd directly from Eclipse Bnd launcher -->
+        <copy todir="encrypt-conf" >
+            <fileset dir="${common.target.dir}/encrypt-conf" />
+        </copy>
+        
+        <!-- put controller in deploy folder to be run by Ant (requires felix main and conf folders too) -->
+        <mkdir dir="${deploy.dir}" />
+        <delete dir="${deploy.dir}/${bin}" />
+        <bndrunbundles bndFile="felix.main.bndrun" outputDir="${deploy.dir}/${bin}" />
+        <copy todir="${deploy.dir}/encrypt-conf" >
+            <fileset dir="${common.target.dir}/encrypt-conf" />
+        </copy>
+        <copy todir="${deploy.dir}/conf" >
+            <fileset dir="${common.target.dir}/conf" />
+            <fileset file="configs.xml" />
+            <fileset file="th.system.properties" />
+        </copy>
+        <delete dir="${deploy.dir}/bundle" />
+        <bndrunbundles bndFile="controller.bndrun" outputDir="${deploy.dir}/bundle" />
+    </target>
+    
+    <target name="launch" depends="setup">
+        <java fork="true" 
+              classname="org.apache.felix.main.Main" 
+              dir="${deploy.dir}"
+              failonerror="true">
+            <jvmarg value="-ea" />
+            <classpath>
+                <fileset dir="${deploy.dir}/${bin}" includes="*.jar"/>
+            </classpath>
+            <sysproperty key="gosh.args" value="--noi" />
+        </java>
+    </target>
+    
+    <target name="test" depends="setup" description="Start up the controller and run client tester">
+        <parallel>
+            <!-- run controller as daemon so it stops when Ant is done even if the shutdown command doesn't work -->
+            <daemons> 
+                <antcall target="launch" />
+            </daemons>
+            <sequential>
+                <!-- give controller a chance to start before running examples and tests -->
+                <sleep seconds="35" />
+                <antcall target="master.test" />
+                <!-- give controller a chance to stop before continuing -->
+                <sleep seconds="10" />
+                <!-- make sure the controller is killed -->
+                <antcall target="try-kill-controller-processes" />
+            </sequential>
+        </parallel>
+    </target>
+    
+</project>

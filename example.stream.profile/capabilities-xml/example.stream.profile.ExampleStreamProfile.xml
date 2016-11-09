@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+
+<StreamProfileCapabilities xmlns="capability.datastream.core.th.dod.mil"
+    productName="ExampleStreamProfile" 
+    description="An example stream profile plugin"
+    manufacturer="Example, Inc."
+    xmlns:stream="http://th.dod.mil/core/datastream/types">
+    
+    <format>
+        <stream:mimeFormat>video/mp4</stream:mimeFormat>
+    </format>
+    
+    <format>
+        <stream:mimeFormat>video/mpeg</stream:mimeFormat>
+    </format>
+    
+    <minBitrateKbps>0.1</minBitrateKbps>
+    
+    <maxBitrateKbps>100000000</maxBitrateKbps>
+   
+</StreamProfileCapabilities>

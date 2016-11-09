@@ -1,0 +1,152 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+import "shared.proto";
+import "asset/capability/AssetCapabilities.proto";
+import "mapTypes.proto";
+
+//Namespace for proper handling of remote asset directory service
+message AssetDirectoryServiceNamespace
+{
+    //An enumeration of different requests/responses for handling remote asset directory service
+    enum AssetDirectoryServiceMessageType
+    {
+        //Request to get all the asset factory names this service knows, responses are contained in
+        //GetAssetTypesResponse
+        GetAssetTypesRequest = 1;
+
+        //Response for GetAssetTypesRequest
+        GetAssetTypesResponse = 2;
+
+         //Request to create a new asset, responses are contained in CreateAssetResponse
+        CreateAssetRequest = 3;
+
+        //Response for CreateAssetRequest
+        CreateAssetResponse = 4;
+
+        //Request to get all the assets this service knows, responses are contained within GetAssetsResponse
+        GetAssetsRequest = 5;
+
+        //Response for GetAssetsRequest
+        GetAssetsResponse = 6;
+       
+        //Request to get the capabilities known to the asset, responses are contained within GetCapabilitiesResponse
+        GetCapabilitiesRequest = 7;
+
+        //Response for GetCapabilitiesRequest
+        GetCapabilitiesResponse = 8;
+        
+        //Request to get a list of asset types that are scannable
+        GetScannableAssetTypesRequest = 9;
+
+        //Response to GetScannableAssetTypesRequest
+        GetScannableAssetTypesResponse = 10;
+        
+        //Request to scan for new assets, responses are contained in ScanForNewAssetsResponse
+        ScanForNewAssetsRequest = 11;
+
+        //Response for ScanForNewAssetsRequest
+        ScanForNewAssetsResponse = 12;
+
+    }
+
+    //This is the asset directory service message type
+    required AssetDirectoryServiceMessageType type = 1;
+
+    // serialization of the data associated with the message (may be n/a), represents a protocol buffer message where
+    // the type is the MessageType field value with "Data" appended, for this namespace this would be
+    // "AssetDirectoryServiceMessageTypeData"
+    optional bytes data = 2;
+}
+
+//This message returns an ordered list of asset types and an ordered list of asset names.
+//Lists are indexed so that index i in each list corresponds to the same asset.
+message GetAssetTypesResponseData
+{
+    // product type of the factory object in fully qualified class name format as returned by
+    // mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    repeated string productType = 1;
+
+    // human readable names of the products that this factory produces returned by 
+    // mil.dod.th.core.factory.FactoryDescriptor.getProductName()
+    repeated string productName = 2;
+}
+
+//This message requests a scan for new assets. Optionally a specific type to scan for can be included in the
+//message. If no type is specified, assets of any type will be scanned for.
+message ScanForNewAssetsRequestData
+{
+    // product type of the factory object in fully qualified class name format as returned by
+    // mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    // if set, will scan for one type of a particular asset
+    optional string productType = 1;
+}
+
+//This message requests the creation of an asset of the type specified.
+message CreateAssetRequestData
+{
+    // product type of the factory object in fully qualified class name format as returned by
+    // mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    required string productType = 1;
+    
+    //Name to give the asset, if not set the default name will be used
+    optional string name = 2;
+
+    //Map of properties that need to be set for the asset to be created. Only properties that override or don't declare
+    //a default value need to be included.
+    repeated SimpleTypesMapEntry properties = 3;
+}
+
+//This message returns the identifying information of a newly created asset.
+message CreateAssetResponseData
+{
+    //factory object info of the newly created asset
+    required FactoryObjectInfo info = 1;
+}
+
+//This message returns a list of the identifying information for each asset known to the system.
+//If no assets are known to the system then an empty list is returned.
+message GetAssetsResponseData
+{
+    // details about the base factory object info for the assets this service knows
+    repeated FactoryObjectInfo assetInfo = 1;
+}
+
+//This message requests the capabilities from the factory that produces assets of a specified type.
+message GetCapabilitiesRequestData
+{
+    // product type of the factory object in fully qualified class name format as returned by
+    // mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    required string productType = 1;
+}
+
+//This message returns the capabilities of a factory that produces assets of a specified type.
+message GetCapabilitiesResponseData
+{
+    // product type of the factory object in fully qualified class name format as returned by
+    // mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    required string productType = 1;
+
+    //capabilities that are known to the asset
+    required AssetCapabilities capabilities = 2;
+}
+
+//This message is the response to the request for a list of asset product types that are scannable
+message GetScannableAssetTypesResponseData
+{
+    //scannable asset product types; the product types represented are equivalent to the fully qualified class name
+    //returned by mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    repeated string scannableAssetType = 1;
+}
+

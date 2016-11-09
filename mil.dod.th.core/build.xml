@@ -1,0 +1,84 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<project name="mil.dod.th.core" default="build">
+    
+    <import file="../cnf/build.xml" />
+    
+    <!-- override so the core.api bundle is not deployed to system, bundle is for building only, core.api.runtime JAR 
+         is used in deployments -->
+    <target name="deploy-component" depends="deploy-component-check">
+        <copy todir="${bp.bundle.deploy.dir}">
+            <fileset dir="${target-dir}">
+                <include name="*.runtime.jar" />
+            </fileset>
+        </copy>
+    </target> 
+
+    <target name="compile" depends="template.compile,jdo-enhance" />
+        
+    <target name="clean" depends="template.clean,clean-jdo-enhance" />
+        
+    <target name="jdo-enhance" depends="init"
+                description="Enhances compiled classes with JDO annotations, assumes code is compiled already">
+        <path id="jdo.classpath">
+            <fileset dir="${localrepo.dir}" includes="org.datanucleus.api.jdo/*.jar" />
+            <fileset dir="${localrepo.dir}" includes="org.datanucleus/*.jar" />
+        </path>
+        <taskdef name="datanucleusenhancer" classname="org.datanucleus.enhancer.EnhancerTask" 
+            classpathref="jdo.classpath" />
+        <mkdir dir="enhance-bin" />
+        <datanucleusenhancer verbose="true" classpathref="jdo.classpath" failonerror="true" destination="enhance-bin">
+            <classpath>
+                <fileset id="xjc" dir="${deps.dir}/jaxb-xjc" includes="**/*.jar" />
+            </classpath>
+            <classpath path="${project.buildpath}" />
+            <jvmarg line="-Dlog4j.configuration=datanucleus.log4j.properties"/>
+        </datanucleusenhancer>
+    </target>
+
+    <target name="clean-jdo-enhance">
+        <delete dir="enhance-bin" includes="**/*" includeemptydirs="true" />
+    </target>
+    
+    <target name="javadoc" depends="init,build" if="srcjavafiles.present" 
+        description="Create Javadoc that includes JAXB generated code">
+        <javadoc
+            destdir="${target}/javadoc"
+            maxmemory="256M"
+            classpath="${project.buildpath}"
+            bootclasspath="${project.bootclasspath}"
+            access="private"
+            version="true"
+            use="true"
+            author="true"
+            splitindex="true"
+            windowtitle="${project.name}"
+            doctitle="${project.name}"
+            nodeprecated="false"
+            nodeprecatedlist="false"
+            notree="false"
+            noindex="false"
+            nohelp="false"
+            nonavbar="false"
+            useexternalfile="true"
+            additionalparam="-Xdoclint:-missing"> <!-- Missing comments or tags validated by Checkstyle, must use external file because there are so many files -->
+            <link offline="true" packagelistloc="${javadoc.package.list.dir}/java8" href="http://docs.oracle.com/javase/8/docs/api/" />
+            <link offline="true" packagelistloc="${javadoc.package.list.dir}/osgi4-core" href="https://osgi.org/javadoc/r4v43/core/" />
+            <link offline="true" packagelistloc="${javadoc.package.list.dir}/osgi4-cmpn" href="https://osgi.org/javadoc/r4v43/cmpn/" />
+            <fileset dir="${src}" includes="**/*.java" />
+            <fileset dir="${workspacedir}/mil.dod.th.core.lexicon" includes="**/core/**/*.java" />
+        </javadoc>
+    </target>
+</project>

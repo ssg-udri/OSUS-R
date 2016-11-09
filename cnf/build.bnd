@@ -1,0 +1,100 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+
+########################
+## BND BUILD SETTINGS ##
+########################
+
+
+## Global defaults are loaded from the bnd library (as shown below), place your
+## specific settings here. Additional settings are inherited from ext/*.bnd and
+## they will be overridden by anything you specify in this file.
+
+## General Options
+#project.dependson:     ${p-dependson;:}
+#project.bootclasspath: ${p-bootclasspath;:}
+#project.buildpath:     ${p-buildpath;:}
+#project.sourcepath:    ${p-sourcepath;:}
+#project.allsourcepath: ${p-allsourcepath;:}
+#project.output:        ${p-output}
+#project.testpath:      ${p-testpath;:}
+
+#-verbose:              false
+#project:               ${basedir}
+#src:                   src
+#bin:                   bin
+#testsrc:               test
+testbin:               test-bin
+#target-dir:            generated
+#target:                ${project}/${target-dir}
+#build:                 ${workspace}/cnf
+#p:                     ${basename;${project}}
+#project.name:          ${p}
+#plugin-dir:            ${build}/plugins
+lib:                    lib
+obj:                    obj
+
+## Java Compiler Options
+#java:                  java
+#javac:                 javac
+javac.source:          1.8
+javac.target:          1.8
+#javac.debug:           on
+
+## Bnd Options
+#-sources:              true
+#-sourcepath:           ${project}/src
+
+# if this is removed, building a single project will cause it to build all project dependencies, this doesn't work
+# since some projects use old commons build files, in the future can remove once commons files are removed
+donotrecurse:           true
+
+# directory to use for the core data directory when OSUS-R runs
+data.dir: ${target}/runtime-data
+
+## Properties from ext/*.bnd can be referenced in order to extend them. For
+## example, to add one additional plugin to the list defined in
+## ext/repositories.bnd:
+# -plugin: ${ext.repositories.-plugin}, org.example.MyPlugin
+
+## Git information
+Git-Descriptor:       ${system-allow-fail;git describe --dirty --always}
+Git-SHA:              ${system-allow-fail;git rev-list -1 HEAD}
+
+#TODO: TH-2548: this doesn't work with something like Jenkins that checks out by revision
+#Git-Branch:           ${system-allow-fail;git symbolic-ref --short -q HEAD}
+
+# common run properties
+-runee: JavaSE-1.8
+-runfw: org.apache.felix.framework
+-runsystempackages:  \
+    com.sun.xml.internal.bind
+-runvm: -ea
+-runtrace: true
+-runproperties: \
+    mil.dod.th.ose.data.dir=${data.dir}, \
+    target.dir=${target}
+
+# Requires Bndtools 2.5 or later
+eclipse.newaccessrules: true
+eclipse.debug: true
+
+## Put any custom properties in the custom.bnd file. This file will not be committed to the repository so it can have 
+## unique settings in it. Since this file is included after the properties above, the values in custom.bnd will override
+## what is set here.
+-include -cnf/custom.bnd
+
+## Uncomment the following to check the version of each bundle in this workspace when building
+## Currently disabled as false positives will presented
+#-diffignore: Git-Descriptor,Git-SHA,Git-Branch
+#-baseline: *

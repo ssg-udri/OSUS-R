@@ -1,0 +1,90 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Ant build file for the Java portion of the Controller platform interface 
+ unit.  This will build and test unit.
+
+==============================================================================
+-->
+
+<project name="mil.dod.th.ose.linux.serial" default="build">
+
+    <import file="../cnf/build.xml" />
+
+    <target name="init" depends="master.init">
+        <!-- 
+            Arch/Compiler properties are defined in cnf/ext/platform.bnd (if applicable for platform being built on).
+            Target can only enabled if an associated controller has already built.
+        -->
+        <condition property="target.enabled">
+            <and>
+                <os family="unix" />
+                <isset property="c.arch" />
+                <isset property="c.options" />
+                <isset property="exe.cc" />
+                <isset property="exe.ln" />
+            </and>
+        </condition>
+    </target>   
+    
+    <target name="compile-c" depends="init" if="target.enabled">
+        <echo>c.arch=${c.arch}</echo>
+        <echo>c.options=${c.options}</echo>
+        <echo>exe.cc=${exe.cc}</echo>
+        <echo>exe.ln=${exe.ln}</echo>
+        <mkdir dir="${obj}/${c.arch}" />
+        <property name="c.includes" value="-Isrc/c/include -I${java.home}/../include -I${java.home}/../include/linux"/>
+        <property name="c.flags" value="${c.options} ${c.includes}"/>
+        <property name="c.flags.objects" value="-c"/>
+        <apply executable="${exe.cc}" failonerror="true">
+            <arg line="${c.flags} ${c.flags.objects} -o"/>
+            <targetfile/>
+            <srcfile/>
+            <fileset dir="src/c" includes="*.c" />
+            <mapper type="glob" from="*.c" to="${projectdir}/${obj}/${c.arch}/*.o" />
+        </apply>
+        <pathconvert property="linker.objs" pathsep=" ">
+            <fileset dir="${obj}/${c.arch}" includes="*.o" />
+        </pathconvert>
+        <mkdir dir="${lib}/${c.arch}" />
+        <property name="outlibrary.path" value="${lib}/${c.arch}/libserialport.so" />
+        <exec executable="${exe.ln}" failonerror="true">
+            <arg line="-rdynamic -shared -o ${outlibrary.path} ${linker.objs}" />
+        </exec>
+    </target>
+    
+    <target name="compile" depends="compile-c,template.compile" description="Compile the source and test java files" />
+    
+    <!-- override default to deploy only the JAR file for the desired architecture, not all JAR files -->
+    <target name="deploy-component" depends="deploy-component-check" if="target.enabled">
+        <echo>Deploying ${c.arch} component for ${projectdir}</echo>
+        <fileset id="gen-jars" dir="${target}" includes="*.${c.arch}.jar" />
+        <pathconvert property="component-found" setonempty="false"> 
+            <fileset refid="gen-jars" /> 
+        </pathconvert> 
+        <fail message="No JAR files found for ${ant.file}" unless="component-found"/> 
+        <copy todir="${bp.bundle.deploy.dir}">
+            <fileset refid="gen-jars" />
+        </copy>
+    </target>
+    
+    <target name="clean" depends="template.clean" description="Remove all build files">
+        <delete failonerror="false">
+            <fileset dir="${lib}" includes="*.so" />
+            <fileset dir="${obj}" includes="**/*.o" />
+        </delete>
+    </target>
+    
+</project>

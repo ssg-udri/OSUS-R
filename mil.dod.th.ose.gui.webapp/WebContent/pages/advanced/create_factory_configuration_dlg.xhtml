@@ -1,0 +1,49 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ 
+ Dialog shown for creating a configuration.
+ 
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:configuration="http://java.sun.com/jsf/composite/configuration">
+
+    <p:dialog widgetVar="createFactoryConfigDlg" id="createFactoryConfig" width="700" header="Create Factory Configuration" resizable="false">
+       <h2>Configuration Values</h2>
+       <h:form id="createFactoryForm">
+          <p:outputPanel id="createFactoryConfigPanel">
+             <p:scrollPanel style="width:650px;height:300px;margin:0 auto" mode="native">
+                <configuration:configuration_table configList="#{createFactoryConfig.getPropertiesList()}" creationDialog="true"/>
+             </p:scrollPanel>
+          </p:outputPanel>
+          <div style="width:100%; margin-top:1em;margin-left:2em;">
+             <h:outputText value="*" style="color:red;"/>
+             <h:outputText value=" = Property is required or no default has been defined."/>
+          </div>
+          <div style="width:100%; margin-top:1em; text-align:center">
+             <p:commandButton id="createConfig" value="Create" update="@form" action="#{createFactoryConfig.createConfiguration()}" oncomplete="if (!args.validationFailed) createFactoryConfigDlg.hide();"/>
+             <p:commandButton id="cancelConfig" immediate="true" value="Cancel" onclick="createFactoryConfigDlg.hide();">
+             <p:resetInput target="createFactoryConfigPanel" />
+             </p:commandButton>
+          </div>
+       </h:form>
+    </p:dialog>  
+</ui:composition>

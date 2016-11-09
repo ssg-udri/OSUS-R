@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<p:MissionProgramTemplate xmlns:p="http://th.dod.mil/core/mp/model" xmlns:shared="http://th.dod.mil/core/types" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://th.dod.mil/core/mp/model ../resources/missionProgramSchema/MissionProgramTemplate.xsd ">
+  <p:source>
+<![CDATA[importClass(java.lang.Runnable)
+importPackage(Packages.mil.dod.th.core.types)
+importClass(Packages.org.osgi.service.event.EventHandler);
+
+      
+        
+//Variables
+subscribeEvent;
+triggerAsset;
+captureAsset;
+modalityType;
+triggerSensorId;
+
+executorService = mngExe.newCachedThreadPool();
+
+//
+// Function to determine which observation event to listen for
+//
+function subscribedEvent(theEvent) {
+    switch (theEvent.toLowerCase()) {
+        case "new":
+            return "mil/dod/th/core/persistence/ObservationStore/OBSERVATION_PERSISTED_WITH_OBS";
+        case "updated":
+            return "mil/dod/th/core/persistence/ObservationStore/OBSERVATION_MERGED_WITH_OBS";
+        case "both":
+            return "both";
+        default:
+            throw "Invalid value for event type: " + theEvent;
+    }
+}
+        
+obj = {
+    execute: function () {
+
+        runnable = {
+            run: function () {
+                //call capture data 
+                captureAsset.captureData();
+            }
+        }
+        captureDataTask = new Runnable(runnable);
+                    
+        eventObj = {
+            handleEvent: function (event) {
+                observation = event.getProperty("observation");
+                //check to see if the sensings need to be evaluated
+                if (!modalityType.equals("Any")) {
+                    var found = false;
+                    //get the sensings
+                    sensings = observation.getSensings();
+                    for (var i = 0; i < sensings.size(); i++) {
+                        sense = sensings.get(i);
+                        if (sense.getModalityType().value().equals(modalityType)) {
+                            found = true;
+                        }
+                    }
+                    if (!found) {  // observation does not contain the desired sensing modality
+                        return;
+                    }
+                }
+                if (triggerSensorId.equals("n/a") || triggerSensorId.equals(observation.getSensorId()))
+                {
+                    //initiate the captureData event on the captureAsset
+                    logSvc.info("Asset %s has been triggered because event %s has occured for asset %s with sensor id %s", 
+                            [captureAsset.getName(), subscribeEvent, triggerAsset.getName(), observation.getSensorId()]);
+
+                    executorService.submit(captureDataTask);
+                }
+                else
+                {
+                    logSvc.debug("Trigger from sensor id %s, not %s, so data will not be captured", [observation.getSensorId(), triggerSensorId]);
+                }
+            }
+        };
+        
+        handler = new EventHandler(eventObj);
+
+        //figure out what event to subscribe to
+        topic = subscribedEvent(subscribeEvent);
+
+        filter = "(obj.uuid=" + triggerAsset.getUuid() + ")";
+        if (topic == "both") {
+            reg = evtHndHlp.registerHandler(handler, 
+                "mil/dod/th/core/persistence/ObservationStore/OBSERVATION_PERSISTED_WITH_OBS", filter);
+            reg2 = evtHndHlp.registerHandler(handler, 
+                "mil/dod/th/core/persistence/ObservationStore/OBSERVATION_MERGED_WITH_OBS", filter);
+        } else {
+            reg = evtHndHlp.registerHandler(handler, topic, filter);
+        }
+    },
+    
+    test: function()
+    {
+        triggerAsset.captureData();
+        captureAsset.captureData();
+        return TestResult.class.static.PASSED;
+    },
+    shutdown: function()
+    {
+        evtHndHlp.unregisterHandler(reg);
+        if (topic == "both")
+        {
+            evtHndHlp.unregisterHandler(reg2);
+        }
+    }
+};
+]]>
+</p:source>
+  <p:name>triggered-data-captured</p:name>
+  <p:description>This mission involves two assets. One asset will trigger another asset 
+     to capture data. The sensor id of the trigger asset must match the entered value for a capture data to occur.
+     The mission requires one asset capable of capturing data, a value for the system to use to trigger 
+     the other asset to capture data, a value for whether the data captured should be saved, and the modality/type of 
+     information that will trigger the data capturing. </p:description>
+     
+  <p:primaryImage encoding="image/png">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</p:primaryImage>
+  
+  <p:withInterval>false</p:withInterval>
+  <p:withImageCapture>false</p:withImageCapture>
+  <p:withSensorTrigger>true</p:withSensorTrigger>
+  <p:withTimerTrigger>false</p:withTimerTrigger>
+  <p:withPanTilt>false</p:withPanTilt>
+  <p:supportTestExecution>true</p:supportTestExecution>
+
+  <p:variableMetaData>
+    <shared:name>subscribeEvent</shared:name>
+    <shared:defaultValue>Both</shared:defaultValue>
+    <shared:optionValues>New</shared:optionValues>
+    <shared:optionValues>Updated</shared:optionValues>
+    <shared:optionValues>Both</shared:optionValues>
+    <shared:description>Whether the trigger for the 'triggered asset' should be new observations or just updated observations from 
+    the asset that is the trigger. </shared:description>
+    <shared:humanReadableName>Event trigger</shared:humanReadableName>
+    <p:type>String</p:type>
+  </p:variableMetaData>
+  
+  <p:variableMetaData>
+    <shared:name>triggerAsset</shared:name>
+    <shared:description>The asset which will trigger the other asset to capture data.</shared:description>
+    <shared:humanReadableName>Trigger Asset</shared:humanReadableName>
+    <p:type>Asset</p:type>
+  </p:variableMetaData>
+  
+  <p:variableMetaData>
+    <shared:name>captureAsset</shared:name>
+    <shared:description>The asset which will be triggered to capture data.</shared:description>
+    <shared:humanReadableName>Capture Asset</shared:humanReadableName>
+    <p:type>Asset</p:type>
+  </p:variableMetaData>
+  
+  <p:variableMetaData>
+    <shared:name>modalityType</shared:name>
+    <shared:defaultValue>Any</shared:defaultValue>
+    <shared:optionValues>Any</shared:optionValues>
+    <shared:optionValues>Acoustic</shared:optionValues>
+    <shared:optionValues>Biological</shared:optionValues>
+    <shared:optionValues>Chemical</shared:optionValues>
+    <shared:optionValues>GPS</shared:optionValues>
+    <shared:optionValues>Hyperspectral</shared:optionValues>
+    <shared:optionValues>Imager</shared:optionValues>
+    <shared:optionValues>INS</shared:optionValues>
+    <shared:optionValues>Ladar</shared:optionValues>
+    <shared:optionValues>Magnetic</shared:optionValues>
+    <shared:optionValues>Other</shared:optionValues>
+    <shared:optionValues>Power</shared:optionValues>
+    <shared:optionValues>PIR</shared:optionValues>
+    <shared:optionValues>Radar</shared:optionValues>
+    <shared:optionValues>Radiation</shared:optionValues>
+    <shared:optionValues>RF</shared:optionValues>
+    <shared:optionValues>RFID</shared:optionValues>
+    <shared:optionValues>Seismic</shared:optionValues>
+    <shared:optionValues>WaterQuality</shared:optionValues>
+    <shared:optionValues>Weather</shared:optionValues>
+    <shared:description>The type/modality required to trigger the data capture.</shared:description>
+    <shared:humanReadableName>Modality</shared:humanReadableName>
+    <p:type>String</p:type>
+  </p:variableMetaData>
+  <p:variableMetaData>
+    <shared:name>triggerSensorId</shared:name>
+    <shared:defaultValue>n/a</shared:defaultValue>
+    <shared:description>Only trigger the capture device if the trigger asset contains this sensor ID or ignore if 'n/a'.</shared:description>
+    <shared:humanReadableName>Trigger Sensor ID</shared:humanReadableName>
+    <p:type>String</p:type>
+  </p:variableMetaData>
+</p:MissionProgramTemplate>

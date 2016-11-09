@@ -1,0 +1,80 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+# The classes in the bundle have a lot of interdependencies which keep it from being split up. The API classes depend
+# on the implementation classes and vice versa so all classes must be in the same bundle or else there would be a cycle
+# at runtime.
+#
+# Also, the API includes JDO enhanced classes so they can be persisted at runtime and the current version of DataNucleus
+# requires all JDO enhanced classes to be in the same bundle. DataNucleus keeps a static collection of persistable types
+# and when one type is initially loaded, it will attempt to load all other classes using the same classloader instead of
+# the classloader for each class. It is possible newer version of DataNucleus have fixed this issue. Since the 
+# implementation also has a JDO enhanced class, PersistentDataType, this also keeps the API and implementation classes
+# together.
+#
+# Additionally the API classes are annotated with JAXB for validation which requires all schema files to be in the same
+# bundle the way resources are found (use relative paths only). You can programmatically define the schema location of 
+# the top level type (observation, command, capability, etc.), but the Java XML library will only look in the same
+# bundle for inner types. For example, the observation schema is in this bundle, so therefore, the shared schemas used 
+# by the observation schema must be in the bundle too. Further, since most JAXB classes are already in this bundle, all
+# schema files are included within. Ideally, a seperate bundle would contain the scheam files with just the JAXB 
+# classes.
+#
+
+Bundle-Version: 1.1.0.${tstamp}
+Bundle-Name: Terra Harvest Open Software Environment (THOSE) Core
+Bundle-Description:  Contains a standard reference implementation for the Terra Harvest standard.
+Bundle-Vendor: UDRI
+
+Export-Package: \
+    mil.dod.th.ose.core.factory.api.*, \
+    mil.dod.th.ose.core.factory.proto, \
+    mil.dod.th.ose.core.pm.api
+Private-Package: \
+    mil.dod.th.ose.core.*
+# org.apache.felix.service.command requires the provisional status in order to be accepted as an import  
+Import-Package: \
+    org.apache.felix.service.command;status=provisional, \
+    *
+Service-Component: *
+Include-Resource: \
+    schemas=../mil.dod.th.core.lexicon/schemas, \
+    resources/
+
+-buildpath:  \
+    osgi.cmpn,\
+    osgi.core,\
+    ${junit},\
+    ${mockito},\
+    ${powermock},\
+    mil.dod.th.ose.utils;version=latest,\
+    mil.dod.th.core.api;version=latest,\
+    mil.dod.th.core.proto.messages;version=latest,\
+    mil.dod.th.ose.shared;version=latest,\
+    mil.dod.th.ose.test.all;version=latest,\
+    mil.dod.th.ose.core.proto;version=latest,\
+    mil.dod.th.ose.metatype;version=latest,\
+    mil.dod.th.ose.mp.runtime;version=latest,\
+    biz.aQute.bnd.annotation,\
+    com.google.guava,\
+    com.google.protobuf;version=2.6.1,\
+    org.apache.commons.lang,\
+    javax.jdo,\
+    org.datanucleus.api.jdo,\
+    org.datanucleus,\
+    org.datanucleus.store.rdbms,\
+    org.apache.felix.gogo.runtime,\
+    ${data.nucleus.dir}/geronimo-jta_1.1_spec-1.1.jar;version=file
+    
+# Specify configuration interfaces to be generated into metatype xml.
+-metatype: *

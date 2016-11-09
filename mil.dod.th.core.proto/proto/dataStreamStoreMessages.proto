@@ -1,0 +1,144 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+option java_package = "mil.dod.th.core.remote.proto";
+import "shared.proto";
+
+//Namespace for proper handling of remote DataStreamStore
+message DataStreamStoreNamespace
+{
+    //An enumeration of different requests/responses for handling remote DataStreamStore
+    enum DataStreamStoreMessageType
+    {
+        //Request to enable an archiving operation for a data stream
+        EnableArchivingRequest = 1;
+        
+        //Response to EnableArchivingRequest
+        EnableArchivingResponse = 2;
+        
+        //Request to disable an archiving operation for a data stream
+        DisableArchivingRequest = 3;
+        
+        //Response to DisableArchivingRequest
+        DisableArchivingResponse = 4;
+        
+        //Remote client sends this message periodically to prevent an archiving process
+        //from writing to disk
+        ClientAck = 5;
+        
+        //Request to get the time periods of available archived data associated with
+        //a particular stream profile
+        GetArchivePeriodsRequest = 6;
+        
+        //Response to GetArchivePeriodsRequest
+        GetArchivePeriodsResponse = 7;
+        
+        //Request to retrieve archived data
+        GetArchivedDataRequest = 8;
+        
+        //Response to GetArchivedDataRequest
+        GetArchivedDataResponse = 9;
+        
+    }
+
+    //This is the DataStreamStore message type
+    required DataStreamStoreMessageType type = 1;
+
+    // Serialization of the data associated with the message (may be N/A). Represents a protocol 
+    // buffer message where the type is the MessageType field value with "Data" appended. For this 
+    // namespace, this would be "DataStreamStoreMessageTypeData"
+    optional bytes data = 2;
+}
+
+//Request to enable archiving
+message EnableArchivingRequestData
+{
+
+    //Unique identifier of the stream profile instance
+    required UUID streamProfileUuid = 1;
+    
+    //True to archive the source datastream without any transcoding; false
+    //to use the output of the transcoding process defined by the stream profile.
+    required bool useSourceBitrate = 2;
+    
+    //Amount of time in seconds that a client has to send a ClientAck message
+    //before the controller begins archiving data to disk. Use a value of 0 to
+    //continuously archive, regardless of ClientAck messages.
+    required uint64 heartbeatPeriod = 3;
+    
+    //The initial delay in seconds until the controller will start the first
+    //heartbeatPeriod countdown.
+    required uint64 delay = 4;
+}
+
+//Request to disable archiving
+message DisableArchivingRequestData
+{
+    //Unique identifier of the stream profile instance
+    required UUID streamProfileUuid = 1;
+}
+
+//
+message ClientAckData
+{
+    //Unique identifier of the stream profile instance
+    required UUID streamProfileUuid = 1;
+}
+
+//Request the available time periods of archived data
+message GetArchivePeriodsRequestData
+{
+    //Unique identifier of the stream profile instance
+    required UUID streamProfileUuid = 1;
+}
+
+//Returns a list of date/time ranges of available data
+message GetArchivePeriodsResponseData
+{
+    //Chronological list of non-overlapping date/time ranges
+    repeated DateRange dateRange = 1;
+}
+
+//Contains start and stop points for a date range
+message DateRange
+{
+    //Start time in milliseconds since January 1, 1970, 00:00:00 GMT
+    required uint64 startTime = 1;
+    
+    //Stop time in milliseconds since January 1, 1970, 00:00:00 GMT
+    required uint64 stopTime = 2;
+}
+
+//Request archived data for a given date range
+message GetArchivedDataRequestData
+{
+    //Unique identifier of the stream profile instance
+    required UUID streamProfileUuid = 1;
+    
+    //Contains start and stop date/times of the requested data
+    required DateRange dateRange = 2;
+}
+
+//Returns a block of archived streaming data. Potentially many GetArchivedDataReponse
+//messages will be sent in response to a single GetArchivedDataRequest message.
+message GetArchivedDataResponseData
+{
+    //Sequence number to specify the order of multiple GetArchivedDataResponse messages
+    //for a single GetArchivedDataRequest message
+    required uint64 sequenceNum = 1;
+    
+    //True if this is the last response message in the sequence; false otherwise
+    required bool isLastResponse = 2;
+    
+    //A binary block of streaming data as it is stored on the controller
+    required bytes dataBlock = 3;
+}

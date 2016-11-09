@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<!DOCTYPE jdo PUBLIC
+    "-//Sun Microsystems, Inc.//DTD Java Data Objects Metadata 2.0//EN"
+    "http://java.sun.com/dtd/jdo_2_0.dtd">
+<jdo>
+    <package name="mil.dod.th.core.observation.types">
+        <class
+              name="Observation"
+              detachable="true">
+            <inheritance strategy="new-table"/>
+            <field
+                  name="relatedObservations"
+                  persistence-modifier="persistent"
+                  serialized="true"
+                  default-fetch-group="true"/>
+            <field
+                  name="audioMetadata"
+                  persistence-modifier="persistent"
+                  dependent="true"
+                  default-fetch-group="true">
+                  <unique name="AUDIO_METADATA_CONSTRAINT" />
+            </field>
+            <field
+                  name="assetLocation"
+                  persistence-modifier="persistent"
+                  dependent="false"
+                  default-fetch-group="true">
+                  <join unique="true" delete-action="restrict" />
+            </field>
+            <field
+                  name="platformOrientation"
+                  persistence-modifier="persistent"
+                  dependent="false"
+                  default-fetch-group="true">
+                  <join unique="true" delete-action="restrict" />
+            </field>
+            <field
+                  name="assetOrientation"
+                  persistence-modifier="persistent"
+                  dependent="false"
+                  default-fetch-group="true">
+                  <join unique="true" delete-action="restrict" />
+            </field>
+            <field
+                  name="pointingLocation"
+                  persistent-modifier="persistent"
+                  dependent="false"
+                  default-fetch-group="true">
+                  <join unique="true" delete-action="restrict" />
+            </field>
+            <field
+                  name="modalities"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
+            <field
+                  name="detection"
+                  persistence-modifier="persistent"
+                  dependent="true"
+                  default-fetch-group="true">
+                  <unique name="DETECTION_CONSTRAINT" />
+            </field>
+            <field
+                  name="digitalMedia"
+                  persistence-modifier="persistent"
+                  dependent="false"
+                  default-fetch-group="true">
+                  <join delete-action="restrict" />
+            </field>
+            <field
+                  name="imageMetadata"
+                  persistence-modifier="persistent"
+                  dependent="true"
+                  default-fetch-group="true">
+                  <unique name="IMAGE_METADATA_CONSTRAINT" />
+            </field>
+            <field
+                  name="status"
+                  persistence-modifier="persistent"
+                  dependent="true"
+                  default-fetch-group="true">
+                  <unique name="STATUS_CONSTRAINT" />
+            </field>
+            <field
+                  name="videoMetadata"
+                  persistence-modifier="persistent"
+                  dependent="true"
+                  default-fetch-group="true">
+                  <unique name="VIDEO_METADATA_CONSTRAINT" />
+            </field>
+            <field
+                  name="weather"
+                  persistence-modifier="persistent"
+                  dependent="true"
+                  default-fetch-group="true">
+                  <unique name="WEATHER_CONSTRAINT" />
+            </field>
+            <field
+                  name="biological"
+                  persistence-modifier="persistent"
+                  dependent="true"
+                  default-fetch-group="true">
+                  <unique name="BIOLOGICAL_CONSTRAINT" />
+            </field>
+            <field
+                  name="chemical"
+                  persistence-modifier="persistent"
+                  dependent="true"
+                  default-fetch-group="true">
+                  <unique name="CHEMICAL_CONSTRAINT" />
+            </field>
+            <field
+                  name="cbrneTrigger"
+                  persistence-modifier="persistent"
+                  dependent="true"
+                  default-fetch-group="true">
+                  <unique name="CBRNE_TRIGGER_CONSTRAINT" />
+            </field>
+            <field
+                  name="waterQuality"
+                  persistence-modifier="persistent"
+                  dependent="true"
+                  default-fetch-group="true">
+                  <unique name="WATER_QUALITY_CONSTRAINT" />
+            </field>
+            <field
+                  name="power"
+                  persistence-modifier="persistent"
+                  dependent="true"
+                  default-fetch-group="true">
+                  <unique name="POWER_CONSTRAINT" />
+            </field>
+            <field
+                  name="observedTimestamp"
+                  persistence-modifier="persistent">
+                  <index name="OBSERVED_TIMESTAMP_INDEX" />
+            </field>
+            <field
+                  name="createdTimestamp"
+                  persistence-modifier="persistent">
+                  <index name="CREATED_TIMESTAMP_INDEX" />
+            </field>
+            <field
+                  name="assetUuid"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true">
+                  <index name="ASSETUUID_INDEX" />
+            </field>
+            <field
+                  name="assetType"
+                  persistence-modifier="persistent">
+                  <index name="ASSETTYPE_INDEX" />
+            </field>
+            <field
+                  name="uuid"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true">
+                  <unique name="UUID_CONSTRAINT" />
+                  <index name="UUID_INDEX" />
+            </field>
+            <field
+                  name="version"
+                  persistence-modifier="persistent" 
+                  serialized="true"
+                  default-fetch-group="true" />
+            <field
+                  name="reserved"
+                  persistence-modifier="persistent" 
+                  serialized="true"
+                  default-fetch-group="true" />
+        </class>
+    </package>
+</jdo>

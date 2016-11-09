@@ -1,0 +1,92 @@
+/*==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+This style sheet is for the observation tab on the asset page. 
+==============================================================================
+*/
+
+.observationHeader .ui-panel-titlebar
+{
+    padding:1em 1em 0em 1em;
+}
+
+.observationHeader td
+{
+    padding-right:5px !important;
+}
+
+.observationHeader .ui-panel-titlebar-icon, .observationHeader .ui-panel-titlebar-icon:focus,
+.observationHeader .ui-panel-titlebar-icon:hover
+{
+    margin-top: -3.5em;
+}
+
+.observationViewer .ui-dialog-title
+{
+    display: inline !important;
+    width:92% !important;
+    margin-right: 0px !important;
+}
+
+.observationLink
+{
+    display: block !important;
+    color: blue !important;
+}
+
+h3.observationFilter
+{
+    margin-bottom:5px;
+}
+
+.relatedLinkPanelGrid tr, .relatedLinkPanelGrid td, .observationToolsPanelGrid tr, .observationToolsPanelGrid td
+{
+    border: medium hidden;
+    border-bottom: hidden;
+    border-top: hidden;
+}
+
+.generalObsInfoPanelGrid td
+{
+    padding-bottom: 20px;
+}
+
+.observationComponentPanelGrid tr, .observationComponentPanelGrid td, .generalObsInfoPanelGrid tr, .generalObsInfoPanelGrid td
+{
+    background: none !important;
+    border: none !important;
+}
+
+.relatedLinkDataGrid .ui-widget-content, .observationComponentDataGridNoBorder .ui-widget-content 
+{
+    border: none !important;
+}
+
+.relatedLinkDataGrid td
+{
+    text-align:left;
+    padding-bottom:5px !important;
+}
+
+.relatedLinkDataGrid a
+{
+    margin-bottom:5px;
+}
+
+/* Alters the width of the second div within the related observation dialog. This is needed so that only the width of
+dialog's body is altered and not the header. The ID relatedObsDlg can be found in the 
+asset_observation_related_obs_dialog.xhtml file.*/
+#relatedObsDlg > div:nth-of-type(2)
+{
+    width:97%;
+}

@@ -1,0 +1,57 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+
+# Put any properties here that are copied from cnf/ant/default.properties that can't be moved yet
+
+cnf.dir:                ${workspace}/cnf
+deps.dir:               ${workspace}/deps
+
+localrepo.dir:          ${build}/localrepo
+buildrepo.dir:          ${build}/buildrepo
+runrepo.dir:            ${build}/runrepo
+
+javadoc.package.list.dir: ${cnf.dir}/javadoc
+
+cobertura.dir:          ${deps.dir}/cobertura
+data.nucleus.dir:       ${deps.dir}/datanucleus
+osgi-cdi.jar:           ${deps.dir}/glassfish/osgi-cdi.jar
+# this is the location that old build.xml files look, once completely moved over, look at having a ser file per project
+# instead of one gigantic one
+cobertura.ser.file:     ${workspace}/reports/cobertura/cobertura.ser
+
+example.asset.dir:      ${workspace}/example.asset
+example.ccomm.dir:      ${workspace}/example.ccomm
+example.platform.power.dir: ${workspace}/example.platform.power
+example.stream.profile.dir: ${workspace}/example.stream.profile
+core.proto.dir:         ${workspace}/mil.dod.th.core.proto
+linux.serial.dir:       ${workspace}/mil.dod.th.ose.linux.serial
+linux.integration.dir:  ${workspace}/mil.dod.th.ose.linux.integration
+integration.dir:        ${workspace}/mil.dod.th.ose.integration
+test.dir:               ${workspace}/mil.dod.th.ose.test
+datastream.service.dir: ${workspace}/mil.dod.th.ose.datastream
+transcoder.vlc.dir:     ${workspace}/mil.dod.th.ose.transcoder.vlc
+datastream.store.dir:   ${workspace}/mil.dod.th.ose.datastream.store
+archiver.vlc.dir:       ${workspace}/mil.dod.th.ose.archiver.vlc
+com.sun.jna.file:       ${localrepo.dir}/com.sun.jna/com.sun.jna-3.0.0.jar
+
+junit4.test.runner.jar: ${workspace}/mil.dod.th.junit4.test.runner/generated/mil.dod.th.junit4.test.runner.runtime.jar
+
+base.target.dir: ${workspace}/target
+common.target.dir: ${base.target.dir}/common
+target.gui.dir = ${base.target.dir}/generic/gui
+target.controller.generic.dir = ${base.target.dir}/generic/controller-app
+
+gui.contextpath:        /those
+gui.portbase:           8100
+
+osus.license.file = ${workspace}/LICENSE

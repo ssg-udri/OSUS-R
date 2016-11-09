@@ -1,0 +1,136 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+option java_package = "mil.dod.th.core.remote.proto";
+import "shared.proto";
+import "datastream/capability/StreamProfileCapabilities.proto";
+
+//Namespace for proper handling of remote DataStreamService
+message DataStreamServiceNamespace
+{
+    //An enumeration of different requests/response for handling remote DataStreamService
+    enum DataStreamServiceMessageType
+    {
+        //Request to get all stream profile instances. 
+        GetStreamProfilesRequest = 1;
+        
+        //Response to GetStreamProfilesRequest.
+        GetStreamProfilesResponse = 2;
+        
+        //Request to get the capabilities of a specified stream profile type
+        GetCapabilitiesRequest = 3;
+        
+        //Response to GetCapabilitiesRequest
+        GetCapabilitiesResponse = 4;
+        
+        //Request to enable a particular stream profile instance. 
+        EnableStreamProfileRequest = 5;
+        
+        //Response to EnableStreamProfileRequest
+        EnableStreamProfileResponse = 6;
+        
+        //Request to disable a particular stream profile instance.
+        DisableStreamProfileRequest = 7;
+        
+        //Response to DisableStreamProfileRequest
+        DisableStreamProfileResponse = 8;
+        
+    }
+    
+    //This is the DataStreamService message type
+    required DataStreamServiceMessageType type = 1;
+
+    // Serialization of the data associated with the message (may be N/A). Represents a protocol 
+    // buffer message where the type is the MessageType field value with "Data" appended. For this 
+    // namespace, this would be "DataStreamServiceMessageTypeData"
+    optional bytes data = 2;
+}
+
+//Request all the stream profile instances. The optional assetUuid
+//requests only those stream profiles associated with a specific asset.
+message GetStreamProfilesRequestData
+{
+    //The asset UUID
+    optional UUID assetUuid = 1;
+}
+
+//Returns a list of stream profiles.
+message GetStreamProfilesResponseData
+{
+    //Details about each StreamProfile instance.
+    repeated StreamProfile streamProfile = 1;
+}
+
+//The message contains all the publicly accessible fields of a stream profile instance.
+message StreamProfile
+{
+    //Contains identifiers for StreamProfile object including UUID, pid and productType.
+    required FactoryObjectInfo info = 1;
+
+    //The UUID of the asset this StreamProfile is associated with.
+    required UUID assetUuid = 2;
+    
+    //The target bitrate (in kilobits per second) for the data stream. A value
+    //less than 0 means that the original source bitrate is being used with no transcoding.
+    required double bitrateKbps = 3;
+    
+    //Format of the data stream.  Can be a standard MIME type or a custom format enumerated in
+    //StreamProfileCapabilities
+    required string format = 4;
+    
+    //String representation of the URI where a remote client should connect to receive
+    //the data stream
+    required string streamPort = 5;
+    
+    //True if the stream profile is currently enabled; false otherwise.
+    required bool isEnabled = 6;
+    
+    //If the stream profile is associated with a specific sensor of an asset, then
+    //this field will be a non-empty String.
+    optional string sensorId = 7 [default = ""];
+}
+
+//This message requests the capabilities from the factory that produces stream profiles of a specified type
+message GetCapabilitiesRequestData
+{
+    //Product type of the factory object in fully qualified class name format. Should
+    //match the return value of mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    required string productType = 1;
+}
+
+//Response that contains stream profile capabilities
+message GetCapabilitiesResponseData
+{
+    //Product type of the factory object in fully qualified class name format. Should
+    //match the return value of mil.dod.th.core.factory.FactoryDescriptor.getProductType()
+    required string productType = 1;
+    
+    //capabilities for the stream profile type
+    required StreamProfileCapabilities capabilities = 2;
+}
+
+//Request to enable a stream profile
+message EnableStreamProfileRequestData
+{
+    //UUID of the stream profile instance.
+    required UUID uuid = 1;
+    
+}
+
+//Request to disable a stream profile
+message DisableStreamProfileRequestData
+{
+    //UUID of the stream profile instance.
+    required UUID uuid = 1;
+}
+        
+        

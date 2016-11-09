@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?p2f version='1.0.0'?>
+<p2f version='1.0.0'>
+  <ius size='32'>
+    <iu id='bndtools.feature.feature.group' name='Bndtools' version='2.4.0.REL'>
+      <repositories size='1'>
+        <repository location='http://bndtools-updates.s3.amazonaws.com/'/>
+      </repositories>
+    </iu>
+    <iu id='net.sf.eclipsecs.feature.group' name='Eclipse Checkstyle Plug-in' version='5.9.0.201410282234'>
+      <repositories size='2'>
+        <repository location='http://eclipse-cs.sf.net/update/'/>
+        <repository location='http://eclipse-cs.sourceforge.net/update/'/>
+      </repositories>
+    </iu>
+    <iu id='epp.package.java' name='Eclipse IDE for Java Developers' version='1.5.0.20120614-1633'>
+      <repositories size='2'>
+        <repository location='http://download.eclipse.org/releases/juno'/>
+        <repository location='http://marketplace.eclipse.org/repo/'/>
+      </repositories>
+    </iu>
+    <iu id='org.eclipse.jst.enterprise_ui.feature.feature.group' name='Eclipse Java EE Developer Tools' version='3.4.0.v201107072300-7b7JIM0FSK2WM1PS9Ar7AKUz0TrWn'>
+      <repositories size='2'>
+        <repository location='http://download.eclipse.org/releases/juno'/>
+        <repository location='http://marketplace.eclipse.org/repo/'/>
+      </repositories>
+    </iu>
+    <iu id='oracle.eclipse.tools.juno.doc.javaee5.feature.group' name='Java EE 5 Documentation' version='1.0.0.201207240829'>
+      <repositories size='1'>
+        <repository location='http://download.java.net/glassfish/eclipse/juno'/>
+      </repositories>
+    </iu>
+    <iu id='oracle.eclipse.tools.juno.doc.javaee6.feature.group' name='Java EE 6 Documentation' version='1.0.0.201207240829'>
+      <repositories size='1'>
+        <repository location='http://download.java.net/glassfish/eclipse/juno'/>
+      </repositories>
+    </iu>
+    <iu id='org.eclipse.wst.jsdt.feature.feature.group' name='JavaScript Development Tools' version='1.4.0.v201111090639-7H7DFeHFC7sRemSZgYbe4'>
+      <repositories size='2'>
+        <repository location='http://download.eclipse.org/releases/juno'/>
+        <repository location='http://marketplace.eclipse.org/repo/'/>
+      </repositories>
+    </iu>
+    <iu id='oracle.eclipse.tools.juno.glassfish.feature.group' name='Oracle GlassFish Server Tools' version='2.0.1.201207240829'>
+      <repositories size='1'>
+        <repository location='http://download.java.net/glassfish/eclipse/juno'/>
+      </repositories>
+    </iu>
+    <iu id='net.sourceforge.pmd.eclipse.feature.group' name='PMD Plug-in' version='3.2.6.v200903300643'>
+      <repositories size='1'>
+        <repository location='http://pmd.sourceforge.net/eclipse'/>
+      </repositories>
+    </iu>
+    <iu id='com.google.eclipse.protobuf.feature.group' name='Protocol Buffer Editor' version='1.3.2.201207081052'>
+      <repositories size='1'>
+        <repository location='http://protobuf-dt.googlecode.com/git/update-site'/>
+      </repositories>
+    </iu>
+  </ius>
+</p2f>

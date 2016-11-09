@@ -1,0 +1,63 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Ant build file for the entire controller subsystem.  This will build all 
+ units using their Ant build file and allows for deploying the files to the 
+ target.
+
+==============================================================================
+-->
+<project name="generic-controller-app" default="deploy">
+    <property environment="env" />
+
+    <!-- properties cannot be overriden, imported as first right to define (common->local) -->
+    <property file="../../../build.properties" prefix="bp" />
+
+    <property name="target.app.dir" value="${bp.workspace.dir}/target/generic/controller-app"/>
+
+    <import file="${bp.workspace.dir}/cnf/ant/target-commons.xml" />
+
+    <target name="build-no-deps" />
+    
+    <target name="build-with-deps">
+        <ant dir="${bp.ant.build.files.dir}" antfile="tools.xml" target="build" />
+        <ant dir="${bp.ant.build.files.dir}" antfile="shared.xml" target="build" />
+        <antcall target="build-no-deps" />
+    </target>
+
+    <target name="clean" description="Clean all files generated from build including units">
+        <ant dir="${bp.ant.build.files.dir}" antfile="tools.xml" target="clean" />
+        <ant dir="${bp.ant.build.files.dir}" antfile="shared.xml" target="clean" />
+    </target>
+
+    <target name="deploy-app">
+        <copy file="${bp.license.file}" todir="${bp.subsystem.deploy.dir}" />
+
+        <copy todir="${bp.subsystem.deploy.dir}/${bp.bin.dir}">
+            <fileset dir="${bp.common.target.dir}/${bp.scripts.dir}" />
+        </copy>
+        <copy todir="${bp.subsystem.deploy.dir}/conf">
+            <fileset dir="${bp.common.target.dir}/conf" />
+        </copy>
+        
+        <!-- Deploy both the 32 and 64 bit nssm versions -->
+        <copy file="${bp.deps.dir}/nssm/win32/nssm.exe" todir="${bp.subsystem.deploy.dir}/bin/nssm-win32" />
+        <copy file="${bp.deps.dir}/nssm/win64/nssm.exe" todir="${bp.subsystem.deploy.dir}/bin/nssm-win64" />
+                    
+        <copy file="${bp.felix.main.bundle.file}" tofile="${bp.subsystem.deploy.dir}/bin/felix.jar" />
+        <ant dir="${bp.ant.build.files.dir}" antfile="shared.xml" target="deploy-components" />
+    </target>
+
+</project>

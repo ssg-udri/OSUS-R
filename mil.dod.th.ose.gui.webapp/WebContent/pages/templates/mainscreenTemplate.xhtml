@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<!-- The above DOCTYPE is needed for IE8, other pages use this page as a template. The element must be on
+the first line. It is used to declare to the browser the version of HTML the document is written in. DO NOT REMOVE -->
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ This is the template which is the placeholder for all other pages. This template 
+ consists of four layout units. North displays the active controller and holds buttons
+ for channel, theme, and help functionality. West displays the navigation choices for the GUI.
+ Center is used to display the pages based on the navigation choice chosen. East displays
+ controllers that the GUI is connected to.
+ 
+==============================================================================
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:common="http://java.sun.com/jsf/composite/common">
+    
+    <h:head>
+        <meta http-equiv="Content-Type" 
+              content="text/html; charset=UTF-8" />
+        <h:outputStylesheet library="css" name="default.css"/>
+        
+        <ui:insert name="stylesheets"></ui:insert>
+        <title>THOSE GUI</title>
+        <!-- Growl component to be used for any message that will be displayed until closed. -->
+        <p:growl widgetVar="growlSticky" for="growl-sticky" id="growl-sticky" showDetail="true" sticky="true"/>
+        <!-- Growl component to be used for any message that should close after a specified time period. -->
+        <p:growl widgetVar="growlTimed" for="growl-timed" id="growl-timed" showDetail="true" />
+        
+        <!-- Javascript logging functions -->
+         <h:outputScript library="scripts/logging" name="logJS.js"/>
+        
+        <h:outputScript library="scripts/push/common" name="commonTopicValues.js"/>
+        <h:outputScript library="scripts/push/common" name="commonPushEventProperties.js"/>
+        <h:outputScript library="scripts/push/common" name="commonMessageTypes.js"/>
+        <h:outputScript library="scripts/push/common" name="messageSocketFunctionCheck.js"/>
+        <h:outputScript library="scripts/push/common" name="commonControllerFunctions.js"/>
+        
+        
+         <!-- PrimeFaces Push components to update Growl messages -->
+         <h:outputScript library="scripts/push/pages/growl" name="pushGrowlMessages.js"/>
+         <h:outputScript library="scripts/push/common" name="commonPushConnectionFunctions.js"/>
+         <h:outputScript library="scripts/push/common" name="commonPushEventFunctions.js"/>
+    </h:head>
+    
+    <h:body>
+       <p:idleMonitor timeout="6900000" onidle="produceSessionTimeoutGrowl();"></p:idleMonitor>
+       <p:layout fullPage="true">
+       <p:ajax event="toggle" listener="#{layoutCollapsed.handleToggle}"/>
+            <p:layoutUnit position="center" size="100">
+                <p:socket widgetVar="messageSocket" channel="#{pushChannelConstants.messageChannel}" onMessage="messageRouterFunction" autoConnect="false"/>
+                <h:outputScript library="scripts/push/common" name="messageSocketConnection.js"/>
+                
+                <p:outputPanel id="contentLayout">
+                    <ui:insert name="content"></ui:insert>
+                </p:outputPanel>
+            </p:layoutUnit>
+            <p:layoutUnit position="north">
+                <p:outputPanel id="activeControllerPanel">
+                    <p:toolbar style="overflow:hidden;">
+                        <p:toolbarGroup align="left" style="margin-top:10px;margin-left:5px;">
+                            <p:graphicImage id="operatingModeIcon" styleClass="icon#{activeController.activeController.operatingMode}" library="images" name="thoseIcons/modes/no_controller.png"/>
+                            <p:tooltip for="operatingModeIcon" value="#{activeController.activeController.operatingModeDisplayText}" rendered="#{activeController.activeControllerSet}"/>
+                        </p:toolbarGroup>
+                        <p:toolbarGroup align="left" style="margin-top:10px;margin-left:5px;">
+                            <h:outputText id="controllerName" value="#{activeController.activeController.name} : "
+                                rendered="#{activeController.activeControllerSet}"/>
+                            <h:outputText id="controllerId" value="#{activeController.activeController.id}"
+                                rendered="#{activeController.activeControllerSet}"
+                                converter="hexConverter"/>
+                        </p:toolbarGroup>
+                        <p:toolbarGroup align="left" style="margin-top:8px;">
+                            <p:graphicImage rendered="#{activeController.activeControllerSet}" style="padding-left:10px;" library="images" name="thoseIcons/observations/mini-icons/observation.png" />
+                        </p:toolbarGroup>
+                        <p:toolbarGroup align="left" style="margin-top:10px;">
+                            <!-- '=' is own output text because push component does not support updating this text. -->
+                            <h:outputText value="= "/>
+                            <!-- if this id is changed, the activeControllerCleanupFilter function in commonPushEventFunctions.js needs to be updated -->
+                            <h:outputText id="activeControllerObsCnt_#{activeController.activeController.id}" value="#{observationCountMgr.getObservationCount(activeController.activeController.id)}" style="padding-left:2px;" 
+                                rendered="#{activeController.activeControllerSet}"/>
+                            <common:pushUpdateOutputText for="activeControllerObsCnt_#{activeController.activeController.id}" 
+                                uniqueId="#{activeController.activeController.id}" 
+                                pushTopic="window.thTopic.observationCountUpdated" 
+                                pushValueProp="obs.count"
+                                callback="outputTextActiveControllerCallback"
+                                cleanupFilter="activeControllerCleanupFilter"
+                                cleanupTopic="window.thTopic.activeControllerChanged"/>
+                            <h:outputText id="noController" value="No Controller" rendered="#{not activeController.activeControllerSet}"/>
+                        </p:toolbarGroup>
+                        
+                        <p:toolbarGroup align="left" style="margin-top:10px;margin-left:20px">        
+                            <h:outputText id="debugOutput" value="" style="color:yellow;" /> <!-- used by GUI integration tests only -->
+                        </p:toolbarGroup>
+                        
+                        <p:toolbarGroup align="right">
+                            <p:separator/>
+                            <p:commandButton immediate="true" id="channelsButton" value="Channels" action="chan-cconn"></p:commandButton>  
+                            <p:separator />
+                            <p:commandButton value="Help"/>
+                        </p:toolbarGroup>
+                        <p:toolbarGroup align="right">
+                            <h:form>
+                                <p:themeSwitcher value="#{themeManagerBean.theme}">
+                                    <f:selectItem itemLabel="Day" itemValue="TH-Day"></f:selectItem>
+                                    <f:selectItem itemLabel="Night" itemValue="TH-Night"></f:selectItem>
+                                    <p:ajax listener="#{themeManagerBean.setTheme(themeManagerBean.theme)}"/>
+                                </p:themeSwitcher>
+                            </h:form>
+                        </p:toolbarGroup>
+                    </p:toolbar>
+                </p:outputPanel>
+                <h:form>
+                    <p:remoteCommand name="rcUpdateActiveController" update='@([id$="activeControllerPanel"])'/>
+                    <p:remoteCommand name="rcUpdateMainContent" update='@([id$="contentLayout"])'/>
+                </h:form>
+            </p:layoutUnit>
+            <p:layoutUnit id="navigationLayout" position="west" size="300" collapsible="true" header="Options"
+                collapsed="#{layoutCollapsed.isNavigationCollapsed()}">
+                <h:form>
+                  <!-- button actions are defined in the faces-config.xml through the use of navigation rules -->
+                  <p:accordionPanel multiple="true" activeIndex="0,1,2,3">
+                      <p:tab title="Devices" >
+                          <p:commandButton id="assetButton" immediate="true" styleClass="navigationButtons" value="Assets" action="dev-assets"></p:commandButton>
+                          <p:commandButton id="commsButton" immediate="true" styleClass="navigationButtons" value="Comms" action="dev-comms"></p:commandButton>
+                      </p:tab>
+                      <p:tab title="Mission Programming">
+                          <p:commandButton id="setupButton" immediate="true" styleClass="navigationButtons" value="Set Up Mission" action="mp-setupmis"></p:commandButton>
+                          <p:commandButton id="missionsButton" immediate="true" styleClass="navigationButtons" value="Missions" action="mp-missions"></p:commandButton>
+                      </p:tab>
+                      <p:tab title="Advanced">
+                          <p:commandButton id="powerButton" disabled="true" immediate="true" styleClass="navigationButtons" value="Power Management" action="adv-powerman" ></p:commandButton>
+                          <p:commandButton id="editorButton" disabled="true" immediate="true" styleClass="navigationButtons" value="Mission Editor" action="adv-missioneditor" ></p:commandButton>
+                          <p:commandButton id="systemButton" immediate="true" styleClass="navigationButtons" value="System Configurations" action="adv-sysconfig"></p:commandButton>
+                          <p:commandButton id="guiButton" immediate="true" styleClass="navigationButtons" value="GUI Configuration" action="adv-guiconfig" ></p:commandButton>
+                      </p:tab>
+                      <!-- TODO TH-516 removal of test code -->
+                      <!-- <p:tab title="Test Pages">
+                          <p:commandButton id="testChannel" style="width:100%; text-align:center;" value="Channels" action="test-page" ></p:commandButton>
+                      </p:tab>
+                      -->
+                  </p:accordionPanel>
+                  
+                </h:form>
+            </p:layoutUnit>
+            
+            <p:layoutUnit id="controllerLayout" header="Controller Statuses" position="east" collapsible="true" 
+                collapsed="#{layoutCollapsed.isControllerCollapsed()}"
+                size="340">
+                <ui:include src="/pages/controller/controller.xhtml"/>
+            </p:layoutUnit>
+         </p:layout>
+    </h:body>
+</html>

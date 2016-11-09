@@ -1,0 +1,80 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<project name="generic-sdk-app" default="deploy">
+    <property environment="env" />
+
+    <!-- properties cannot be overriden, imported as first right to define (common->local) -->
+    <property file="../../../build.properties" prefix="bp" />
+    <property name="target.app.dir" value="${bp.workspace.dir}/target/generic/sdk-app"/>
+
+    <import file="${bp.workspace.dir}/cnf/ant/target-commons.xml" />
+
+    <target name="build-no-deps">
+        <ant dir="${bp.sdk.dir}" target="build" />
+    </target>
+    
+    <target name="build-with-deps">
+        <!-- javadoc targets will call build first, so don't call build directly or else build will run twice -->
+        <ant dir="${bp.utils.dir}" target="build" />
+        <ant dir="${bp.core.lexicon.dir}" target="build" /> 
+        <ant dir="${bp.jaxb.proto.converter.dir}" target="build" />
+        <ant dir="${bp.core.proto.dir}" target="build" />
+        <ant dir="${bp.core.dir}" target="javadoc" />
+        <antcall target="build-no-deps" />
+    </target>
+
+    <target name="clean" description="Clean all files generated from build including units">
+        <ant dir="${bp.sdk.dir}" target="clean" />
+    </target>
+
+    <target name="deploy-app">
+        <copy file="${bp.license.file}" todir="${bp.subsystem.deploy.dir}" />
+
+        <ant dir="${bp.sdk.dir}" target="deploy-component" />
+        
+        <!-- api -->
+        <copy todir="${bp.subsystem.deploy.dir}/api" flatten="true">
+            <resources>
+                <file file="${bp.core.api.bundle.file}" /> 
+                <file file="${bp.core.proto.messages.bundle.file}" />
+                <file file="${bp.gogo.runtime.bundle.file}" /> 
+                <file file="${bp.org.osgi.core.jar.file}" /> 
+                <file file="${bp.org.osgi.cmpn.jar.file}" /> 
+                <file file="${bp.core.lexicon.dir}/${bp.gen.dir}/mil.dod.th.core.schema.zip" />
+            </resources>
+        </copy>
+        <zip basedir="${bp.core.dir}/${bp.gen.dir}/javadoc" 
+            destfile="${bp.subsystem.deploy.dir}/api/core.api-docs.zip" />
+        
+        <!-- libs -->
+        <copy todir="${bp.subsystem.deploy.dir}/${bp.lib.dir}" flatten="true">
+            <resources>
+                <file file="${bp.bnd.jar.file}" />
+                <file file="${bp.bnd.lib.jar.file}"/>
+                <file file="${bp.bnd.annotation.jar.file}" />
+                <file file="${bp.junit.jar.file}" />
+                <fileset dir="${bp.mockito.dir}" includes="*.jar" />
+                <file file="${bp.hamcrest.jar.file}" />
+            </resources>
+        </copy>
+            
+        <!-- tools -->
+        <copy todir="${bp.subsystem.deploy.dir}/tools/ant" failonerror="true">
+            <fileset dir="${bp.ant.dir}" includes="**/*" />
+        </copy>
+        <chmod file="${bp.subsystem.deploy.dir}/those.sh" perm="a+x" />
+    </target>
+
+</project>

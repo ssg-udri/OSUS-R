@@ -1,0 +1,73 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ -->
+<ui:composition
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui">
+      
+      <table style="width:100%">
+           <tr>
+               <td style="width:50%">
+                   <h3>Variables and Dependencies for #{missionSetUpMgr.mission.name}</h3>
+               </td>
+               <td style="width:50%;">
+                   <!-- <p:selectOneMenu style="float:right">
+                       <f:selectItem itemLabel="Populate with Saved Mission" itemValue=""/>
+                       <f:selectItem itemLabel="Mission 1" itemValue=""/>
+                       <f:selectItem itemLabel="Mission 2" itemValue=""/>
+                    </p:selectOneMenu>-->
+               </td>
+           </tr>
+       </table>
+
+       <div style="width:90%;margin:20px auto 10px auto;" id="dataDiv">
+            <p:dataTable value="#{missionSetUpMgr.mission.arguments}" var="arg" editable="true" scrollable="true" scrollHeight="300" resizableColumns="true" id="argsTable">
+                <p:column headerText="Variable" width="150">
+                    <h:outputText value="#{arg.name}"/>
+                </p:column>
+                <p:column headerText="Type" width="80">
+                    <h:outputText value="#{arg.type.value()}"/>
+                </p:column>
+                <p:column headerText="Value" width="200">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{arg.currentValue}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:inputText id="variableInput" style="width:100%" value="#{arg.currentValue}" rendered="#{(arg.optionValues.size() == 0)}" validator="#{arg.validateValue}">
+                                <p:ajax update="inputMsg"/>
+                            </p:inputText>
+                            <p:selectOneMenu id="variableDropDown" style="width:100%" value="#{arg.currentValue}" rendered="#{(arg.optionValues.size() > 0)}">
+                              <f:selectItems value="#{arg.optionValues}" var="optVal" itemLabel="#{optVal}" itemValue="#{optVal}"/>
+                            </p:selectOneMenu>
+                            <p:message id="inputMsg" for="variableInput"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column width="20" resizable="false">
+                    <p:rowEditor/>
+                </p:column>
+                <p:column headerText="Description" width="250">
+                    <h:outputText value="#{arg.description}"/>
+                </p:column>
+              </p:dataTable>
+         </div>
+
+</ui:composition>
+      

@@ -1,0 +1,117 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+//
+// Description: Contains OSGi event handling functionality for the remote
+//              interface.
+//
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+
+import "mapTypes.proto";
+import "types/remote/RemoteTypes.proto";
+
+// Namespace is used to listen to OSGi events from another system.  Events that are sent through a Terra Harvest's 
+// EventAdmin service can be sent to other systems that have registered for the event.  Events contain a topic string
+// and optionally a property map (key/value pairs).  OSGi produces standard events for bundle events, configuration 
+// events and other standard events.  A Terra Harvest system will also produce standard events for assets, observations,
+// etc. that are described in the Terra Harvest Standard document. A remote system can register for these events by 
+// specifying a topic and optionally a filter string to select events with certain properties.  An event registration 
+// topic string can match a specific topic or use wildcards (*) to select multiple event topics.  See the OSGi 
+// Compendium Specification (Section 113) for more information.
+message EventAdminNamespace
+{
+    //An enumeration of different requests/responses for handling remote events
+    enum EventAdminMessageType
+    {
+        // Message is sent for every registered event that occurs (to the system that has registered for the event) 
+        SendEvent = 1;
+
+        // Used to register for an event.  A SendEvent message will be sent for each event (to the system registering).
+        // Responses are contained in EventRegistrationResponse
+        EventRegistrationRequest = 2;
+        // Contains the response to a EventRegistrationRequest. Specifically the response contains an ID used to 
+        // identify the registration of an event for later cleanup
+        EventRegistrationResponse = 3;
+
+        // Contains request to unregister an event based on event registration ID from EventRegistrationRequest.  System
+        // will no longer receive a SendEvent message. Responses are contained in UnregisterEventResponse.
+        UnregisterEventRequest = 4;
+        // Confirmation response to UnregisterEventRequest that the event registration has been unregistered.
+        UnregisterEventResponse = 5;
+
+        // Used by a system to unregister all remote event.  System will no longer receive a SendEvent message for any
+        // events that may occur. Responses are contained in CleanupResponse.
+        CleanupRequest = 7;
+        // Confirmation response to CleanupRequest.
+        CleanupResponse = 8;
+    }
+
+    // This is the event handling message type
+    required EventAdminMessageType type = 1;
+    // Serialization of the data associated with the message (may be n/a), represents a protocol buffer message where
+    // the type is the MessageType field value with "Data" appended, for this namespace this would be
+    // "EventMessageTypeData".
+    optional bytes data = 2;
+}
+
+//Message containing the topic and property map of a registered event
+message SendEventData
+{
+    //event topic that describes the event
+    required string topic = 1;
+    //map of properties associated with the event
+    repeated ComplexTypesMapEntry property = 2;
+}
+
+//Message for getting notifications for specific events based on an event topic and filter
+message EventRegistrationRequestData
+{
+    // specific topic to register for or a filter for that topic (e.g., mil/dod/th/core/* to register for all core 
+    // events)
+    repeated string topic = 1;
+
+    // LDAP event filter to receive events only if the event property map matches the filter (e.g., 
+    // (|(obj.type=A)(obj.type=B)) would filter out events only if the object type is "A" OR "B")
+    optional string filter = 2;
+
+    // TODO: TH-778 Field currently ignored until TH-778 is implemented.
+    // Expiration of event registration in hours. Max value and default is 3 weeks (504 hours).
+    required int32 expirationTimeHours = 3;
+
+    // TODO: TH-1239 Field currently ignored until TH-1239 is implemented.
+    // This boolean value indicates whether the event that is being registered for can be queued.
+    // If false, when the system tries to send an event to a listener who is not currently available, the message will
+    // be dropped. If true, the event will be queued for later sending to the listener.
+    required bool canQueueEvent = 4;
+
+    // Once registered for an event, each event matching the specific topic and filter will be sent to the requester
+    // with a set of properties that pertain to the event. This field indicates the data format for lexicon based 
+    // properties. See ComplexTypesMapEntry for supported types.
+    optional LexiconFormat.Enum objectFormat = 5 [default = NATIVE];   
+}
+
+//Response to EventRegistrationRequest, which contains an ID corresponding
+//to a registered event and its topic and filter
+message EventRegistrationResponseData
+{
+    //used to identify the registration of an event and its topic/filter
+    required sint32 id = 1;
+}
+
+//Request to unregister an event based on an event ID set in the EventRegistrationResponse
+message UnregisterEventRequestData
+{
+    //unregister an event based on ID from event registration response
+    required sint32 id = 1;
+}

@@ -1,0 +1,59 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ Status LED component. This LED will reflect the status of an entity.
+ 
+==============================================================================
+ -->  
+<ui:composition 
+    xmlns:composite="http://java.sun.com/jsf/composite"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+
+    <composite:interface componentType="mil.dod.th.ose.gui.webapp.component.StatusComponent">
+        <!-- Object which must implement the StatusCapable interface. -->
+        <composite:attribute name="statusCapableObject" required="true" />
+        <!-- Optional topic identifying when this component should be push updated via a JS callback. -->
+        <composite:attribute name="pushTopic" />
+        <!-- Optional filter that further constrains when this component should be updated. This filter value
+            is expected to be related to the topic above and should be in the format <key>=<value> 
+            (e.g., obj.uuid=#{linkLayer.uuid}). -->
+        <composite:attribute name="pushFilter" />
+        <!-- Status property key for the status value, e.g., for a LinkLayer this property may be linklayer.status.summary. 
+            This property key will be used to pull the new status value from the JS callback property map. -->
+        <composite:attribute name="pushStatusProp" />
+        <!-- Unique id of the object to register a callback for -->
+        <composite:attribute name="uniqueId" />       
+    </composite:interface>
+
+    <composite:implementation>
+        <!-- Only if the push topic is present should the following script be loaded. -->
+        <c:if test="#{cc.attrs.pushTopic != null}">
+            <h:outputScript  library="scripts/push/common" name="commonPushEventFunctions.js"/>
+            <h:outputScript  library="scripts/push/components" name="statusComponent.js"/>
+            <script type="text/javascript">
+                regProp = { statusProp : "#{cc.attrs.pushStatusProp}" };
+                registerComponent("#{cc.clientId}", #{cc.attrs.pushTopic}, "#{cc.attrs.uniqueId}", "#{cc.id}", "#{cc.attrs.pushFilter}", statusCallback, regProp);
+            </script>
+        </c:if>
+        <h:outputStylesheet library="css" name="status.css"/>
+        <div id="#{cc.clientId}" class="#{cc.statusStyle}" />
+
+     </composite:implementation>
+</ui:composition>

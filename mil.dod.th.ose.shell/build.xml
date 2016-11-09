@@ -1,0 +1,37 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Ant build file for the shared shell component.
+
+==============================================================================
+-->
+<project name="mil.dod.th.ose.shell" default="build">
+    
+    <import file="../cnf/build.xml" />
+
+    <target name="deploy-component" depends="master.deploy-component" >
+        <copy todir="${bp.subsystem.deploy.dir}/conf/etc">
+            <fileset file="resources/gosh_profile" />
+            <fileset file="resources/motd" />
+        </copy>
+        <copy todir="${bp.bundle.deploy.dir}">
+            <fileset file="${bp.gogo.runtime.bundle.file}" />
+            <fileset file="${bp.gogo.shell.bundle.file}" />
+            <fileset file="${bp.gogo.command.bundle.file}" />
+            <fileset file="${bp.shell.remote.bundle.file}" />
+        </copy>
+    </target>
+
+</project>

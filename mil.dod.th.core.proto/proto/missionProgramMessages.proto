@@ -1,0 +1,438 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+//Description:
+//Mission program messages
+//
+//===============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+
+import "types/SharedTypes.proto";
+import "mp/model/MissionProgramTemplate.proto";
+import "mp/model/MissionProgramParameters.proto";
+
+// Enum of mission program test results
+enum MissionTestResult
+{
+    // Corresponding 'PASSED' result for the type mil.dod.th.core.mp.TestResult
+    PASSED = 1;
+
+    // Corresponding 'FAILED' result for the type mil.dod.th.core.mp.TestResult
+    FAILED = 2;
+}
+
+// Enum of mission program statuses (equivalent to mil.dod.th.core.mp.Program.ProgramStatus)
+enum MissionStatus
+{
+    // Corresponding 'EXECUTED' status
+    EXECUTED = 1;
+
+    // Corresponding 'EXECUTING' status
+    EXECUTING = 2;
+
+    // Corresponding 'EXECUTING_TEST' status
+    EXECUTING_TEST = 3;
+
+    // Corresponding 'INITIALIZATION_ERROR' status
+    INITIALIZATION_ERROR = 4;
+
+    // Corresponding 'SCRIPT_ERROR' status
+    SCRIPT_ERROR = 5;
+
+    // Corresponding 'UNSATISFIED' status
+    UNSATISFIED = 6;
+
+    // Corresponding 'VARIABLE_ERROR' status
+    VARIABLE_ERROR = 7;
+
+    // Corresponding 'WAITING_INITIALIZED' status
+    WAITING_INITIALIZED = 8;
+
+    // Corresponding 'WAITING_UNINITIALIZED' status
+    WAITING_UNINITIALIZED = 9;
+
+    // Corresponding 'SCHEDULED' status
+    SCHEDULED = 10;
+
+    // Corresponding 'CANCELED' status
+    CANCELED = 11;
+
+    // Corresponding 'SHUTTING_DOWN' status. */
+    SHUTTING_DOWN = 12;
+
+    // Corresponding 'SHUTDOWN' status. */
+    SHUTDOWN = 13;
+}
+
+// Namespace message that contains the namespace message type and the specific namespace message's data
+message MissionProgrammingNamespace
+{
+    //Mission programming namespace message types.
+    enum MissionProgrammingMessageType
+    {
+        //Request to load a template
+        //Response is contained in LoadTemplateResponse.
+        LoadTemplateRequest = 1;
+        //Response that the template was loaded.
+        LoadTemplateResponse = 2;
+
+        //Request to load the parameters needed for a program to execute.
+        //Response is contained in LoadParametersResponse.
+        LoadParametersRequest = 3;
+        //Response that the parameters were loaded.
+        LoadParametersResponse = 4;
+
+        //Request to remove a template.
+        //Response is contained in RemoveTemplateResponse.
+        RemoveTemplateRequest = 5;
+        //Response to the remove template request.
+        RemoveTemplateResponse = 6;
+
+        //Request to get mission program templates from the destination system.
+        //Response is contained in GetTemplatesResponse.
+        GetTemplatesRequest = 7;
+        //Response to get templates request.
+        GetTemplatesResponse = 8;
+
+        //Request to execute the test function for the program with the specified name. The name
+        //should be the program name given in the parameters and not the template name. This request
+        //will only work if the mission program template is identified as containing a test function.
+        //The actual execution may take a while, as such this response is not an indication of the outcome
+        //of executing the test method, but rather just an acknowledgement that the request was initiated.
+        ExecuteTestRequest = 9;
+        //Response to executing the test function.
+        ExecuteTestResponse = 10;
+
+        //Request to execute the program with the specified name. The name
+        //should be the program name given in the parameters and not the template name.
+        //The actual execution may take a while, as such this response is not an indication of the outcome
+        //of execution, but rather just an acknowledgement that the request was initiated.
+        ExecuteRequest = 11;
+        //Response to the ExecuteRequest for the specified program.
+        ExecuteResponse = 12;
+
+        //Request to execute the 'shutdown' function for the program with the specified name. The name
+        //should be the program name given in the parameters and not the template name.
+        //The actual execution of the shutdown method may take a while, as such this response is not an indication
+        //of the outcome of executing the shutdown method, but rather just an acknowledgement that
+        //the request was initiated.
+        ExecuteShutdownRequest = 13;
+        //Response to executing the program's 'shutdown' function.
+        ExecuteShutdownResponse = 14;
+
+        //Request to get the names of all programs.
+        //Response message is GetProgramNamesResponse.
+        GetProgramNamesRequest = 15;
+        //Response to a GetProgramNamesRequest message, this message contains the names of all known programs.
+        GetProgramNamesResponse = 16;
+
+        //Request to get the names of all templates.
+        //Response message is GetProgramsTemplateNamesResponse.
+        GetTemplateNamesRequest = 17;
+        //Response to a GetProgramsTemplateNamesRequest message, this message contains the names of all known templates.
+        GetTemplateNamesResponse = 18;
+
+        //Request to get a program's status.
+        //Response message is GetProgramStatusResponse.
+        GetProgramStatusRequest = 19;
+        //Response to a GetProgramStatusRequest message, this message contains the specified program's status.
+        GetProgramStatusResponse = 20;
+
+        //Request to get the last test results for a program.
+        //Response message is GetLastTestResultsResponse.
+        GetLastTestResultsRequest = 21;
+        //Response message to GetLastTestResultsRequest, this message contains that last test results of
+        //the specified program.
+        GetLastTestResultsResponse = 22;
+
+        //Request to get the current execution parameters. These parameters can be dynamically available,
+        //therefore a program could be waiting for the dependencies. The response to this request is not
+        //a guarantee that the needed resources are available.
+        //Response message is GetExecutionParametersResponse.
+        GetExecutionParametersRequest = 23;
+        //Response to a GetExecutionParametersRequest message, this message contains the execution parameters for
+        //the specified program.
+        GetExecutionParametersResponse = 24;
+
+        //Request to cancel a mil.dod.th.core.mp.Program that is scheduled to run in the future. This request will
+        //pull the program out of the execution queue.
+        //Response message is CancelProgramResponse.
+        CancelProgramRequest = 25;
+        //Response message to CancelProgramRequest, this message is an acknowledgement of a request to cancel
+        //the specified mission program.
+        CancelProgramResponse = 26;
+
+        //Get information about any or all known mission programs. Depending on the number of programs the response
+        //to this request can be large.
+        //Response message is GetProgramInformationResponse.
+        GetProgramInformationRequest = 27;
+        //Response message to GetProgramInformationRequest.
+        GetProgramInformationResponse = 28;
+
+        //Request to remove a program. If the program is currently executing, test executing or shutting down
+        //removal cannot be completed and a GenericErrorResponse with the ILLEGAL_STATE error code will be sent
+        //as the response.
+        //If successful the response message is RemoveMissionProgramResponse.
+        RemoveMissionProgramRequest = 29;
+        //Response message to RemoveMissionProgramRequest, this message is acknowledgement of a request to remove
+        // the specified program.
+        RemoveMissionProgramResponse = 30;
+
+        //Request to shutdown all managed executors known to the the mil.dod.th.core.mp.ManagedExecutors service.
+        //This service will be deprecated, as such this message is also deprecated. Mission programs should be
+        //shutdown via the missions 'shutdown' function contained within the mission's script.
+        //Response to this message is ManagedExecutorsShutdownResponse.
+        ManagedExecutorsShutdownRequest = 100;
+        //Response to a ManagedExecutorsShutdownRequest message, this message is the response to the shutting down
+        //of the managed executor service.
+        ManagedExecutorsShutdownResponse = 101;
+
+        //Request to unregister all org.osgi.service.event.EventHandler(s) from
+        //the mil.dod.th.core.mp.EventHandlerHelper service.
+        //Response to this message is UnregisterEventHandlerResponse.
+        UnregisterEventHandlerRequest = 200;
+        //Response message to a UnregisterEventHandlerRequest.
+        UnregisterEventHandlerResponse = 201;
+    }
+
+    //This is the mission program message type
+    required MissionProgrammingMessageType type = 1;
+
+    //Serialization of the data associated with the message (may be n/a), represents a protocol buffer message where
+    //the type is the MessageType field value with "Data" appended, for this namespace the LoadTemplateRequest is
+    //"LoadTemplateRequestData"
+    optional bytes data = 100;
+}
+
+//Request to load a new mission program template to the destination system. Note that the name of the template within
+//this message must not overlap with the name of a template already on the destination system. If the names overlap,
+//the new template will be denied.
+message LoadTemplateRequestData
+{
+   //this contains the name, source, and variable meta data for a mission program
+   required MissionProgramTemplate mission = 1;
+}
+
+//Request to load mission program parameters for a template on the destination system. Note that it is
+//necessary that the template is already on the controller as the parameters will not be accepted
+//on the destination system without a template to pair with the parameters.
+message LoadParametersRequestData
+{
+    //parameter values needed to execute a mission program
+    required MissionProgramParameters parameters = 1;
+}
+
+//Request message to remove a template by name from the destination system.
+message RemoveTemplateRequestData
+{
+    //String name of the template to remove
+    required string nameOfTemplate = 1;
+}
+
+//Response message for the GetTemplatesRequest.
+message GetTemplatesResponseData
+{
+    //A list of all the templates from the destination system that the GetTemplatesRequest was sent to.
+    repeated MissionProgramTemplate template = 1;
+}
+
+//Request message to execute the test function of the specified mission program.
+message ExecuteTestRequestData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+}
+
+//Response message to execution of the test function of the specified mission program.
+message ExecuteTestResponseData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+}
+
+//Request to execute the program with the specified name.
+message ExecuteRequestData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+}
+
+//Response to executing the program with the specified name.
+message ExecuteResponseData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+}
+
+//Request to execute the 'shutdown' function for the program with the specified name.
+message ExecuteShutdownRequestData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+}
+
+//Response to execution of the 'shutdown' function for the program with the specified name.
+message ExecuteShutdownResponseData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+}
+
+//Response containing the names of all programs.
+message GetProgramNamesResponseData
+{
+    //Names of all the known mission programs.
+    repeated string missionName = 1;
+}
+
+//Response containing all the template names.
+message GetTemplateNamesResponseData
+{
+    //Names of all the known mission templates.
+    repeated string templateName = 1;
+}
+
+//Request to get a program's status.
+message GetProgramStatusRequestData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+}
+
+//Response containing the specified program's status.
+message GetProgramStatusResponseData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+
+    //The program's status.
+    required MissionStatus missionStatus = 2;
+
+    //An exception message if the last execution of the mission incurred an exception.
+    optional string exception = 3;
+}
+
+//Request to get the last test results for a program.
+message GetLastTestResultsRequestData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+}
+
+//Response containing that last test results for the specified program.
+message GetLastTestResultsResponseData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+
+    //The mil.dod.th.core.mp.TestResult equivalent outcome of the execution of the test function.
+    //This may not be set in the event that there is not a last known test result.
+    optional MissionTestResult result = 2;
+
+    //An exception message if the last testing incurred an exception.
+    optional string exception = 3;
+}
+
+//Request to get the current execution parameters.
+message GetExecutionParametersRequestData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+}
+
+//Response containing the execution parameters for the specified program.
+message GetExecutionParametersResponseData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+
+    //The mission's execution parameters.
+    repeated MapEntry executionParam = 2;
+}
+
+//Request to cancel a mil.dod.th.core.mp.Program that is scheduled to run in the future.
+message CancelProgramRequestData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+}
+
+//Response to canceling the specified mission program.
+message CancelProgramResponseData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+
+    //The program's status after canceling.
+    required MissionStatus missionStatus = 2;
+}
+
+//Request to get information about programs, message contains the template name,
+//current program status, execution parameters, and the schedule.
+message GetProgramInformationRequestData
+{
+    //Names of mission programs to gather information about, if empty the information for all known mission programs
+    //will be returned in the response.
+    repeated string missionName = 1;
+}
+
+//Response containing the specified program(s) information.
+message GetProgramInformationResponseData
+{
+    //Mission program information.
+    repeated ProgramInfo missionInfo = 1;
+}
+
+//Request to remove a program.
+message RemoveMissionProgramRequestData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+}
+
+//Response to the removal of a program.
+message RemoveMissionProgramResponseData
+{
+    //Name of the mission program.
+    required string missionName = 1;
+}
+
+//Request to shutdown mission programs via the mil.dod.th.core.mp.ManagedExecutors service.
+message ManagedExecutorsShutdownRequestData
+{
+    //boolean if the request is to shutdown the executors immediately. If true will call
+    //mil.dod.th.core.mp.ManagedExecutors#shutdownAllExecutorServicesNow, else if false
+    //mil.dod.th.core.mp.ManagedExecutors#shutdownAllExecutorServices will be called.
+    required bool shutdownNow = 1;
+
+}
+
+//Message type representing a program's key features like the name of the template used for construction,
+//the status, execution parameters, and the mission's schedule.
+message ProgramInfo
+{
+    //Name of the mission program.
+    required string missionName = 1;
+
+    //Name of the template this program uses.
+    required string templateName = 2;
+
+    //The mission's execution parameters.
+    repeated MapEntry executionParam = 3;
+
+    //The program's status.
+    required MissionStatus missionStatus = 4;
+
+    //The program's schedule.
+    required MissionProgramSchedule missionSchedule = 5;
+}

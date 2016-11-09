@@ -1,0 +1,30 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+
+
+    <h:graphicImage rendered="#{mission.withInterval}" style='float:#{justify}; padding:2px 2px 2px 2px' library="images" name="thoseIcons/mp/miniIcons/interval.png" alt="Huh?"/>
+    <h:graphicImage rendered="#{mission.withImageCapture}" style="float:#{justify}; padding:5px 2px 2px 2px" library="images" name="thoseIcons/mp/miniIcons/camera.png" alt="Huh?"/>
+    <h:graphicImage rendered="#{mission.withTimerTrigger}" style="float:#{justify}; padding:2px 2px 2px 2px" library="images" name="thoseIcons/mp/miniIcons/time.png" alt="Huh?"/>
+    <h:graphicImage rendered="#{mission.withSensorTrigger}" style="float:#{justify}; padding:2px 2px 2px 2px" library="images" name="thoseIcons/mp/miniIcons/sensor_trigger.png" alt="Huh?"/>    
+    
+</ui:composition>

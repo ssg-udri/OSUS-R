@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<!DOCTYPE sun-web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Servlet 2.5//EN" "http://www.sun.com/software/appserver/dtds/sun-web-app_2_5-0.dtd">
+<sun-web-app error-url="">
+    <context-root>/those</context-root>
+    <class-loader delegate="true" />
+    <jsp-config>
+        <property name="keepgenerated" value="true">
+            <description>Keep a copy of the generated servlet class java
+                code.</description>
+        </property>
+    </jsp-config>
+    
+    <!-- GlassFish default encoding is ISO-8859, but because we are using JSF and Servlets the encoding is actually UTF-8.
+         This causes the warning: "Unable to set request character encoding to UTF-8 from context /, because request 
+         parameters have already been read, or ServletRequest.getReader() has already been called." To avoid this we set the 
+         default encoding for GlassFish to UTF-8 by doing the following below. -->
+    <parameter-encoding default-charset="UTF-8"/>
+</sun-web-app>

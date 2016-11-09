@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<ruleset xmlns="http://pmd.sf.net/ruleset/1.0.0" name="pmd-rules" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd" xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd">
+   <description>THOSE TEST ruleset</description>
+   <rule ref="rulesets/migrating.xml/JUnit4TestShouldUseBeforeAnnotation"/>
+   <rule ref="rulesets/migrating.xml/JUnit4TestShouldUseAfterAnnotation"/>
+   <rule ref="rulesets/migrating.xml/JUnit4TestShouldUseTestAnnotation"/>
+</ruleset>

@@ -1,0 +1,138 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ 
+ This dialog is used to add a new asset to the system.
+ 
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:those="http://java.sun.com/jsf/composite/common">
+    
+    
+    <p:dialog id="addAssetDialog" resizable="false" header="Add an Asset" widgetVar="newAssetDlg" height="450" width="700" style="color: white;">
+      <table style="width:100%">
+        <tr>
+            <td style="vertical-align: top; width: 10%"><p:graphicImage
+                    library="images" name="icons/add.png" alt="Image Not Found" />
+            </td>
+            <td style="font-weight: bold; font-size: 1.5em">
+                <h:outputText
+                        value="Add Asset" id="addAssetOut">
+                </h:outputText>
+            </td>
+            <td style="text-align:right">
+                <p:commandButton
+                     style="margin-bottom:10px" icon="ui-icon-arrowrefresh-1-w"
+                     value="Refresh" id="refreshAssetTypes"
+                     actionListener="#{addAssetHelper.requestAssetTypeUpdate(activeController.activeController.id)}"/>
+                <p:tooltip for="refreshAssetTypes" value="Update the list of available asset types" />
+            </td>
+        </tr>
+      </table>
+      <h:form id="createAssetForm">
+        <p:defaultCommand target="configureAsset" />
+        <p:outputPanel layout="block" style="width:100%;height:100%">
+          <table style="width:100%; height: 100%">
+            <tr>
+              <td style="width:40%;vertical-align:top">
+                <p:outputPanel id="createAssetPanel">
+                  <p:scrollPanel styleClass="addScroll" style="height:280px;width:100%">
+                    <ui:param name="typeList" 
+                        value="#{assetTypesMgr.getAssetFactoriesForControllerAsync((activeController.getActiveController()).getId())}"/>
+                    <p:dataList id="assetTypeList" styleClass="addAsset" var="factory" value="#{typeList}"
+                           columns="1" paginator="false" type="none" rendered="#{activeController.isActiveControllerSet()}" >
+                      <f:facet name="header">Asset Types</f:facet>
+                         <p:column>
+                                <table style="width:100%">
+                                    <tr>
+                                        <td style="width:10%">
+                                             <p:graphicImage library="images" name="#{factory.getImage()}" 
+                                                alt="Image Not Found"/>
+                                        </td>
+                                        <td>
+                                            <p:commandLink value="#{factory.getSimpleType()}" 
+                                             actionListener="#{addAssetHelper.setAssetFactory(factory)}" 
+                                             update='@([id$="factoryInfo"])' process="@this" />
+                                        </td>
+                                    </tr>
+                                </table>
+                         </p:column>
+                      </p:dataList>
+                      </p:scrollPanel>
+                    </p:outputPanel>
+                  </td>
+                  <td style="width:60%;vertical-align:top">
+                    <p:outputPanel id="factoryInfo" >
+                       <table style="width:100%" >
+                         <tr>
+                            <td style="vertical-align:center;width:50px;height:50px">
+                              <p:graphicImage rendered="#{(addAssetHelper.getAssetFactory() != null)}" 
+                                          library="images" name="#{(addAssetHelper.getAssetFactory()).getImage()}" 
+                                          alt="Image Not Found"/>
+                            </td>
+                            <td style="vertical-align:center;font-weight:bold;font-size:1.5em">
+                              <h:outputText value="#{(addAssetHelper.getAssetFactory()).getSimpleType()}" 
+                                id="factoryName" style="display:block;width:250px;overflow-x:hidden"/>
+                            </td>
+                            <td style="text-align:center">
+                              <p:commandButton id="assetSpecsButton" icon="ui-icon-search" value="Specs" 
+                                 oncomplete="assetCapDlg.show()" update='@([id$="assetTreeTable"])'/>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="3" style="vertical-align:top;width:75%">
+                              <p:scrollPanel style="height:223px" id="description">
+                                #{(addAssetHelper.getAssetFactory()).getFactoryCaps().getDescription()}
+                              </p:scrollPanel>
+                            </td>
+                          </tr>
+                        </table>
+                      </p:outputPanel>
+                   </td>
+                 </tr>
+                 <tr>           
+                   <td colspan="2" style="padding-bottom:1em;padding-top:2em;text-align:center">
+                     <p:outputLabel for="aName" value="Enter New Asset Name:" />
+                     <p:inputText id="aName" style="margin-left:0.9em" required="true" 
+                        requiredMessage="Please enter a name for the new asset." value="#{addAssetHelper.newAssetName}" >
+                        <f:validateLength minimum="1"/>
+                     </p:inputText>
+                     <p:message for="aName"/>
+                   </td>
+                 </tr>
+                 <tr>
+                  <td colspan="2">
+                    <div style="width:100%; text-align:center">
+                      <p:commandButton id="configureAsset" value="Configure" update='@form @([id$="assetCreateConfiguration"])'
+                              oncomplete="if(!args.validationFailed){ assetCreateConfigurationDlg.show(); newAssetDlg.hide();}"
+                              disabled="false"/>
+                      <p:commandButton id="cancelCreateAsset" value="Cancel" onclick="newAssetDlg.hide();"/>
+                    </div>
+                 </td>
+              </tr>
+            </table>
+         </p:outputPanel>
+       </h:form>
+     </p:dialog>
+     <h:form>
+        <those:capabilitiesTree capObject="#{addAssetHelper.assetCaps}" prefix="asset" />
+     </h:form>
+</ui:composition>

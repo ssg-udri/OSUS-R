@@ -1,0 +1,239 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ 
+ The observation tab assists in the reviewing of observations capture by assets.
+ 
+==============================================================================
+ -->
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:observation="http://java.sun.com/jsf/composite/observation">
+    
+    <h:form id="obsQueryPanel">
+        <p:accordionPanel id="obsAccordion" rendered="#{activeController.isActiveControllerSet()}"
+            activeIndex="#{assetPageDisplayHelper.observationToolsActiveIndex}">
+            <p:ajax event="tabChange" listener="#{assetPageDisplayHelper.observationToolsTabChange}"/>
+            <p:tab title="Retrieve or Delete Observations" id="retrievePanel">
+                <table style="padding-top:10px">
+                    <tr>
+                        <td>
+                            <h:outputText value="By Created Date " style="vertical-align:top"/>
+                            <p:selectBooleanCheckbox id="retrieveDateBox" 
+                                value="#{retieveDeleteObs.retrieveDeleteByDate}" >
+                                <p:ajax resetValues="true" update='retrieveDeletePanel'/>
+                            </p:selectBooleanCheckbox>
+                        </td>
+                    </tr> 
+                    <tr>
+                        <td>
+                            <h:outputText value="Retrieve By Number " style="vertical-align:top"/>
+                            <p:selectBooleanCheckbox id="retrieveMaxNumBox" value="#{retieveDeleteObs.retrieveByMaxObsNum}">
+                                <p:ajax resetValues="true" update='retrieveDeletePanel'/>
+                            </p:selectBooleanCheckbox>
+                        </td>
+                    </tr>
+                </table>
+                <p:panelGrid id="retrieveDeletePanel" styleClass="observationToolsPanelGrid" style="margin-top:-9px;"> 
+                    <p:row rendered="#{retieveDeleteObs.retrieveDeleteByDate}" id="filterDatePanel" >
+                        <p:column style="padding-right:75px" colspan="2" id="startDateRetrieveCol">
+                            <h3 class="observationFilter">Start Date (created)</h3> 
+                            <p:message for="startDateRetrieve" id="startDateRetreiveMsg" />
+                            <p:calendar value="#{retieveDeleteObs.startDate}" 
+                                timeZone="UTC"
+                                id="startDateRetrieve" 
+                                pattern="MM/dd/yyyy HH:mm:ss" 
+                                required="#{retieveDeleteObs.retrieveDeleteByDate}"
+                                requiredMessage="Please select a date." 
+                                converterMessage="Invalid date format.">
+                                <p:ajax event="dateSelect" update='startDateRetreiveMsg, endDateMsgRetrieve' 
+                                    process='@([id$="endDateRetrieve,startDateRetrieve"])' partialSubmit="true"/>
+                                <p:ajax event="blur" update='startDateRetreiveMsg, endDateMsgRetrieve' 
+                                    process='@([id$="endDateRetrieve,startDateRetrieve"])' partialSubmit="true"/>
+                            </p:calendar>
+                        </p:column>
+                        <p:column style="padding-right:75px" colspan="2" id="endDateRetrieveCol">
+                            <h3 class="observationFilter">End Date (created)</h3> 
+                            <p:message for="endDateRetrieve" id="endDateMsgRetrieve" />
+                            <p:calendar value="#{retieveDeleteObs.endDate}" 
+                                timeZone="UTC" 
+                                id="endDateRetrieve" 
+                                pattern="MM/dd/yyyy HH:mm:ss" 
+                                required="#{retieveDeleteObs.retrieveDeleteByDate}" 
+                                requiredMessage="Please select a date." 
+                                converterMessage="Invalid date format.">  
+                                <p:ajax event="dateSelect" update='startDateRetreiveMsg, endDateMsgRetrieve' 
+                                    process='@([id$="endDateRetrieve,startDateRetrieve"])' partialSubmit="true"/>
+                                <p:ajax event="blur" update='startDateRetreiveMsg, endDateMsgRetrieve' 
+                                    process='@([id$="endDateRetrieve,startDateRetrieve"])' partialSubmit="true"/>
+                            </p:calendar>
+                        </p:column>
+                        <f:event listener="#{retieveDeleteObs.validateDates}" type="postValidate"/>
+                    </p:row>
+                    <p:row id="obsNumPanel" rendered="#{retieveDeleteObs.retrieveByMaxObsNum}">
+                        <p:column colspan="4">
+                            <h3 class="observationFilter">Number of Observations</h3> 
+                            <p:panelGrid columns="1" style="margin-bottom:10px;" styleClass="observationToolsPanelGrid">
+                                <h:outputText id="obsNumOut" value="Retrieve #{retieveDeleteObs.maxObservationNumber} Observations"/> 
+                                <p:inputText id="obsNum" 
+                                    value="#{retieveDeleteObs.maxObservationNumber}" 
+                                    converterMessage="Please enter a valid number."
+                                    validatorMessage="Value must be larger than 0.">
+                                    <p:ajax event="blur" update='obsNumPanel, retrieveDeletePanel' />
+                                    <f:validateLongRange minimum="1"/>
+                                </p:inputText>
+                                <p:message for="obsNum"/>
+                            </p:panelGrid> 
+                        </p:column>
+                     </p:row>
+                 </p:panelGrid>
+                <table>
+                    <tr>
+                        <td>
+                            <div style="width:100%;text-align:left;margin-top:5px;">
+                                <p:commandButton id="deleteObs" icon="ui-icon-trash" 
+                                    value="Delete" style="margin-right:10px" 
+                                    onclick="removeAllConfirmationDlg.show();"
+                                    title="Deletes all observations within specified date range. If date range not specified, deletes all observations." >
+                                    <p:resetInput target="retrievePanel" />
+                                </p:commandButton>
+                                <p:commandButton id="retrieveObs" icon="ui-icon-arrowreturnthick-1-e" value="Retrieve" style="margin-right:10px" 
+                                    actionListener="#{retieveDeleteObs.submitRetrieveObservationsRequest(assetDisplay.getSelectedFactoryObject())}"
+                                    title="Retrieves the specified number of observations or all observations within specified date range. If date range nor number of observations is specified, retrieves all observations." >
+                                    <p:resetInput target="retrievePanel" />
+                                </p:commandButton>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </p:tab>
+            <p:tab title="Filter" id="filteringPanel">
+                <table style="padding-top:2px">
+                    <tr>
+                        <td>
+                            <h:outputText value="By Created Date " style="vertical-align:top"/>
+                            <p:selectBooleanCheckbox id="filterByDate" value="#{obsMgr.filterByDate}" >
+                                <p:ajax update='filterAfterRetrievePanel,@([id$="obsTable"])' />
+                            </p:selectBooleanCheckbox>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputText value="By Expression " style="vertical-align:top"/>
+                            <p:selectBooleanCheckbox id="filterStringBox" value="#{obsMgr.filterByExpression}">
+                                <p:ajax update='filterAfterRetrievePanel,@([id$="obsTable"])' />
+                            </p:selectBooleanCheckbox>
+                        </td>
+                    </tr> 
+                </table>
+                <p:panelGrid id="filterAfterRetrievePanel" styleClass="observationToolsPanelGrid" style="margin-top:-9px;"> 
+                    <p:row rendered="#{obsMgr.filterByDate}" id="filterByByDate" >
+                        <p:column style="padding-right:75px" colspan="2" id="startDateFilterCol">
+                             <h3 class="observationFilter">Start Date (created)</h3> 
+                             <p:message for="startDateFilter" id="startDateMsgFilter" />
+                             <p:calendar value="#{obsMgr.startDate}" 
+                                timeZone="UTC"
+                                id="startDateFilter" 
+                                pattern="MM/dd/yyyy HH:mm:ss" 
+                                required="#{obsMgr.filterByDate}"
+                                requiredMessage="Please select a date." 
+                                converterMessage="Invalid date format.">
+                                <p:ajax event="dateSelect" update='startDateMsgFilter, endDateMsgFilter, @([id$="obsTable"])' 
+                                    process='@([id$="endDateFilter,startDateFilter"])' partialSubmit="true"/>
+                                <p:ajax event="blur" update='startDateMsgFilter, endDateMsgFilter, @([id$="obsTable"])' 
+                                    process='@([id$="endDateFilter,startDateFilter"])' partialSubmit="true"/>
+                            </p:calendar>
+                        </p:column>
+                        <p:column style="padding-right:75px" colspan="2" id="endDateFilterCol">
+                            <h3 class="observationFilter">End Date (created)</h3> 
+                            <p:message for="endDateFilter" id="endDateMsgFilter" />
+                            <p:calendar value="#{obsMgr.endDate}" 
+                                timeZone="UTC" 
+                                id="endDateFilter" 
+                                pattern="MM/dd/yyyy HH:mm:ss" 
+                                required="#{obsMgr.filterByDate}" 
+                                requiredMessage="Please select a date." 
+                                converterMessage="Invalid date format." >  
+                                <p:ajax event="dateSelect" update='startDateMsgFilter, endDateMsgFilter, @([id$="obsTable"])' 
+                                    process='@([id$="endDateFilter,startDateFilter"])' partialSubmit="true"/>
+                                <p:ajax event="blur" update='startDateMsgFilter, endDateMsgFilter, @([id$="obsTable"])' 
+                                    process='@([id$="endDateFilter,startDateFilter"])' partialSubmit="true"/>
+                            </p:calendar>
+                        </p:column>
+                        <f:event listener="#{obsMgr.validateDates}" type="postValidate"/>
+                    </p:row>
+                    <p:row id="filterByExpression" rendered="#{obsMgr.filterByExpression}">
+                        <p:column colspan="4">
+                            <h3 class="observationFilter">Filter Expression</h3> 
+                            <p:panelGrid columns="1" style="margin-bottom:10px;" 
+                                styleClass="observationToolsPanelGrid" >
+                                <p:inputText id="obsFilter" value="#{obsMgr.filter}" 
+                                    size="90"
+                                    validator="#{obsMgr.checkFilter}" >
+                                    <p:ajax event="blur" update='msgForObsFilter, @([id$="obsTable"])' partialSubmit="true" />
+                                </p:inputText>
+                                <p:message for="obsFilter" id="msgForObsFilter"/>
+                            </p:panelGrid>   
+                        </p:column>
+                     </p:row>
+                 </p:panelGrid>
+                 <table>
+                    <tr>
+                        <td>
+                            <div style="width:100%;text-align:left;margin-top:5px;">
+                                <p:commandButton id="filterButton" 
+                                    icon="ui-icon-transferthick-e-w" 
+                                    value="Filter" style="margin-right:10px" 
+                                    process="filterByExpression,filterByByDate"
+                                    actionListener="#{obsMgr.handleManualFilterRequest()}"
+                                    update='@form, @([id$="obsTable"])'
+                                    title="Apply filter(s) to retrieved observations." >
+                                    <p:resetInput target="filterByExpression,filterByByDate" />
+                                </p:commandButton>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <p:defaultCommand target='filterButton' scope='filteringPanel' />
+            </p:tab>
+        </p:accordionPanel>
+    </h:form>   
+    <p:separator/>
+    
+    <h:form id="obsForm">
+    <h:outputText value="No assets, set an 'active' controller." rendered="#{not activeController.isActiveControllerSet()}"/>
+    <p:outputPanel id="obsPanel" rendered="#{activeController.isActiveControllerSet()}">
+    
+        <p:dataTable id="obsTable" value="#{obsMgr.observations}" var="guiObs" lazy="true"
+            emptyMessage="No Observations Can Be Found."
+            styleClass="tablesNoBorderOnCells" 
+            paginator="true" rows="10"  
+            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+            rowsPerPageTemplate="10,25,50,100">
+            <p:column>
+                <observation:observation_component 
+                    guiObservation="#{guiObs}"
+                    collapsed="true" 
+                    toggleable="true" 
+                    isOnDialog="false" />
+            </p:column>
+        </p:dataTable>
+    </p:outputPanel> 
+    </h:form>
+</ui:composition>

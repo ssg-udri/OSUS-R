@@ -1,0 +1,84 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+import "shared.proto";
+
+// Namespace which gives access to physical link operations
+message PhysicalLinkNamespace
+{
+    // An enumeration of different requests/responses for handling remote physical link layers
+    enum PhysicalLinkMessageType
+    {
+        // Determine if the link is currently open, responses are contained in IsOpenResponse
+        IsOpenRequest = 1;
+
+        // Response for IsOpenRequest
+        IsOpenResponse = 2;
+        
+        // Request to see if physical link is in use, responses are contained in IsInUseResponse.
+        IsInUseRequest = 3;
+
+        // Response for IsInUseResponse.
+        IsInUseResponse = 4;
+
+        // Request to delete a physical link, responses are contained in DeleteResponse.
+        DeleteRequest = 5;
+
+        // Response for DeleteRequest.
+        DeleteResponse = 6;
+    }
+
+    // This is the physical link message type
+    required PhysicalLinkMessageType type = 1;
+
+    // serialization of the data associated with the message (may be n/a), represents a protocol buffer message where
+    // the type is the MessageType field value with "Data" appended, for this namespace this would be
+    // "PhysicalLinkMessageTypeData"
+    optional bytes data = 100;
+}
+
+// Request to get the availability of the specified physical link layer.
+message IsOpenRequestData
+{
+    // UUID of the physical link to identify which layer this is in the message
+    required UUID uuid = 1;
+}
+
+// Response representing if the physical link layer from the request is open.
+message IsOpenResponseData
+{
+    // True if the physical link is currently open
+    required bool isOpen = 1;
+}
+
+// Check if the physical link is already in use.
+message IsInUseRequestData
+{
+    // UUID of the physical link you want to check.
+    required UUID physicalLinkUuid = 1;
+}
+
+// Returns whether or not the physical link is in use or not.
+message IsInUseResponseData
+{
+    // Returned bool value true if the physical link requested is in use.
+    required bool isInUse = 1;
+}
+
+// Removes the given physical link and deletes its configuration.
+message DeleteRequestData
+{
+    // UUID of the physical link you want to remove.
+    required UUID physicalLinkUuid = 1;
+}

@@ -1,0 +1,47 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+This xhtml page is used to render the information for displaying and
+configuring the controller and it's bundles. 
+
+==============================================================================
+ --> 
+<ui:composition template="../templates/mainscreenTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:define name="content">
+        <h:outputScript library="scripts/push/pages/advanced" name="pushEventConfigMessages.js"/>
+        <h:outputStylesheet library="css" name="systemconfig.css"/>
+        <p:tabView id="systemConfigTab" activeIndex="#{configPageDisplayHelper.configTabIndex}">
+            <p:ajax event="tabChange" listener="#{configPageDisplayHelper.configTabViewChange}"/>
+            <p:tab id="bundleTab" title="Bundles">
+                <ui:include src="systemconfig_bundles_tab.xhtml"/>
+            </p:tab>
+            <p:tab id="configTab" title="Configurations">
+                <ui:include src="systemconfig_configuration_tab.xhtml"/>
+            </p:tab>
+        </p:tabView>
+        <ui:include src="systemconfig_bundles_info_dlg.xhtml" />
+        <ui:include src="systemconfig_bundles_install_dlg.xhtml" />
+        <ui:include src="systemconfig_bundles_uninstall_dlg.xhtml" />
+        <ui:include src="systemconfig_configuration_remove_dlg.xhtml" />
+        <ui:include src="create_factory_configuration_dlg.xhtml" />
+    </ui:define>
+    
+</ui:composition>

@@ -1,0 +1,47 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+This xhtml page acts as a template for custom terra harvest tooltips.  
+
+==============================================================================
+ -->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+     xmlns:c="http://java.sun.com/jsp/jstl/core"
+     xmlns:p="http://primefaces.org/ui"
+     xmlns:composite="http://java.sun.com/jsf/composite">
+     
+    
+     <composite:interface>
+          <!-- Text to appear in tool tip bubble -->
+          <composite:attribute name="value" required="true" />
+     </composite:interface>
+    
+    
+    <composite:implementation>   
+        <h:outputStylesheet library="css" name="tooltip.css"/> 
+        <!-- All elements are specific to the style defined in tooltip.css. 
+        Do not alter the element tags without altering the CSS -->
+        <div class="tooltip point">     
+            <span>
+                <!-- img element is used to form the tooltip point.  -->
+                <img src=""/>
+                #{cc.attrs.value}                                                                     
+            </span>                                                                
+        </div>
+    </composite:implementation>
+</ui:composition>

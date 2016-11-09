@@ -1,0 +1,31 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+
+rem See README for complete instructions on using this file.
+rem This file should be used to set environment variables.  You can either run this in a command line or add a call
+rem at the end of this file to start Eclipse to have variables set in Eclipse.
+
+rem installation location of Ant
+set ANT_HOME=<root of workspace>\deps\apache-ant-1.8.4
+
+rem installation directory of the JDK 1.8
+set JAVA_HOME=C:\Program Files\Java\jdk1.8.0_60
+
+rem location of the JDK include files
+set JAVA_INCLUDE=%JAVA_HOME%\include
+
+rem location of the JDK command line tools
+set JAVA_BIN=%JAVA_HOME%\bin
+
+rem update PATH to include ANT and JDK, optionally add SWIG if platform interface is required
+set PATH=%ANT_HOME%\bin;%JAVA_BIN%;%PATH%

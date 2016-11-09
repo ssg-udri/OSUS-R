@@ -1,0 +1,26 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+# build.bnd will look for a custom.bnd file in this directory. This file will be
+# used by the continuous integration server as all ci- targets in rootBuild.xml will
+# have this file copied to custom.bnd so that it will be picked up
+
+# see build.bnd, baselining is currently disabled
+#-plugin: ${ext.repositories.-plugin}, \
+#    aQute.bnd.deployer.repository.FixedIndexedRepo; \
+#    name=CI Release; \
+#    locations="http://ssgubuntusvr1310/release-bundle-repo/index.xml.gz"
+
+# Jenkins does not support a release repo so just set a baseline repo so baselining is still performed    
+#-baselinerepo: CI Release
+

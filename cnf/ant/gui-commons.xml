@@ -1,0 +1,30 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Common build targets for the web GUI.
+
+==============================================================================
+-->
+<project name="gui-commons">
+    
+    <!-- set the asadmin property to the asadmin script based on OS -->
+    <target name="asadmin-win" if="is.windows">
+        <property name="asadmin" value="${gui.deploy.dir}/glassfish3/bin/asadmin.bat" />
+    </target>
+    <target name="asadmin-other" unless="is.windows">
+        <property name="asadmin" value="${gui.deploy.dir}/glassfish3/bin/asadmin" />
+    </target>
+    <target name="check-asadmin" depends="asadmin-win,asadmin-other" />
+</project>

@@ -1,0 +1,77 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ 
+ This xhtml page is used to enable creation and deletion of communications
+ channels between the GUI and a specified controller.
+ 
+==============================================================================
+ -->
+<ui:composition template="../templates/mainscreenTemplate.xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui">
+      
+      <ui:define name="content">
+        <h:form>
+            <p:outputPanel id="mainTable">
+                <table style="width:100%">
+                    <tr>
+                        <td style="width:50%">
+                            <h2>Live Channels</h2>
+                            <p:commandButton id="addChannel" icon="ui-icon-plus" value="Add a Channel" 
+                                actionListener="#{channelGuiDialogHelper.clearNewChannelInput()}" 
+                                update='@([id$="newChannelProps"])' 
+                                oncomplete="newChannelPropsDlg.show()"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <br/>
+                            <p:selectOneRadio value="#{channelGuiHelper.renderOption}">
+                                <p:ajax update="@form"></p:ajax>
+                                <f:selectItem itemLabel="By Channel" itemValue="CHANNEL"></f:selectItem>
+                                <f:selectItem itemLabel="By Controller" itemValue="CONTROLLER"></f:selectItem>
+                            </p:selectOneRadio>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <p:outputPanel id="channelsPanel">
+                                <ui:fragment rendered="#{channelGuiHelper.renderOption eq 'CHANNEL'}">
+                                    <ui:include src="channels_display_by_channel.xhtml"/>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{channelGuiHelper.renderOption eq 'CONTROLLER'}">
+                                    <ui:include src="channels_display_by_controller.xhtml"/>
+                                </ui:fragment> 
+                            </p:outputPanel>
+                        </td>
+                    </tr>
+                </table>
+            </p:outputPanel>
+            
+            <!-- Here are all the remote commands used by the Push API, 
+            commands are called from the pushEventChannelMessages.js -->
+            <p:remoteCommand name="rcUpdateChannels" update='@([id$="channelsPanel"])'/>
+        </h:form>
+        
+        <h:outputScript library="scripts" name="push/pages/channels/pushEventChannelMessages.js"/>
+        <ui:include src="channels_new_channel_dialog.xhtml"/>
+        <ui:include src="channels_set_new_channel_properties.xhtml"/>
+        
+      </ui:define>
+</ui:composition>

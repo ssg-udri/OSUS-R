@@ -1,0 +1,41 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+Bundle-Version: 1.3.168.${tstamp}
+Bundle-Name: H2 Database Engine
+Bundle-Description: H2 Database Engine
+Main-Class: org.h2.tools.Console
+Bundle-Activator: org.h2.util.DbDriverActivator
+Bundle-Vendor: H2 Group
+
+# org.slf4 http://www.h2database.com/html/features.html#other_logging describes that it is optional
+# org.apache.lucene http://www.h2database.com/html/tutorial.html#fulltext describes that it is optional
+# javax.servlet is only needed for the h2 servlet that is not being used
+Import-Package: \
+    !javax.servlet.*,\
+    !org.apache.lucene.*,\
+    !org.slf4j,\
+    *
+Premain-Class: org.h2.util.Profiler
+Export-Package: org.h2.*
+Build-Jdk: 1.5
+Service-Component=org.h2.Driver; \
+    provide:=java.sql.Driver  
+    
+-classpath: ../deps/h2/h2-1.3.168.jar
+
+# clear out default source path of "src"
+-sourcepath: 
+
+# don't baseline this bundle, version reflects version of wrapped JAR
+-baseline: none

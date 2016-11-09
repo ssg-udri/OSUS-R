@@ -1,0 +1,55 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+#
+Bundle-Version: 6.1.0.${tstamp}
+Bundle-Name: Terra Harvest Core API Runtime
+Bundle-Description: \
+    Core API bundle to be used at runtime as it contains JDO enhanced classes. Not to be used at build time.
+
+# hasPersistentType=true is required by packages containing persistable types used by data nucleus bundle to dynamically
+# import these packages
+#
+# mil.dod.th.core.* is imported last so special instructions for package listed above it are picked up for inner
+# packages
+#
+# merge last (enhance-bin) as we need the enhanced version of the code in this bundle
+Export-Package: \
+    !mil.dod.th.core.remote.proto, \
+    mil.dod.th.core.persistence;-split-package:=merge-last, \
+    mil.dod.th.core.types.*;hasPersistentTypes=true;provide:=true;-split-package:=merge-last, \
+    mil.dod.th.core.observation.types.*;hasPersistentTypes=true;provide:=true;-split-package:=merge-last, \
+    mil.dod.th.core.*.capability;provide:=true, \
+    mil.dod.th.core.asset.commands;provide:=true, \
+    mil.dod.th.core.mp.model;provide:=true, \
+    mil.dod.th.core.*
+# org.datanucleus packages needed by JDO enhanced data types
+# com.sun.xml.internal.bind needed by unmarshaller for JAXB classes
+Import-Package: \
+    org.datanucleus.api.jdo,\
+    org.datanucleus.store.rdbms.sql,\
+    org.datanucleus.store.rdbms.sql.method,\
+    org.datanucleus.store.rdbms.query,\
+    com.sun.xml.internal.bind,\
+    *
+    
+Service-Component: *
+
+-includeresource: \
+    mil/dod/th=../mil.dod.th.core.lexicon/schemas, \
+    mil/dod/th/core=jdo, \
+    mil/dod/th/core/observation/types/version.properties=../mil.dod.th.core.lexicon/observation.version.properties, \
+    enhance-bin
+
+# Specify configuration interfaces to be generated into metatype xml.
+-metatype: *
+

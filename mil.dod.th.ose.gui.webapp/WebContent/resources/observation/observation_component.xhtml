@@ -1,0 +1,162 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+    Component will display a single observation including the header and data
+    for each subtype.
+===============================================================================
+ -->
+<ui:composition 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:composite="http://java.sun.com/jsf/composite"
+      xmlns:observation="http://java.sun.com/jsf/composite/observation">
+      
+    <composite:interface>
+        <!-- Gui observation model which holds observation to be displayed -->
+        <composite:attribute name="guiObservation" required="true"/>
+
+        <!-- Initial state of data panels, either true or false -->
+        <composite:attribute name="collapsed" required="true"/>
+
+        <!-- Whether the data panel can be expanded/collapsed -->
+        <composite:attribute name="toggleable" required="true"/>
+        
+        <!-- Whether the data panel is being displayed within a dialog-->
+        <composite:attribute name="isOnDialog" required="true" />
+    </composite:interface>
+      
+      
+    <composite:implementation>
+        <p:panel id="observationPanel" style="width:100%;#{cc.attrs.isOnDialog ? 'border:none' : ''}" styleClass="observationHeader" toggleable="#{cc.attrs.toggleable}" collapsed="#{cc.attrs.collapsed}">
+            <f:facet name="header">
+                <p:panelGrid style="width:95%;" styleClass="observationComponentPanelGrid">
+                    <p:row>
+                        <p:column style="width:5%;">
+                            <p:graphicImage 
+                                id="obsAssetImg" 
+                                library="images"  
+                                name="#{assetImage.tryGetAssetImage(cc.attrs.guiObservation.observation.assetUuid)}" 
+                                alt="Image Not Found"/>
+                        </p:column>
+                        <p:column style="text-align:left;width:30%;">
+                            <div style="width:100%;overflow:hidden;text-overflow:ellipsis;margin-left:10px;max-height:100px;max-width:190px;">
+                                <h:outputText id="obsAssetName" style="font-weight:bold;font-size:1.1em;" value="#{cc.attrs.guiObservation.observation.assetName}"/>
+                            </div>
+                        </p:column>
+                        <p:column style="width:55%;text-align:right">
+                            <div style="display: #{cc.attrs.guiObservation.observation.isSetAudioMetadata() ? 'inline' : 'none'};">
+                                <p:graphicImage id="audio" rendered="#{cc.attrs.guiObservation.observation.isSetAudioMetadata()}" library="images" name="#{obsImageService.tryGetObservationImage('AUDIO_METADATA')}"/>
+                                <p:tooltip for="audio" value="Audio"/>
+                                <p:commandLink id="dlAudio" value="Download" styleClass="observationLink" ajax="false" rendered="#{cc.attrs.guiObservation.observation.isSetAudioMetadata()}" actionListener="#{viewObsMgr.setObservation(cc.attrs.guiObservation.observation)}">
+                                    <p:fileDownload value="#{viewObsMgr.downloadMedia()}"/>
+                                </p:commandLink>
+                            </div>
+                            <div style="display: #{cc.attrs.guiObservation.observation.isSetImageMetadata() ? 'inline' : 'none'};">
+                                <p:graphicImage id="img" rendered="#{cc.attrs.guiObservation.observation.isSetImageMetadata()}" library="images" name="#{obsImageService.tryGetObservationImage('IMAGE_METADATA')}"/>
+                                <p:tooltip for="img" value="Image"/>
+                                <p:commandLink id="viewImageObs" value="View" styleClass="observationLink" rendered="#{cc.attrs.guiObservation.observation.isSetImageMetadata()}" oncomplete="obsViewDlg.show()" actionListener="#{viewObsMgr.setObservation(cc.attrs.guiObservation.observation)}" update='@([id="obsViewPanel"])'/>
+                            </div>
+                            <div style="display:inline;">
+                                <p:graphicImage id="status" rendered="#{cc.attrs.guiObservation.observation.isSetStatus()}" library="images" name="#{obsImageService.tryGetObservationImage('STATUS')}"/>
+                                <p:tooltip for="status" value="Status"/>
+                            </div>
+                            <div style="display: #{cc.attrs.guiObservation.observation.isSetVideoMetadata() ? 'inline' : 'none'};">
+                                <p:graphicImage id="video" rendered="#{cc.attrs.guiObservation.observation.isSetVideoMetadata()}" library="images" name="#{obsImageService.tryGetObservationImage('VIDEO_METADATA')}"/>
+                                <p:tooltip for="video" value="Video"/>
+                                <p:commandLink id="dlVideo" value="Download" styleClass="observationLink" ajax="false" rendered="#{cc.attrs.guiObservation.observation.isSetVideoMetadata()}" actionListener="#{viewObsMgr.setObservation(cc.attrs.guiObservation.observation)}">
+                                    <p:fileDownload value="#{viewObsMgr.downloadMedia()}"/>
+                                </p:commandLink>
+                            </div>
+                            <div style="display:inline;">
+                                <p:graphicImage id="weather" rendered="#{cc.attrs.guiObservation.observation.isSetWeather()}" library="images" name="#{obsImageService.tryGetObservationImage('WEATHER')}"/>
+                                <p:tooltip for="weather" value="Weather"/>
+                            </div>
+                            <div style="display:inline;">
+                                <p:graphicImage id="class" rendered="#{cc.attrs.guiObservation.observation.isSetDetection()}" library="images" name="#{obsImageService.tryGetObservationImage('DETECTION')}"/>
+                                <p:tooltip for="class" value="Detection"/>
+                            </div>
+                            <div style="display:inline;">
+                                <p:graphicImage id="biological" rendered="#{cc.attrs.guiObservation.observation.isSetBiological()}" library="images" name="#{obsImageService.tryGetObservationImage('BIOLOGICAL')}"/>
+                                <p:tooltip for="biological" value="Biological"/>
+                            </div>
+                            <div style="display:inline;">
+                                <p:graphicImage id="chemical" rendered="#{cc.attrs.guiObservation.observation.isSetChemical()}" library="images" name="#{obsImageService.tryGetObservationImage('CHEMICAL')}"/>
+                                <p:tooltip for="chemical" value="Chemical"/>
+                            </div>
+                            <div style="display:inline;">
+                                <p:graphicImage id="cbrneTrigger" rendered="#{cc.attrs.guiObservation.observation.isSetCbrneTrigger()}" library="images" name="#{obsImageService.tryGetObservationImage('CBRNE_TRIGGER')}"/>
+                                <p:tooltip for="cbrneTrigger" value="CBRNE Trigger"/>
+                            </div>
+                            <div style="display:inline;">
+                                <p:graphicImage id="waterQuality" rendered="#{cc.attrs.guiObservation.observation.isSetWaterQuality()}" library="images" name="#{obsImageService.tryGetObservationImage('WATER_QUALITY')}"/>
+                                <p:tooltip for="waterQuality" value="Water Quality"/>
+                            </div>
+                            <div style="display:inline;">
+                                <p:graphicImage id="power" rendered="#{cc.attrs.guiObservation.observation.isSetPower()}" library="images" name="#{obsImageService.tryGetObservationImage('POWER')}"/>
+                                <p:tooltip for="power" value="Power"/>
+                            </div>
+                        </p:column>
+                        <p:column style="width:5%">
+                            <div style="display:inline;">
+                                <p:graphicImage id="link" rendered="#{cc.attrs.guiObservation.relatedObservationModels.size() > 0}"
+                                    library="images" name="thoseIcons/observations/link.png"/>
+                                <p:tooltip for="link" rendered="#{cc.attrs.guiObservation.relatedObservationModels.size() > 0}" value="Related Observations"/>
+                            </div>
+                        </p:column>
+                        <p:column style="width:5%;text-align:right">
+                            <p:commandButton id="remObs" rendered="#{!cc.attrs.isOnDialog}" icon="ui-icon-trash" actionListener="#{retieveDeleteObs.setSelectedObsUuid(cc.attrs.guiObservation.observation.uuid)}" oncomplete="removeObsConfirmationDlg.show();"/>
+                            <p:tooltip for="remObs" value="Remove an observation from the local and remote Observation Store."/>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column style="text-align:center">
+                            <p:graphicImage id="opMode" rendered="#{!cc.attrs.guiObservation.observation.isSystemInTestMode()}" library="images" name="thoseIcons/modes/operation_16.png"/>
+                            <p:tooltip for="opMode" value="Operational Mode"/>
+                            <p:graphicImage id="testMode" rendered="#{cc.attrs.guiObservation.observation.isSystemInTestMode()}" library="images" name="thoseIcons/modes/test_16.png"/>
+                            <p:tooltip for="testMode" value="Test Mode"/>
+                        </p:column>
+                        <p:column style="text-align:left" colspan="2">
+                            <p:graphicImage id="createdTime" style="padding-right:5px" rendered="#{cc.attrs.guiObservation.observation.isSetCreatedTimestamp()}" library="images" name="thoseIcons/observations/mini-icons/create-time.png"/>
+                            <p:tooltip for="createdTime" value="Created Time"/>
+                            <h:outputText id="obsCreatedTime" converter="dateTimeConverter" rendered="#{cc.attrs.guiObservation.observation.isSetCreatedTimestamp()}" value="#{cc.attrs.guiObservation.observation.createdTimestamp}"/>
+                        </p:column>
+                        <p:column style="text-align:right" colspan="2">
+                            <h:outputText id="sensorId" rendered="#{cc.attrs.guiObservation.observation.isSetSensorId()}" value="Sensor Id: #{cc.attrs.guiObservation.observation.sensorId}"/>
+                        </p:column>
+                    </p:row>
+                    <p:row rendered="#{cc.attrs.guiObservation.observation.isSetObservedTimestamp()}">
+                        <p:column>
+                        </p:column>
+                        <p:column style="text-align:left" colspan="2">
+                            <p:graphicImage id="obsTime" style="padding-right:5px" library="images" name="thoseIcons/observations/mini-icons/obs-time.png"/>
+                            <p:tooltip for="obsTime" value="Observed Time"/>
+                            <h:outputText id="obsObservedTime" converter="dateTimeConverter" value="#{cc.attrs.guiObservation.observation.observedTimestamp}"/>
+                        </p:column>
+                        <p:column colspan="2">
+                        </p:column>
+                    </p:row>
+                </p:panelGrid>
+                
+                </f:facet>
+                    
+                <!-- This is the composite component that displays all information contained in the observation -->
+                <observation:observation_data_display_component
+                    guiObservation="#{cc.attrs.guiObservation}" isOnDialog="#{cc.attrs.isOnDialog}"/>
+        </p:panel>
+    </composite:implementation>
+</ui:composition>

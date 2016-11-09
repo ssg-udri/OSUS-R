@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<ns2:AssetCapabilities xmlns="capability.core.th.dod.mil" xmlns:ns2="capability.asset.core.th.dod.mil" 
+     productName="Smartphone Asset"
+     description="An asset representing a smartphone client connected to the websocket server. Do NOT remove an asset of this type, or you will no longer retrieve observations from the client that this asset represents. Creating an asset of this type will create an asset that does nothing, as it should only be created by the websocket server." 
+     manufacturer="">
+    <ns2:modalities value="Unknown"/>
+    <ns2:statusCapabilities batteryChargeLevelAvailable="true">
+        <ns2:availableComponentStatuses type="Power"/>
+    </ns2:statusCapabilities>
+    <ns2:commandCapabilities captureData="false" performBIT="false">
+    </ns2:commandCapabilities>
+    <ns2:observationCapabilities observedTimestampAvailable="false"/>
+</ns2:AssetCapabilities>

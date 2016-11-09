@@ -1,0 +1,153 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+ 
+ This dialog is used to add a new comms stack to the system.
+ 
+==============================================================================
+ -->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+
+    <p:dialog resizable="false" header="Confirm Comms Stack"
+        widgetVar="confirmStackDlg" height="450" width="580">
+        <p:outputPanel id="confirmStack">
+            <h:form>
+                <table style="width: 100%">
+                    <tr>
+                        <td style="vertical-align: top; width: 10%"><p:graphicImage
+                                library="images" name="icons/confirm.png" alt="Image Not Found" />
+                        </td>
+                        <td style="font-weight: bold; font-size: 1.5em"><h:outputText
+                                value="Confirm Stack">
+                            </h:outputText></td>
+                    </tr>
+                </table>
+                <table style="width: 100%">
+                    <tr>
+                        <td style="vertical-align: top">
+                        <p:outputPanel>
+                         <ui:param name="newStackModel" value="#{addCommsHelper.getCommsCreationModel()}"/>
+                                <table style="width: 100%">
+                                    <tr>
+                                        <td align="center">
+                                        <p:panelGrid
+                                                styleClass="tablesNoBorderOnCells"
+                                                style="padding-bottom:10px;padding-top:20px;width:100%"
+                                                rendered="#{newStackModel.selectedTransportLayerType != null and !newStackModel.forceAdd}">
+                                                <f:facet name="header">
+                                                    <p:row>
+                                                        <p:column colspan="3">Transport Layer</p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Layer Name Entered</p:column>
+                                                        <p:column>Layer Type Selected</p:column>
+                                                    </p:row>
+                                                </f:facet>
+                                                <p:row>
+                                                    <p:column>
+                                                        #{newStackModel.newTransportName}
+                                                    </p:column>
+                                                    <p:column>
+                                                        #{newStackModel.selectedTransportLayerType}
+                                                    </p:column>
+                                                </p:row>
+                                            </p:panelGrid></td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center">
+                                            <p:panelGrid
+                                                styleClass="tablesNoBorderOnCells" rendered="#{!newStackModel.forceAdd}"
+                                                style="padding-bottom:10px;padding-top:20px;width:100%">
+                                                <f:facet name="header">
+                                                    <p:row>
+                                                        <p:column colspan="2">Link Layer</p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Layer Name Entered</p:column>
+                                                        <p:column>Layer Type Selected</p:column>
+                                                    </p:row>
+                                                </f:facet>
+                                                <p:row>
+                                                    <p:column>
+                                                        #{newStackModel.newLinkName}
+                                                    </p:column>
+                                                    <p:column>
+                                                        #{newStackModel.selectedLinkLayerType}
+                                                    </p:column>
+                                                </p:row>
+                                            </p:panelGrid>
+                                         </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center"><p:panelGrid
+                                                styleClass="tablesNoBorderOnCells"
+                                                style="padding-bottom:10px;padding-top:20px;width:100%">
+                                                <f:facet name="header">
+                                                    <p:row>
+                                                        <p:column colspan="2">Physical Link</p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column rendered="#{newStackModel.forceAdd}">Link Name Entered</p:column>
+                                                        <p:column>Link Type</p:column>
+                                                    </p:row>
+                                                </f:facet>
+                                                <p:row>
+                                                    <p:column rendered="#{newStackModel.forceAdd}">
+                                                        #{newStackModel.newPhysicalName}
+                                                    </p:column>
+                                                    <p:column>
+                                                        <h:outputText rendered="#{!newStackModel.forceAdd}" 
+                                                        value="#{newStackModel.selectedPhysicalLink}"/>
+                                                        <h:outputText rendered="#{newStackModel.forceAdd}" 
+                                                        value="#{newStackModel.selectedPhysicalType}"/>                                                     
+                                                    </p:column>
+                                                    
+                                                </p:row>
+                                            </p:panelGrid>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </p:outputPanel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td
+                            style="text-align: center; padding-bottom: 10px; padding-top: 20px">
+                            <h:outputText style="font-size:1.2em"
+                                value="Please verify the above information. If it is correct, submit your request." />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div style="width: 100%; text-align: center">
+                                <p:commandButton value="Submit Request" id="confirmSubmitButton"
+                                    actionListener="#{addCommsController.submitNewCommsStackRequest((activeController.getActiveController()).getId(), newStackModel)}"
+                                    action="#{addCommsHelper.clearAllSelectedValues()}"
+                                    oncomplete="confirmStackDlg.hide(); addCommDlg.hide();"
+                                    update='@([id$="addCommPanel"])'>
+                                </p:commandButton>
+                                <p:commandButton value="Cancel" id="confirmCancelButton" onclick="confirmStackDlg.hide(); addCommDlg.show()"></p:commandButton>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </h:form>
+        </p:outputPanel>
+    </p:dialog>
+</ui:composition>

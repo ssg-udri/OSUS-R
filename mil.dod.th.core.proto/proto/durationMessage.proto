@@ -1,0 +1,37 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+
+//A message representing a duration of time.
+message Duration 
+{
+  //The number of months in the duration
+  optional int32 months = 1;
+  
+  //The number of minutes in the duration
+  optional int32 minutes = 2;
+  
+  //The number of days in the duration
+  optional int32 days = 3;
+  
+  //The number of seconds in the duration, a fractional portion can be included
+  //to represent even smaller time units such as milliseconds
+  optional double seconds = 4;
+  
+  //The number of hours in the duration
+  optional int32 hours = 5;
+  
+  //The number of years in the duration
+  optional int32 years = 6;
+}

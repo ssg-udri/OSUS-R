@@ -1,0 +1,221 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+import "shared.proto";
+
+// Enum for link layer statuses corresponding to mil.dod.th.core.ccomm.link.LinkLayer.LinkStatus
+enum LinkStatus
+{
+    // Lost link layer status
+    LOST = 1;
+
+    // Ok link layer status
+    OK = 2;
+}
+
+// Namespace which gives access to link layer operations
+message LinkLayerNamespace
+{
+    // An enumeration of different requests/responses for handling remote link layers
+    enum LinkLayerMessageType
+    {
+        // Request to activate the link layer, responses are contained in ActivateResponse
+        ActivateRequest = 1;
+
+        // Response for ActivateRequest
+        ActivateResponse = 2;
+
+        // Request to deactivate the link layer, responses are contained in DeactivateResponse
+        DeactivateRequest = 3;
+
+        // Response for DeactivateRequest
+        DeactivateResponse = 4;
+
+        // Request to get the link layer status, responses are contained in GetStatusResponse
+        GetStatusRequest = 5;
+
+        // Response for GetStatusRequest
+        GetStatusResponse = 6;
+
+        // Request to see if the link layer is activated, responses are contained in IsActivatedResponse
+        IsActivatedRequest = 7;
+
+        // Response for IsActivatedRequest
+        IsActivatedResponse = 8;
+        
+        // Request to get the link layer's MTU value, responses are contained in GetMtuResponse
+        GetMtuRequest = 9;
+
+        // Response for GetMtuRequest
+        GetMtuResponse = 10;
+
+        // Request to see if the link layer can reach an address, responses are contained in IsAvailableResponse
+        IsAvailableRequest = 11;
+
+        // Response for IsAvailableRequest
+        IsAvailableResponse = 12;
+
+        // Request to get the physical link associated with the link layer, responses are contained in
+        // GetPhysicalLinkResponse
+        GetPhysicalLinkRequest = 13;
+
+        // Response for GetPhysicalLinkRequest
+        GetPhysicalLinkResponse = 14;
+
+        // Request a link layer to perform it's built-in-test if supported. Response will contain the status
+        // of the layer after performing the test. Response message is PerformBitResponse.
+        PerformBITRequest = 15;
+
+        // Response to a request for the specified layer to perform its BIT.
+        PerformBITResponse = 16;
+
+        // Request to delete a link layer, responses are contained in DeleteResponse.
+        DeleteRequest = 17;
+
+        // Response for DeleteRequest.
+        DeleteResponse = 18;
+    }
+
+    // This is the custom comms message type.
+    required LinkLayerMessageType type = 1;
+
+    // Serialization of the data associated with the message (may be n/a), represents a protocol buffer message where
+    // the type is the MessageType field value with "Data" appended, for this namespace this would be
+    // "LinkLayerMessageTypeData".
+    optional bytes data = 100;
+}
+
+// Request message that can be used to activate the specified link layer.
+message ActivateRequestData
+{
+    // UUID of the link layer to identify which layer this is in the message.
+    required UUID uuid = 1;
+}
+
+// Request message that can be used to deactivate the specified link layer.
+message DeactivateRequestData
+{
+    // UUID of the link layer to identify which layer this is in the message.
+    required UUID uuid = 1;
+}
+
+// Request to get the status of the specified link layer.
+message GetStatusRequestData
+{
+    // UUID of the link layer to identify which layer this is in the message.
+    required UUID uuid = 1;
+}
+
+// Response containing the status of the specified link layer.
+message GetStatusResponseData
+{
+    // UUID of the link layer to which the status belongs.
+    required UUID uuid = 1;
+
+    // Link layer status represented by the enum above.
+    required LinkStatus linkStatus = 2;
+}
+
+// Request message the inquires whether the specified layer is activated.
+message IsActivatedRequestData
+{
+    // UUID of the link layer to identify which layer this is in the message.
+    required UUID uuid = 1;
+}
+
+// Response that contains the activation status of the link layer contained in the original request.
+message IsActivatedResponseData
+{
+    // UUID of the link layer to which the active status belongs.
+    required UUID uuid = 1;
+
+    // Returned bool value true if the link layer is activated.
+    required bool isActivated = 2;
+}
+
+// Request to get the maximum transmission units that the specified link layer can handle.
+message GetMtuRequestData
+{
+    // UUID of the link layer to identify which layer this is in the message.
+    required UUID uuid = 1;
+}
+
+// Response that contains the maximum bytes that the specified link layer in the request can handle at any one
+// point in time.
+message GetMtuResponseData
+{
+    // Maximum transmission unit of the link layer comm interface that sets the largest size of bytes this
+    // link layer can send.
+    required int32 mtu = 1;
+}
+
+// Request used to inquire if the specified link layer is available.
+message IsAvailableRequestData
+{
+    // UUID of the link layer to identify which layer this is in the message.
+    required UUID uuid = 1;
+
+    // Address to be used to see if the link layer can reach it, defined by getMessageAddress from the address class.
+    required string address = 2;
+}
+
+// Response that represents the specified link layer's availability.
+message IsAvailableResponseData
+{
+    // UUID of the link layer that the availability was checked.
+    required UUID uuid = 1;
+
+    // Returned bool value true if the address can be reached from this link layer.
+    required bool available = 2;
+}
+
+// Request to get the specified link layer's child physical link.
+message GetPhysicalLinkRequestData
+{
+    // UUID of the link layer to identify which layer this is in the message.
+    required UUID uuid = 1;
+}
+
+// Response containing the UUID belonging to the physical link of the specified link layer from the request.
+message GetPhysicalLinkResponseData
+{
+    // UUID of the physical link to identify the physical link the link layer uses. Empty if the link layer does not 
+    // have a physical link associated with it.
+    optional UUID physicalLinkUuid = 1;
+}
+
+// Request for the specified layer to perform its built-in-test.
+message PerformBITRequestData
+{
+    // UUID of the link layer
+    required UUID linkUuid = 1;
+}
+
+// Response containing the UUID and the status of a link layer that was previously requested to perform
+// its built-in-test.
+message PerformBITResponseData
+{
+    // UUID of the link layer to which the status belongs
+    required UUID linkUuid = 1;
+
+    // The status of the link layer after performing the BIT
+    required LinkStatus performBitStatus = 2;
+}
+
+// Removes the given link layer and deletes its configuration.
+message DeleteRequestData
+{
+    // UUID of the link layer you want to remove.
+    required UUID linkLayerUuid = 1;
+}

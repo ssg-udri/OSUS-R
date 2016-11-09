@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<faces-config xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd"
+    version="2.0">
+    <navigation-rule>
+        <!-- General rule if no matches then redirect to welcome page -->
+        <from-view-id>*</from-view-id>
+        <navigation-case>
+            <from-outcome>test</from-outcome>
+            <to-view-id>/pages/welcome.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        
+        <!-- CHANNELS -->
+        
+         <!-- CONTROLLER CHANNEL CONNECTIONS -->
+        <navigation-case>
+            <from-outcome>chan-cconn</from-outcome>
+            <to-view-id>/pages/channels/channels.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        
+        <!-- DEVICES -->
+        
+        <!-- ASSETS AND COMMS -->
+        <navigation-case>
+            <from-outcome>dev-assets</from-outcome>
+            <to-view-id>/pages/devices/assets/assets.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>dev-comms</from-outcome>
+            <to-view-id>/pages/devices/comms/comms.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        
+        <!-- MISSION PROGRAMMING -->
+        
+        <!-- ALREADY EXECUTING MISSIONS -->
+        <navigation-case>
+            <from-outcome>mp-missions</from-outcome>
+            <to-view-id>/pages/mp/missions.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <!-- START A NEW MISSION -->
+        <navigation-case>
+            <from-outcome>mp-setupmis</from-outcome>
+            <to-view-id>/pages/mp/setup_mission.xhtml</to-view-id>
+            <redirect/>
+         </navigation-case>
+         <navigation-case>
+         <from-action>#{missionLoadSelected.loadMission()}</from-action>
+            <from-outcome>success</from-outcome>
+            <to-view-id>/pages/mp/missions.xhtml</to-view-id>
+            <redirect />
+         </navigation-case>
+        
+        <!-- ADVANCED -->
+        
+         <!-- GUI CONFIGURATION -->
+        <navigation-case>
+            <from-outcome>adv-guiconfig</from-outcome>
+            <to-view-id>/pages/advanced/guiconfig.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <!-- MISSION EDITOR -->
+        <navigation-case>
+            <from-outcome>adv-missioneditor</from-outcome>
+            <to-view-id>/pages/advanced/missioneditor.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <!-- POWER MANAGEMENT -->
+        <navigation-case>
+            <from-outcome>adv-powerman</from-outcome>
+            <to-view-id>/pages/advanced/power.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <!-- SYSTEM CONFIGURATION -->
+        <navigation-case>
+            <from-outcome>adv-sysconfig</from-outcome>
+            <to-view-id>/pages/advanced/systemconfig.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <!-- TODO TH-516 removal of test code -->
+        <!-- TEST ADD CHANNELS-->
+        <navigation-case>
+            <from-outcome>test-channels</from-outcome>
+            <to-view-id>/test-pages/TestChannelsController.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>         
+    </navigation-rule>
+</faces-config>

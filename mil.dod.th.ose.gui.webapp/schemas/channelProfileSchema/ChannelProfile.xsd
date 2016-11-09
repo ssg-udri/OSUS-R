@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<xs:schema xmlns="model.webapp.gui.ose.th.dod.mil" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" 
+    xmlns:shared="http://th.dod.mil/core/asset/types"
+    targetNamespace="model.webapp.gui.ose.th.dod.mil"
+    elementFormDefault="qualified"
+    jaxb:version="2.1">
+   
+    <xs:element name="ChannelProfile">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation>
+                    This complex type lists all required fields for a channel profile configuration.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:sequence>
+                
+                <xs:element name="name" type="xs:string" minOccurs="0" maxOccurs="1">
+                    <!-- Human Readable description of name of the channel profile -->
+                </xs:element>
+                
+                <xs:element name="description"  type="xs:string" minOccurs="0" maxOccurs="1">
+                    <!-- A description of what this channel profile outlines -->
+                </xs:element>
+                
+                <xs:element name="assetEventConfig" type="AssetEventsProfile" minOccurs="1" maxOccurs="1">
+                    <!-- All available asset event configuration options -->
+                </xs:element>
+                
+                <xs:element name="bundleEventsConfig" type="BundleEventsProfile" minOccurs="1" maxOccurs="1">
+                    <!-- All available bundle event configuration options -->
+                </xs:element>
+                
+                <xs:element name="missionEventsConfig" type="MissionEventsProfile" minOccurs="1" maxOccurs="1">
+                    <!-- All available mission event configuration options -->
+                </xs:element>
+                
+                <xs:element name="commsEventsConfig" type="CommsEventsProfile" minOccurs="1" maxOccurs="1">
+                    <!-- All available comms events configuration options -->
+                </xs:element>
+               
+                <xs:element name="eventNotifications" type="SubscribedEvent" minOccurs = "0" maxOccurs = "unbounded">
+                    <!-- All event notifications and event filters this profile will listen to. -->
+                </xs:element>
+                
+                
+            </xs:sequence>
+        </xs:complexType>
+   </xs:element>
+   
+   <!-- Outlines all Asset events that should be listened for over a channel with this profile -->
+    <xs:complexType name="AssetEventsProfile">
+        <xs:annotation>
+            <xs:documentation>
+                This complex type outlines which asset specific events will be listened to for a 
+                specific profile.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="autoUpdateActivationStatus" type="xs:boolean" minOccurs="1" maxOccurs="1">
+                <!-- Auto Update Activation Status - receive status and update automatically -->
+            </xs:element>
+            <xs:element name="autoUpdateSummaryStatus" type="xs:boolean" minOccurs="1" maxOccurs="1">
+                <!-- Auto Update Summary Status - receive status and update automatically -->
+            </xs:element>
+            <xs:element name="autoUpdateAssetCreationDeletion" type="xs:boolean" minOccurs="1" maxOccurs="1">
+                <!-- Auto update assets that are created and deleted -->
+            </xs:element>
+            <xs:element name="assetTypeUpdates" type="xs:boolean" minOccurs="1" maxOccurs="1">
+                <!-- Auto update asset type updates -->
+            </xs:element>
+            <xs:element name="observationData" type="AssetObservationChoice" minOccurs="1" maxOccurs="1">
+                <!-- Determine how to update GUI based on observations received. -->
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:simpleType name="AssetObservationChoice">
+        <xs:annotation>
+            <xs:documentation>
+                An AssetObservationChoice indicates whether observation events are to be received
+                and updated automatically on GUI, if notifications of events are only to be 
+                received and indicated to a user without updating current GUI information, or 
+                if observation events are to be manually retrieved.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="FULL">
+                <xs:annotation>
+                    <xs:documentation>
+                        Observation events are to be received automatically and updated
+                        on the GUI automatically.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NOTIFICATIONS">
+                <xs:annotation>
+                    <xs:documentation>
+                        Observation events are only to be indicated on the GUI. A manual
+                        refresh of the GUI is needed to update information.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="MANUAL">
+                <xs:annotation>
+                    <xs:documentation>
+                        Observation events are not indicated to a user. A manual query for
+                        observations is needed to retrieve current observations and update the
+                        GUI.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+   
+   <!-- Outlines all Bundle events that should be listened for over a channel with this profile -->
+    <xs:complexType name="BundleEventsProfile">
+        <xs:annotation>
+            <xs:documentation>
+                 This complex type outlines which bundle specific events will be listened to for a specific profile.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="autoReceiveBundleLifeCycleEvents" type="xs:boolean" minOccurs="1" maxOccurs="1">
+                <!-- Option indicates whether notifications should be received for bundle lifecycle events.
+                See valid OSGi bundle states. -->
+            </xs:element>
+            <xs:element name="autoReceiveBundleInstallationEvents" type="xs:boolean" minOccurs="1" maxOccurs="1">
+                <!-- Option indicates whether notifications should be given for install, update, remove bundle events -->
+            </xs:element>
+            <xs:element name="autoLoadBundlesToDestination" type="BundleLoadChoice" minOccurs="1" maxOccurs="1">
+                <!-- Option indicates if bundles should be loaded to a controller automatically, 
+                prompt the user before loading, or do not allow bundles to be loaded to a controller. -->
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:simpleType name="BundleLoadChoice">
+        <xs:annotation>
+            <xs:documentation>
+                A BundleLoadChoice indicates whether a bundle is loaded to destination
+                automatically or will only be loaded if a confirmation screen is affirmed
+                by a user.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <!-- Load a bundle to controller without prompting a user -->
+            <xs:enumeration value="AUTO">
+                <xs:annotation>
+                    <xs:documentation>
+                        Automatically load a bundle to destination without a prompt.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <!-- Load a bundle only after prompting the user -->
+            <xs:enumeration value="PROMPT">
+                <xs:annotation>
+                    <xs:documentation>
+                        Load a bundle to destination only after a prompt has been affirmed.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NEVER">
+                <!-- Do not allow bundles to be loaded remotely. -->
+                <xs:annotation>
+                    <xs:documentation>
+                        Do not allow bundles to be loaded remotely. As a side effect, 
+                        this won't allow adding an asset if the bundle hasn't already been
+                        loaded.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+   
+    <!-- Outlines all Mission events that should be listened for over a channel with this profile -->
+    <xs:complexType name="MissionEventsProfile">
+        <xs:annotation>
+            <xs:documentation>
+                This complex type outlines which mission specific events will be listened to for a specific 
+                profile.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="autoSyncMissionTemplates" type="xs:boolean" minOccurs="1" maxOccurs="1">
+                <!-- Automatically sync mission templates -->
+            </xs:element>
+            <xs:element name="autoSyncMissionPrograms" type="xs:boolean" minOccurs="1" maxOccurs="1">
+                <!-- Automatically sync mission programs that are on a connected controller -->
+            </xs:element>
+            <xs:element name="receiveProgramStatusUpdates" type="xs:boolean" minOccurs="1" maxOccurs="1">
+                <!-- Register to receive program status updates -->
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    
+    
+    <!-- Outlines all Comms events that should be listened for over a channel with this profile -->
+    <xs:complexType name="CommsEventsProfile">
+        <xs:annotation>
+            <xs:documentation>
+                This complex type outlines which comms specific events will be listened to for a 
+                profile.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="autoUpdateActivationStatus" type="xs:boolean" minOccurs="1" maxOccurs="1">
+                <!-- Auto Update Activation Status - receive activation status and update automatically -->
+            </xs:element>
+            <xs:element name="autoUpdateCommsCreationDeletion" type="xs:boolean" minOccurs="1" maxOccurs="1">
+                <!-- Auto update comms that are created and deleted -->
+            </xs:element>
+            <xs:element name="commsTypeUpdates" type="xs:boolean" minOccurs="1" maxOccurs="1">
+                <!-- Auto update comms type updates -->
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    
+    
+   
+   <!-- Outlines all subscribed events that are to be listened to on a channel with this profile -->
+    <xs:complexType name="SubscribedEvent">
+        <xs:annotation>
+            <xs:documentation>
+                This complex type outlines additional OSGi events that can be subscribed to in conjunction
+                with the above options that have been set. Options set above are not included as a 
+                SubscribedEvent. Topic pertains to the event that is to be listened to.
+                Filter should contain a string containing an LDAP-style filter specification. 
+                Any event properties may be used in the filter expression.
+                See OSGi Service Platform Service Compendium - EventAdmin for more information on 
+                events, topics, and filters.
+                
+                Any event registrations in the GUI that are not covered by the above settings but 
+                are registered by the GUI itself can be further configured here. Beans which register
+                for events will check for existence of a SubscribedEvent to further configure events
+                that are to be registered for.
+                
+                Additional events, i.e. events not handled by the above settings and events that are not
+                further configurations of GUI bean events, can be added here as well. 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="topic" type="xs:string" minOccurs="1" maxOccurs="1">
+                <!-- Topic string which specifies which event topics to listen to -->
+            </xs:element>
+            
+            <xs:element name="filter" type="xs:string" minOccurs="0" maxOccurs="1">
+                <!-- Filter string (optional) that goes along with an event -->
+            </xs:element>
+            
+            <xs:element name="systemid" type="xs:string" minOccurs="1" maxOccurs="1">
+                <!-- Represents the id of the system that this event should be registered on. Events can be registered
+                     on multiple systems. Use * to designate that the event should be applied to all connected systems. 
+                     Otherwise, provide system ids separated by :'s -->
+            </xs:element>
+            
+        </xs:sequence>
+    </xs:complexType>
+   
+</xs:schema>

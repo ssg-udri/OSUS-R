@@ -1,0 +1,32 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+
+# Used by deploy target only to deploy these bundles to a specific location. Due to 
+# https://github.com/bndtools/bnd/issues/866, properties cannot be used.
+    
+-runbundles: \
+    mil.dod.th.core.api,\
+    mil.dod.th.core.lexicon.model,\
+    mil.dod.th.core.proto.converters,\
+    mil.dod.th.core.proto.messages,\
+    mil.dod.th.ose.integration.commons,\
+    mil.dod.th.ose.shared,\
+    mil.dod.th.core.api.runtime,\
+    mil.dod.th.ose.config.loading,\
+    mil.dod.th.ose.controller,\
+    mil.dod.th.ose.core,\
+    mil.dod.th.ose.logging,\
+    mil.dod.th.ose.metatype,\
+    mil.dod.th.ose.mp.runtime,\
+    mil.dod.th.ose.remote,\
+    mil.dod.th.ose.shell

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<p:MissionProgramTemplate xmlns:p="http://th.dod.mil/core/mp/model" 
+    xmlns:shared="http://th.dod.mil/core/types" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://th.dod.mil/core/mp/model ../resources/missionProgramSchema/MissionProgramTemplate.xsd ">
+  <p:source>
+  <![CDATA[obj = 
+{
+    execute: function()
+    {
+        //remote channel lookup
+        rmtChnLkp.getAllChannels();
+    },
+    test: function()
+    {
+        // this function is not called from tests and does not need to be
+        return TestResult.class.static.PASSED;
+    },
+    shutdown: function()
+    {
+        logSvc.info("Remote services script is shutting down!.", []);
+    }
+};]]>
+</p:source>
+  <p:name>remote-services-template</p:name>
+  <p:description>See the bindings within the mission program manager. This verifies 
+      that those binding of remote services are actually accessible and fully functional 
+      from within a mission script.</p:description>
+
+  <p:withInterval>false</p:withInterval>
+  <p:withImageCapture>false</p:withImageCapture>
+  <p:withSensorTrigger>false</p:withSensorTrigger>
+  <p:withTimerTrigger>false</p:withTimerTrigger>
+  <p:withPanTilt>false</p:withPanTilt>
+
+  <p:supportTestExecution>true</p:supportTestExecution>
+</p:MissionProgramTemplate>

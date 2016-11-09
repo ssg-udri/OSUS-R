@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<p:Configurations xmlns:p="config.model.th.dod.mil" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="config.model.th.dod.mil schemas/model/config/Configurations.xsd ">
+  <!-- Below is an example factory object configuration entry. Uncomment and fill in the appropriate fields. Add as many of the below
+        entries as is needed to create all desired factory objects.-->
+  <!-- A properties tag can be repeated multiple times. -->
+  <!-- Only one of productType and physicalLinkType should be included
+  <factoryObjects name="Enter the name that is assigned to the object that is to be created">
+    <factoryType>LinkLayer | PhysicalLink | TransportLayer | Asset | StreamProfile</factoryType>
+    <properties key="" value=""/>
+    <productType>The product type of the factory that produces the desired object</productType>
+    <physicalLinkType>SerialPort | GPIO | SPI | I2C</physicalLinkType>
+    <createPolicy>IfMissing | FirstRun</createPolicy>
+  </factoryObjects>
+  -->
+  
+  <!-- Below is an example address configuration entry. Uncomment and fill in the appropriate fields. Add as many of the below
+        entries as is needed to create all desired address objects.-->
+  <!--
+  <addresses addressDescription="This is the string that describes the address.">
+    <createPolicy>IfMissing | FirstRun</createPolicy>
+  </addresses> 
+  -->
+  
+  <!-- Below is an example of a factory PID configuration entry. Uncomment and fill in the appropriate fields. Add as many of the below
+        entries as is needed to create all desired factory PID configurations. A configuration will be created using this factory PID 
+        if firstRun property is not true. -->
+  <!-- A properties tag can be repeated multiple times. -->
+  <!--
+  <osgiConfigs>
+    <factoryPid>mil.example.factory.example.factory.pid</factoryPid>
+    <properties key="" value=""/>
+  </osgiConfigs>
+  -->
+  
+  <!-- Below is an example of a PID configuration entry. Uncomment and fill in the appropriate fields. Add as many of the below
+       entries as is needed to create all desired PID configurations. A configuration will be created using this PID given
+       the override policy.  -->
+  <!-- A properties tag can be repeated multiple times. -->
+  <!-- 
+  <osgiConfigs>
+    <pid>mil.example.pid</pid>
+    <properties key="" value=""/>
+  </osgiConfigs>
+   -->
+   
+   <!-- Below is an example of a event registration entry. Uncomment and fill in the appropriate fields. Add as
+        many of the below entries as needed to create all desired event registrations. -->
+   <!-- 
+   <eventRegs eventFiler="The LDAP filter string to be applied to the event topics."
+        canQueueEvent="true | false"
+        objectFormat="NATIVE | XML"
+        systemId="ID of the system that should receive the events.">
+        <eventTopics>mil/dod/th/core/asset/Asset/DATA_CAPTURED</eventTopics>
+        <eventTopics>mil/dod/th/core/asset/Asset/STATUS_CHANGED</eventTopics>
+        <eventTopics>mil/dod/th/core/persistence/ObservationStore/OBSERVATION_PERSISTED</eventTopics>
+   </eventRegs>
+   -->
+   
+   <!-- Below is an example of a socket channel configuration entry. Uncomment and fill in the appropriate fields. Add
+        as many of the below entries as is needed to create all desired socket channels. -->
+   <!--
+   <socketChannels host="Hostname or IP address of the remote system the socket channel will connect to." 
+        port="Port number the socket channel will connect to on the remote system." 
+        systemId="ID number of the remote system the channel will connect to."/> 
+   -->
+    
+    <!-- Below is an example of a transport channel configuration entry. Uncomment and fill in the appropriate fields. 
+        Add as many of the below entries as is needed to crate all desired transport channels. -->
+    <!--
+    <transportChannels transportLayerName="Name of the transport layer to be used by the transport channel."
+        localAddress="String that describes the local address where data is sent/received." 
+        remoteAddress="String that describes the remote address where data is sent to/received from." 
+        systemId="ID number of the remote system the channel will connect to."/>
+    -->
+</p:Configurations>

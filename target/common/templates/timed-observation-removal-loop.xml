@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<p:MissionProgramTemplate xmlns:p="http://th.dod.mil/core/mp/model" xmlns:shared="http://th.dod.mil/core/types" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://th.dod.mil/core/mp/model ../resources/missionProgramSchema/MissionProgramTemplate.xsd ">
+    <p:source>
+    <![CDATA[importClass(java.lang.Runnable)
+    importPackage(java.util.concurrent)
+    
+    //Variables 
+    initTimeDelay; 
+    timeDelayInterval; 
+    timeUnitStr; 
+    removeTime
+
+    //
+    // Gets the correct time unit based on the string parameter passed in
+    // by the user - which is then returned as the enum value. 
+    //
+    function GetTimeUnit(time)
+    {
+        switch(time.toLowerCase())
+        {
+            case "millisecond":
+                return TimeUnit.MILLISECONDS;
+            case "second":
+                return TimeUnit.SECONDS; 
+            case "minute":
+                return TimeUnit.MINUTES;
+            case "hours":
+                return TimeUnit.HOURS;
+            case "days":
+                return TimeUnit.DAYS;
+            default:
+                throw "Invalid time unit value: " + time;
+        }
+    };
+
+    //
+    // Gets the correct time unit based on the string parameter passed in
+    // and converts the variable time to milliseconds 
+    // time - the string that indicates which time unit to return
+    // toConvert - long value passed in either milliseconds, seconds, minute, hours or days.
+    // returns a converted to milliseconds variable 
+    //
+    function GetTimeInMs(time, toConvert)
+    {
+        switch(time.toLowerCase())
+        {
+            case "millisecond":
+                return toConvert;
+            case "second":
+                return TimeUnit.MILLISECONDS.convert(toConvert, TimeUnit.SECONDS); 
+            case "minute":
+                return TimeUnit.MILLISECONDS.convert(toConvert, TimeUnit.MINUTES);
+            case "hours":
+                return TimeUnit.MILLISECONDS.convert(toConvert, TimeUnit.HOURS);
+            case "days":
+                return TimeUnit.MILLISECONDS.convert(toConvert, TimeUnit.DAYS);
+            default:
+                throw "Invalid time unit value: " + time;
+        }
+    };
+
+    obj = 
+    {
+        execute: function()
+        {
+            runnable =
+            {
+                run: function()
+                {
+                    // Try to remove all observations prior to the specified time
+                    logSvc.debug("Trying to remove observations due to timed-observation-removal-loop", []);
+                    try
+                    {
+                        currentTime = new java.util.Date();
+                        removeTimeMs = GetTimeInMs(timeUnitStr, removeTime);
+                        beginningOfTime = new java.util.Date(0);
+                        stopRemoveTime = new java.util.Date(currentTime.getTime() - removeTimeMs);
+                        obsStr.remove(beginningOfTime, stopRemoveTime);
+                        logSvc.debug("The observations have been removed.", []);
+                    }
+                    catch (e)
+                    {
+                        logSvc.error(e.javaException, "Error removing observations.", [e]);
+                    }
+                }
+            }
+            removeDataCommand = new Runnable(runnable);
+
+            //schedule this timed task with the managed executors service. This must
+            //be done in order to be able to properly stop this script using the TH api
+            executor = mngExe.newSingleThreadScheduledExecutor();
+
+            timeUnit = GetTimeUnit(timeUnitStr);
+            logSvc.debug("Scheduling a timed observation removal loop.", [timeUnitStr]);
+            executor.scheduleAtFixedRate(removeDataCommand, initTimeDelay, timeDelayInterval, timeUnit);
+        },
+        test: function()
+        {
+            return TestResult.class.static.PASSED;
+        },
+        shutdown: function()
+        {
+            executor.shutdownNow();
+        }
+    };]]>
+    </p:source>
+
+    <p:name>timed-observation-removal-loop</p:name>
+    <p:description> This mission performs a simple loop to remove all observations
+    at a specified time interval from a specified time range.
+    </p:description>
+
+    <p:withInterval>true</p:withInterval>
+    <p:withImageCapture>false</p:withImageCapture>
+    <p:withSensorTrigger>false</p:withSensorTrigger>
+    <p:withTimerTrigger>true</p:withTimerTrigger>
+    <p:withPanTilt>false</p:withPanTilt>
+    <p:supportTestExecution>true</p:supportTestExecution>
+
+    <p:variableMetaData>
+        <shared:name>initTimeDelay</shared:name>
+        <shared:defaultValue>0</shared:defaultValue>
+        <shared:minValue>0</shared:minValue>
+        <shared:description>Initial Delay before the mission begins to remove data.</shared:description>
+        <shared:humanReadableName>Initial Delay</shared:humanReadableName>
+        <p:type>Integer</p:type>
+    </p:variableMetaData>
+
+    <p:variableMetaData>
+        <shared:name>timeDelayInterval</shared:name>
+        <shared:defaultValue>1</shared:defaultValue>
+        <shared:minValue>1</shared:minValue>
+        <shared:description>The time to wait between data removal actions.</shared:description>
+        <shared:humanReadableName>Time Interval</shared:humanReadableName>
+        <p:type>Integer</p:type>
+    </p:variableMetaData>   
+
+    <p:variableMetaData>
+        <shared:name>removeTime</shared:name>
+        <shared:defaultValue>1</shared:defaultValue>
+        <shared:minValue>0</shared:minValue>
+        <shared:description>Remove observations older than this value. (0 will remove all observations, 1 will remove all observations 1 time unit ago and older, etc...)</shared:description>
+        <shared:humanReadableName>Removal Time</shared:humanReadableName>
+        <p:type>Long</p:type>
+    </p:variableMetaData>
+
+    <p:variableMetaData>
+        <shared:name>timeUnitStr</shared:name> 
+        <shared:defaultValue>Days</shared:defaultValue>
+        <shared:optionValues>Millisecond</shared:optionValues>
+        <shared:optionValues>Second</shared:optionValues>
+        <shared:optionValues>Minute</shared:optionValues>
+        <shared:optionValues>Hours</shared:optionValues>
+        <shared:optionValues>Days</shared:optionValues>
+        <shared:description>Unit of time that all time intervals are represented as.</shared:description>
+        <shared:humanReadableName>Unit Of Time</shared:humanReadableName>
+        <p:type>String</p:type> 
+    </p:variableMetaData>
+</p:MissionProgramTemplate>

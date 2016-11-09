@@ -1,0 +1,66 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+-->
+<project name="mil.dod.th.core.proto" default="build">
+    
+    <import file="../cnf/ant/protobuf.xml" />
+    
+    <target name="init" depends="master.init">
+        <property name="protoc.include" 
+            value="-I=${project}/proto -I=${project}/${target-dir}/proto"/>            
+    </target>
+    
+    <target name="compile" depends="convert-jaxb-proto,protobuf.compile" />
+    
+    <target name="build" depends="template.build">
+        <zip destfile="${target-dir}/remote-interface-proto.zip">
+            <zipfileset file="${osus.license.file}" fullpath="LICENSE"/>
+            <zipfileset dir="proto" />
+            <zipfileset dir="${target-dir}/proto" />
+        </zip>
+    </target> 
+    
+    <target name="convert-jaxb-proto" depends="init,clean-gen-proto-files" 
+        description="Generate JAXB classes from proto files">
+        <mkdir dir="${target-dir}/proto" />
+        <java classname="mil.dod.th.ose.jaxbprotoconverter.main.JaxbToProtoConverterMain" fork="true" failonerror="true">
+            <!-- Directory containing XSD files to be parsed. -->
+            <arg value="${workspacedir}/mil.dod.th.core.lexicon/schemas/core"/>
+            <!-- Destination directory. -->
+            <arg value="${target-dir}/proto/" />
+            <!-- Java Destination directory. -->
+            <arg value="${src}/" />
+            <!-- Proto messages base package name. -->
+            <arg value="mil.dod.th.remote.lexicon" />
+            <!-- Enum converters package name. -->
+            <arg value="mil.dod.th.remote.converter" />
+            <!-- Folder to check for proto messages to import. -->
+            <arg value="${project}/proto" />
+            <classpath path="${project.buildpath}:${genbin}" />
+        </java>
+    </target>
+    
+    <target name="clean-gen-proto-files" description="removes generated proto and converter files">
+        <delete failonerror="false">
+            <fileset dir="${src}" includes="**/converter/*.java" excludes="**/package-info.java" />
+            <fileset dir="${target-dir}/proto" includes="**/*" />
+        </delete>
+    </target>
+
+    <target name="clean-proto-gen-source" depends="init" description="removes generated protocol buffer class files">
+        <delete failonerror="false" includeemptydirs="true">
+            <fileset dir="${src}" includes="**/*.java" excludes="**/converter/*.java,**/package-info.java" />
+        </delete>
+    </target>
+</project>

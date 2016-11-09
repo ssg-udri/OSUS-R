@@ -1,0 +1,34 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+
+-sub:  \
+    *.bnd
+    
+-buildpath:  \
+    ${junit},\
+    biz.aQute.bnd.annotation,\
+    javax.jdo,\
+    org.apache.felix.gogo.runtime,\
+    osgi.cmpn,\
+    osgi.core,\
+    mil.dod.th.core.api;version=latest,\
+    mil.dod.th.ose.remote;version=latest,\
+    mil.dod.th.core.proto.messages;version=latest,\
+    mil.dod.th.ose.shared;version=latest,\
+    mil.dod.th.ose.test.integration;version=latest,\
+    mil.dod.th.ose.config.event;version=latest,\
+    mil.dod.th.junit4.test.runner.api;version=latest,\
+    com.google.guava,\
+    com.google.protobuf;version=2.6.1,\
+    example.asset.main;version=latest,\
+    example.ccomm.main;version=latest

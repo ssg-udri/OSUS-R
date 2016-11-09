@@ -1,0 +1,134 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+XHTML page the for the configuration tab on the system configuration page.
+Displays all configurations and factory configurations. Also allows setting
+of configuration values and removal of configurations.
+==============================================================================
+ -->
+<ui:composition
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:configuration="http://java.sun.com/jsf/composite/configuration">
+        <h:outputText rendered="#{!activeController.isActiveControllerSet()}" value="No active controller at this time! Please select a controller or add one."/>
+        <p:dataTable id="configTable" rendered="#{activeController.isActiveControllerSet()}" styleClass="configurationTable" value="#{metatypeMgr.getConfigurationsListAsync(activeController.activeController.id)}" var="service">
+            <p:column headerText="Configurations"> 
+                <ui:param name="panelStatus" value="#{configPageDisplayHelper.getPanelCollapsedStatus(activeController.activeController.id, service.pid)}"/>         
+                <p:panel id="configPanel" style="margin-top:10px;" toggleable="true" collapsed="#{panelStatus.collapsed}">
+                    <p:ajax event="toggle" listener="#{configPageDisplayHelper.configPanelStatusChanged}"/>
+                    <f:facet name="header">
+                        <!-- The ID "configHeader" is used within the ConfigPageDisplayHelper class. If this ID is changed then that class needs to be updated to use the new ID value. -->
+                        <h:outputText id="configHeader" styleClass="textHeader" style="float:left;" value="#{service.pid}"/>
+                    </f:facet>
+                    <ui:param value="#{bundleManager.retrieveBundleByLocationAsync(activeController.activeController.id, controllerConfigMgr.getConfigBundleLocationAsync(activeController.activeController.id, service.pid))}" name="bundle"/>
+                    <div style="margin-top:10px">
+                        <h:outputText styleClass="textHeaderUnderlined" value="Bundle Name"/>
+                    </div>
+                    <div>
+                        <h:outputText rendered="#{bundle != null}" value="#{bundle.getSymbolicName()}"/>
+                        <h:outputText id="unboundConfig" rendered="#{bundle == null}" value="Unbound or new configuration."/>
+                    </div>
+                    <div style="margin-top:10px">
+                        <h:outputText styleClass="textHeaderUnderlined" rendered="#{bundle != null}" value="Bundle Description"/>
+                    </div>
+                    <div style="margin-bottom:10px">
+                        <h:outputText style="display:block;" rendered="#{bundle != null}" value="#{bundle.getDescription()}"/>
+                    </div>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText styleClass="textHeader" style="float:left;" value="Properties"/>
+                        </f:facet>
+                        <h:form id="configForm">
+                            <ui:param value="#{controllerConfigMgr.getConfigModelByPidAsync(activeController.activeController.id, service.pid)}" name="model"/>
+                            <configuration:configuration_table configList="#{model.getProperties()}" creationDialog="true"/>
+                            <div style="width:100%; margin-top:1em;margin-left:2em;">
+                               <h:outputText value="*" style="color:red;"/>
+                               <h:outputText value=" = Property is required or no default has been defined."/>
+                            </div>
+                            <div class="saveDeleteDiv">
+                                <p:commandButton id="saveConfig" style="margin-right:5px;" value="Save" update="@form" actionListener="#{controllerConfigMgr.setConfigurationValuesAsync(activeController.activeController.id, model)}"/>
+                                <p:commandButton id="deleteConfig" rendered="#{bundle != null}" value="Delete" update='@([id="removePanel"])' oncomplete="removeDlg.show()" actionListener="#{controllerConfigMgr.setRemoveConfigPid(service.pid)}"/>
+                            </div>
+                        </h:form>
+                    </p:panel>
+                </p:panel>
+            </p:column>
+        </p:dataTable>
+        
+        <p:dataTable id="factoryConfigTable" rendered="#{activeController.isActiveControllerSet()}" styleClass="configurationTable" value="#{metatypeMgr.getFactoriesListAsync(activeController.activeController.id)}" var="service">
+            <p:column headerText="Factory Configurations">
+                <ui:param name="panelStatus" value="#{configPageDisplayHelper.getPanelCollapsedStatus(activeController.activeController.id, service.pid)}"/>          
+                <p:panel id ="factoryPanel" toggleable="true" collapsed="#{panelStatus.collapsed}">
+                    <p:ajax event="toggle" listener="#{configPageDisplayHelper.configPanelStatusChanged}"/>
+                    <f:facet name="header">
+                        <!-- The ID "factoryHeader" is used within the ConfigPageDisplayHelper class. If this ID is changed then that class needs to be updated to use the new ID value. -->
+                        <h:outputText id="factoryHeader" styleClass="textHeader" style="float:left;" value="#{service.pid}"/>
+                    </f:facet>
+                    <ui:param value="#{configWrapper.getConfigurationByPidAsync(activeController.activeController.id, service.pid)}" name="configModel"/>
+                    <div>
+                         <p:commandButton style="margin-bottom:10px;" id="createConfigButton" update='@([id="createFactoryConfig"])' oncomplete="createFactoryConfigDlg.show();" 
+                            action="#{createFactoryConfig.setPropertiesList(configModel, service.pid, activeController.activeController.id)}" value="Create Configuration"/> 
+                    </div>
+                    <p:dataTable id="factoryConfigurations" value="#{controllerConfigMgr.getFactoryConfigurationsAsync(activeController.activeController.id, service.pid)}" var="factoryConfig" emptyMessage="No factory configurations currently available.">
+                        <p:column headerText="Configurations" style="text-align:left">
+                            <ui:param name="factoryConfigPanelStatus" value="#{configPageDisplayHelper.getPanelCollapsedStatus(activeController.activeController.id, factoryConfig.pid)}"/>
+                            <p:panel id="factoryConfigPanel" toggleable="true" collapsed="#{factoryConfigPanelStatus.collapsed}">
+                                <p:ajax event="toggle" listener="#{configPageDisplayHelper.configPanelStatusChanged}"/>
+                                <f:facet name="header">
+                                    <!-- The ID "factoryConfigHeader" is used within the ConfigPageDisplayHelper class. If this ID is changed then that class needs to be updated to use the new ID value. -->
+                                    <h:outputText id="factoryConfigHeader" styleClass="textHeader" value="#{factoryConfig.pid}"/>
+                                </f:facet>
+                                <ui:param value="#{bundleManager.retrieveBundleByLocationAsync(activeController.activeController.id, factoryConfig.bundleLocation)}" name="bundle"/>
+                                <div style="margin-top:10px">
+                                    <h:outputText styleClass="textHeaderUnderlined" value="Bundle Name"/>
+                                </div>
+                                <div>
+                                    <h:outputText rendered="#{bundle != null}" value="#{bundle.getSymbolicName()}"/>
+                                    <h:outputText rendered="#{bundle == null}" value="Unbound or new configuration."/>
+                                </div>
+                                <div style="margin-top:10px">
+                                    <h:outputText styleClass="textHeaderUnderlined" rendered="#{bundle != null}" value="Bundle Description"/>
+                                </div>
+                                <div style="margin-bottom:10px">
+                                    <h:outputText style="display:block;" rendered="#{bundle != null}" value="#{bundle.getDescription()}"/>
+                                </div>
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="textHeader" style="float:left;" value="Properties"/>
+                                    </f:facet>
+                                    <h:form id="factoryConfigForm">
+                                        <ui:param value="#{controllerConfigMgr.getConfigModelByPidAsync(activeController.activeController.id, factoryConfig.pid)}" name="model"/>
+                                        <configuration:configuration_table configList="#{model.getProperties()}" creationDialog="false"/>
+                                        <div class="saveDeleteDiv">
+                                            <p:commandButton id="saveFactoryConfig" style="margin-right:5px;" value="Save" actionListener="#{controllerConfigMgr.setConfigurationValuesAsync(activeController.activeController.id, model)}"/>
+                                            <p:commandButton id="deleteFactoryConfig" rendered="#{bundle != null}" value="Delete" update='@([id="removePanel"])' oncomplete="removeDlg.show()" actionListener="#{controllerConfigMgr.setRemoveConfigPid(factoryConfig.pid)}"/>
+                                        </div>
+                                    </h:form>
+                                </p:panel>
+                            </p:panel>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:column>
+        </p:dataTable>
+        <h:form>
+            <p:remoteCommand name="rcUpdateConfigTable" update='@([id$="configTable"])'/>
+            <p:remoteCommand name="rcUpdateFactoryConfigTable" update='@([id$="factoryConfigTable"])'/>
+        </h:form>
+</ui:composition>

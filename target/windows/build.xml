@@ -1,0 +1,67 @@
+<!--
+==============================================================================
+ This software is part of the Open Standard for Unattended Sensors (OSUS)
+ reference implementation (OSUS-R).
+
+ To the extent possible under law, the author(s) have dedicated all copyright
+ and related and neighboring rights to this software to the public domain
+ worldwide. This software is distributed without any warranty.
+
+ You should have received a copy of the CC0 Public Domain Dedication along
+ with this software. If not, see
+ <http://creativecommons.org/publicdomain/zero/1.0/>.
+==============================================================================
+
+ DESCRIPTION:
+ Build components for the Windows platform.
+==============================================================================
+-->
+<project name="those-target-windows" default="build-with-deps">
+
+    <property environment="env" />
+
+    <dirname property="those-target-windows.basedir" file="${ant.file.those-target-windows}"/>
+    <dirname property="bp.workspace.dir" file="${those-target-windows.basedir}/../../build.xml"/>
+    <echo message="Build workspace.dir is: ${bp.workspace.dir}"/>
+
+    <import file="../../cnf/ant/commons.xml"/>
+
+    <condition property="target.enabled">
+        <os family="windows" />
+    </condition>
+
+    <target name="build-no-deps">
+        <echo message="### Build windows (no deps) ###" />
+        
+        <!-- build each target -->
+        <ant dir="controller-app" target="build-no-deps" />
+    </target>
+   
+    <target name="build-with-deps" if="target.enabled">
+        <echo message="### Build windows (with deps) ###" />
+       
+        <!-- build dependencies for each target -->
+        <ant dir="../generic/controller-app" target="build-with-deps" />
+
+        <antcall target="build-no-deps" />
+    </target>
+    
+    <target name="clean">
+        <echo message="### Clean windows ###" />
+        <ant dir="controller-app" target="clean" />
+    </target>
+
+    <target name="deploy">
+        <echo message="### Deploy windows ###" />
+        <ant dir="controller-app" target="deploy" />
+    </target>
+
+    <target name="deploy-clean">
+        <echo message="### Deploy-Clean windows ###" />
+        <ant dir="controller-app" target="deploy-clean" />
+    </target>
+
+    <target name="build-source-zip" description="Create a zip of all the source that makes up the windows target">
+        <echo message="### Build Source Zip windows ###" />
+    </target>
+</project>
