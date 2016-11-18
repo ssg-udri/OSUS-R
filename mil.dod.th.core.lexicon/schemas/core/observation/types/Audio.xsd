@@ -30,5 +30,6 @@
     <xs:attribute name="sampleRateKHz" type="xs:double" use="optional" />
     <xs:attribute name="startTime" type="xs:dateTime" use="optional" />
     <xs:attribute name="endTime" type="xs:dateTime" use="optional" />
+    <xs:attribute name="triggerTime" type="xs:dateTime" use="optional" />
   </xs:complexType>
 </xs:schema>

@@ -18,11 +18,13 @@ import java.util.UUID;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 
+import mil.dod.th.core.observation.types.AlgorithmStatus;
 import mil.dod.th.core.observation.types.AudioMetadata;
 import mil.dod.th.core.observation.types.Biological;
 import mil.dod.th.core.observation.types.BiologicalEntry;
 import mil.dod.th.core.observation.types.CbrneTrigger;
 import mil.dod.th.core.observation.types.CbrneTriggerEntry;
+import mil.dod.th.core.observation.types.ChannelMetadata;
 import mil.dod.th.core.observation.types.Chemical;
 import mil.dod.th.core.observation.types.ChemicalEntry;
 import mil.dod.th.core.observation.types.Detection;
@@ -43,6 +45,7 @@ import mil.dod.th.core.observation.types.Weather;
 import mil.dod.th.core.observation.types.WeatherCondition;
 import mil.dod.th.core.observation.types.WindMeasurement;
 import mil.dod.th.core.types.AlarmState;
+import mil.dod.th.core.types.AngleDegrees;
 import mil.dod.th.core.types.ComponentType;
 import mil.dod.th.core.types.ComponentTypeEnum;
 import mil.dod.th.core.types.ConcentrationGramsPerLiter;
@@ -52,19 +55,27 @@ import mil.dod.th.core.types.CountsPerTime;
 import mil.dod.th.core.types.DigitalMedia;
 import mil.dod.th.core.types.Direction;
 import mil.dod.th.core.types.DirectionEnum;
+import mil.dod.th.core.types.FrequencyDeltaKhz;
 import mil.dod.th.core.types.FrequencyKhz;
 import mil.dod.th.core.types.LangelierSaturationIndex;
+import mil.dod.th.core.types.MagneticFluxDensityTeslas;
 import mil.dod.th.core.types.MapEntry;
 import mil.dod.th.core.types.PH;
+import mil.dod.th.core.types.PhaseRadians;
 import mil.dod.th.core.types.PowerWatts;
 import mil.dod.th.core.types.PressureMillibars;
+import mil.dod.th.core.types.PressurePascals;
+import mil.dod.th.core.types.ProbabilityFactor;
 import mil.dod.th.core.types.RadianceJoulesPerSqMeter;
+import mil.dod.th.core.types.SNRdB;
+import mil.dod.th.core.types.SPLdB;
 import mil.dod.th.core.types.SalinityPsu;
 import mil.dod.th.core.types.ScoringCriteria;
 import mil.dod.th.core.types.SensingModality;
 import mil.dod.th.core.types.SensingModalityEnum;
 import mil.dod.th.core.types.SpecificGravity;
 import mil.dod.th.core.types.SpeedMetersPerSecond;
+import mil.dod.th.core.types.SquareDegrees;
 import mil.dod.th.core.types.TemperatureCelsius;
 import mil.dod.th.core.types.TurbidityNtu;
 import mil.dod.th.core.types.Version;
@@ -85,7 +96,18 @@ import mil.dod.th.core.types.chemical.ChemicalAgent;
 import mil.dod.th.core.types.chemical.ChemicalAgentEnum;
 import mil.dod.th.core.types.chemical.ChemicalCategory;
 import mil.dod.th.core.types.chemical.ChemicalCategoryEnum;
+import mil.dod.th.core.types.detection.AcousticSignalInfo;
+import mil.dod.th.core.types.detection.AcousticSignature;
+import mil.dod.th.core.types.detection.ColorDescriptorType;
+import mil.dod.th.core.types.detection.DetectionProbability;
 import mil.dod.th.core.types.detection.DetectionTypeEnum;
+import mil.dod.th.core.types.detection.HOGDescriptorType;
+import mil.dod.th.core.types.detection.ImagerSignature;
+import mil.dod.th.core.types.detection.ImagerWheelInfo;
+import mil.dod.th.core.types.detection.MagneticSignature;
+import mil.dod.th.core.types.detection.OpticalFlowType;
+import mil.dod.th.core.types.detection.SeismicSignalInfo;
+import mil.dod.th.core.types.detection.SeismicSignature;
 import mil.dod.th.core.types.detection.TargetClassificationType;
 import mil.dod.th.core.types.detection.TargetClassificationTypeEnum;
 import mil.dod.th.core.types.factory.SpatialTypesFactory;
@@ -109,6 +131,7 @@ import mil.dod.th.core.types.observation.RelationshipTypeEnum;
 import mil.dod.th.core.types.spatial.HaeMeters;
 import mil.dod.th.core.types.spatial.BankDegrees;
 import mil.dod.th.core.types.spatial.Coordinates;
+import mil.dod.th.core.types.spatial.DegreesPerSecond;
 import mil.dod.th.core.types.spatial.DistanceMeters;
 import mil.dod.th.core.types.spatial.ElevationDegrees;
 import mil.dod.th.core.types.spatial.Ellipse;
@@ -117,6 +140,7 @@ import mil.dod.th.core.types.spatial.LatitudeWgsDegrees;
 import mil.dod.th.core.types.spatial.LongitudeWgsDegrees;
 import mil.dod.th.core.types.spatial.Orientation;
 import mil.dod.th.core.types.spatial.OrientationOffset;
+import mil.dod.th.core.types.spatial.OrientationRate;
 import mil.dod.th.core.types.spatial.TrackElement;
 import mil.dod.th.core.types.status.AmbientStatus;
 import mil.dod.th.core.types.status.AmbientType;
@@ -277,7 +301,24 @@ public class ObservationHelper
             targetOrientation.add(targetOrientation1);
             targetOrientation.add(targetOrientation2);
             
-            return createDetectionObservation("328da040-85bb-11e2-9e96-0800200c9a70", targetOrientation, null);
+            AcousticSignature acousticSignature = new AcousticSignature()
+                    .withCylinderCount(2)
+                    .withDeltaFundamentalFrequency(new FrequencyDeltaKhz().withValue(120.0))
+                    .withFootstepCadence(new FrequencyKhz().withValue(0.01))
+                    .withFootstepCount(new CountsPerTime().withCount(2).withTimeWindowSeconds(1.0))
+                    .withFrequencyChange(10.0)
+                    .withFundamentalFrequency(new FrequencyKhz().withValue(500.0))
+                    .withLargestMagnitude(new PressurePascals().withValue(4.0))
+                    .withSignalInfo(new AcousticSignalInfo()
+                            .withAmplitude(new PressurePascals().withValue(3.0))
+                            .withFrequency(new FrequencyKhz().withValue(550.0))
+                            .withPhase(new PhaseRadians().withValue(3.14)))
+                    .withSignalToNoiseRatio(new SNRdB().withValue(0.001))
+                    .withSoundPressureLevel(new SPLdB().withValue(0.01))
+                    .withTimeLargestMagnitude(10L);
+
+            return createDetectionObservation("328da040-85bb-11e2-9e96-0800200c9a70", targetOrientation, null,
+                    acousticSignature, null, null, null);
         }
         else if (variation == 2)
         {
@@ -288,7 +329,96 @@ public class ObservationHelper
             targetLob.add(targetLob1);
             targetLob.add(targetLob2);
             
-            return createDetectionObservation("328da040-85bc-11e2-9e96-0800200c9a70", null, targetLob);
+            SeismicSignature seismicSignature = new SeismicSignature()
+                    .withCylinderCount(2)
+                    .withDeltaFundamentalFrequency(new FrequencyDeltaKhz().withValue(120.0))
+                    .withFootstepCadence(new FrequencyKhz().withValue(0.01))
+                    .withFootstepCount(new CountsPerTime().withCount(2).withTimeWindowSeconds(1.0))
+                    .withFrequencyChange(10.0)
+                    .withFundamentalFrequency(new FrequencyKhz().withValue(500.0))
+                    .withLargestMagnitude(new SpeedMetersPerSecond().withValue(4.0))
+                    .withSignalInfo(new SeismicSignalInfo()
+                            .withAmplitude(new SpeedMetersPerSecond().withValue(3.0))
+                            .withFrequency(new FrequencyKhz().withValue(550.0))
+                            .withPhase(new PhaseRadians().withValue(3.14)))
+                    .withSignalToNoiseRatio(new SNRdB().withValue(0.001))
+                    .withTimeLargestMagnitude(20L);
+
+            return createDetectionObservation("328da040-85bc-11e2-9e96-0800200c9a70", null, targetLob,
+                    null, seismicSignature, null, null);
+        }
+        else if (variation == 3)
+        {
+            OrientationOffset targetLob1 = SpatialTypesFactory.newOrientationOffset(180, 90, 45);
+            OrientationOffset targetLob2 = SpatialTypesFactory.newOrientationOffset(33, 44, 55);
+            
+            List<OrientationOffset> targetLob = new ArrayList<>();
+            targetLob.add(targetLob1);
+            targetLob.add(targetLob2);
+            
+            MagneticSignature magneticSignature = new MagneticSignature()
+                    .withCylinderCount(2)
+                    .withDeltaFundamentalFrequency(new FrequencyDeltaKhz().withValue(120.0))
+                    .withFootstepCadence(new FrequencyKhz().withValue(0.01))
+                    .withFootstepCount(new CountsPerTime().withCount(2).withTimeWindowSeconds(1.0))
+                    .withFrequencyChange(10.0)
+                    .withFundamentalFrequency(new FrequencyKhz().withValue(500.0))
+                    .withIntegral(0.002)
+                    .withLargestMagnitude(new MagneticFluxDensityTeslas().withValue(4.0))
+                    .withMagnitude(new MagneticFluxDensityTeslas().withValue(3.5))
+                    .withSignalToNoiseRatio(new SNRdB().withValue(0.001))
+                    .withTimeLargestMagnitude(30L);
+
+            return createDetectionObservation("328da040-85bd-11e2-9e96-0800200c9a70", null, targetLob,
+                    null, null, magneticSignature, null);
+        }
+        else if (variation == 4)
+        {
+            OrientationOffset targetLob1 = SpatialTypesFactory.newOrientationOffset(180, 90, 45);
+            OrientationOffset targetLob2 = SpatialTypesFactory.newOrientationOffset(33, 44, 55);
+            
+            List<OrientationOffset> targetLob = new ArrayList<>();
+            targetLob.add(targetLob1);
+            targetLob.add(targetLob2);
+            
+            ImagerSignature imagerSignature = new ImagerSignature()
+                    .withArea(new SquareDegrees().withValue(8.0))
+                    .withColorDesc(new ColorDescriptorType()
+                            .withCellHeight(1)
+                            .withCellWidth(1)
+                            .withData(new byte[] {0, 1, 2, 3, 4, 5})
+                            .withHorizontalStride(2)
+                            .withHueBins(3)
+                            .withImageHeight(300)
+                            .withImageWidth(200)
+                            .withVerticalStride(1))
+                    .withHOG(new HOGDescriptorType()
+                            .withBlockHeight(1)
+                            .withBlockWidth(1)
+                            .withCellHeight(1)
+                            .withCellWidth(1)
+                            .withData(new byte[] {6, 7, 8, 9, 0})
+                            .withHorizontalBlockStride(1)
+                            .withHorizontalCellStride(1)
+                            .withImageHeight(300)
+                            .withImageWidth(200)
+                            .withOrientationBins(4)
+                            .withVerticalBlockStride(1)
+                            .withVerticalCellStride(1))
+                    .withOpticalFlow(new OpticalFlowType()
+                            .withData(new byte[] {0, 0, 0, 0})
+                            .withHorizontalStride(1)
+                            .withImageHeight(300)
+                            .withImageWidth(200)
+                            .withVerticalStride(1))
+                    .withPerimeter(new AngleDegrees().withValue(45.0))
+                    .withWheelInfo(new ImagerWheelInfo()
+                            .withWheelConfidence(0.99)
+                            .withWheelLob(SpatialTypesFactory.newOrientationOffset(30))
+                            .withWheelRadius(new AngleDegrees().withValue(10.0)));
+
+            return createDetectionObservation("328da040-85be-11e2-9e96-0800200c9a70", null, targetLob,
+                    null, null, null, imagerSignature);
         }
         else
         {
@@ -297,22 +427,26 @@ public class ObservationHelper
     }
     
     private static Observation createDetectionObservation(String uuid, List<Orientation> targetOrientation, 
-            List<OrientationOffset> targetLob)
+            List<OrientationOffset> targetLob, AcousticSignature acousticSignature, SeismicSignature seismicSignature,
+            MagneticSignature magneticSignature, ImagerSignature imagerSignature)
     {
         Coordinates targetLocation = createCoordinateObject();
         
         List<TargetClassification> listTarget= new ArrayList<TargetClassification>();
         List<ConfidenceFactor> listConfidence = new ArrayList<ConfidenceFactor>();
+        List<ProbabilityFactor> listProbability = new ArrayList<ProbabilityFactor>();
         List<ScoringCriteria> listScoreCriteria = new ArrayList<ScoringCriteria>();
         SensingModality sense = new SensingModality(SensingModalityEnum.ACOUSTIC, "acoustic");
         ScoringCriteria scoreCriteria = new ScoringCriteria(sense, 0.0);
         listScoreCriteria.add(scoreCriteria);
         ConfidenceFactor confidenceFactor = new ConfidenceFactor(listScoreCriteria, 0.0);
         listConfidence.add(confidenceFactor);
+        ProbabilityFactor probFactor = new ProbabilityFactor(0.0);
+        listProbability.add(probFactor);
         TargetClassification targetClassifications = 
                 new TargetClassification(
                         new TargetClassificationType(TargetClassificationTypeEnum.AIRCRAFT, "aircraft"), 
-                        listConfidence);
+                        listConfidence, listProbability, 1);
         listTarget.add(targetClassifications);
         
         SpeedMetersPerSecond targetSpeed =
@@ -340,9 +474,20 @@ public class ObservationHelper
         listTrackHistory.add(trackElement2);
         
         Direction directionOfTravel = new Direction(DirectionEnum.FN, "blah");
+        DetectionProbability detectionProbability = new DetectionProbability().withValue(0.75);
+        Orientation targetLobGlobal = SpatialTypesFactory.newOrientation(90, 45, 45);
+        OrientationOffset targetLobLocal = SpatialTypesFactory.newOrientationOffset(10, 4, 60.5);
+        Double detectionLength = 1.5;
+        OrientationRate targetAngularVelocity = new OrientationRate()
+                .withAzimuth(new DegreesPerSecond().withValue(4.0))
+                .withBank(new DegreesPerSecond().withValue(1.0))
+                .withElevation(new DegreesPerSecond().withValue(10.5));
+        Double targetRadialVelocityNormalized = 1.0;
         String targetId = "someID";
         String targetName = "someName";
         DetectionTypeEnum type = DetectionTypeEnum.ALARM;
+        Integer targetCount = 1;
+        String algorithmId = "algorithm1";
         
         Detection detect = new Detection(targetLocation, 
                 listTarget, 
@@ -353,9 +498,21 @@ public class ObservationHelper
                 targetFrequency,
                 listTrackHistory, 
                 directionOfTravel,
+                detectionProbability,
+                targetLobGlobal,
+                targetLobLocal,
+                detectionLength,
+                targetAngularVelocity,
+                targetRadialVelocityNormalized,
+                acousticSignature,
+                seismicSignature,
+                magneticSignature,
+                imagerSignature,
                 type,
                 targetId,
-                targetName);
+                targetName,
+                targetCount,
+                algorithmId);
         
         return ObservationHelper.createBaseObservation()
                    .withModalities(listSensings)
@@ -408,7 +565,19 @@ public class ObservationHelper
         ambientStatus.add(new AmbientStatus(
                 new AmbientType(AmbientTypeEnum.OCCLUSION, "occlusion"), 
                     new OperatingStatus(SummaryStatusEnum.BAD, "occlusions are bad")));
-        
+
+        List<AlgorithmStatus> algoStatus = new ArrayList<>();
+        algoStatus.add(new AlgorithmStatus()
+            .withAlgorithmId("testAlgorithm")
+            .withDetectionInterval(1.0f)
+            .withFrameSizeSamples(1)
+            .withHighFrequencyCutoff(new FrequencyKhz().withValue(100.0))
+            .withLowFrequencyCutoff(new FrequencyKhz().withValue(50.0))
+            .withProbablityDetection(0.5)
+            .withSampleRateKHz(2.0f)
+            .withSensitivity(0.6)
+            .withSignatureInterval(2.0f));
+
         Status status = new Status(new OperatingStatus(SummaryStatusEnum.GOOD, "stuff too"),
                 componentStatuses,
                 ambientStatus,
@@ -422,6 +591,7 @@ public class ObservationHelper
                 analogAnalogVoltage,
                 analogDigitalVoltage,
                 analogMagVoltage,
+                algoStatus,
                 assetOnTime,
                 nextStatusDurationMs);
 
@@ -524,17 +694,19 @@ public class ObservationHelper
         listSamples.add(sampleOfInterest);
         
         AudioRecorder recorder = 
-               new AudioRecorder(AudioRecorderEnum.MICROPHONE, "mic");
+               new AudioRecorder(AudioRecorderEnum.MICROPHONE, "mic", 1);
         Double sampleRateKHz = 100.00;
         Long startTime = 10L;
         Long endTime = 200L;
+        Long triggerTime = 100L;
        
         AudioMetadata audio = new AudioMetadata(
                 listSamples,
                 recorder,
                 sampleRateKHz,
                 startTime,
-                endTime);
+                endTime,
+                triggerTime);
        
         return ObservationHelper.createBaseObservation()
                 .withUuid(UUID.fromString("328da040-85bb-11e2-9e96-0800200c9a73")).withAudioMetadata(audio)
@@ -795,6 +967,7 @@ public class ObservationHelper
         AudioMetadata audioMetadata = null;
         ImageMetadata imageMetadata = null;
         VideoMetadata videoMetadata = null;
+        ChannelMetadata channelMetadata = null;
         WaterQuality waterQuality = null;
         CbrneTrigger cbrneTrigger = null;
         Biological biological = null;
@@ -840,6 +1013,7 @@ public class ObservationHelper
                 audioMetadata, 
                 imageMetadata, 
                 videoMetadata, 
+                channelMetadata,
                 reserved,
                 uuid, 
                 observedTimestamp, 

@@ -20,6 +20,7 @@ import mil.dod.th.core.ccomm.transport.TransportLayerProxy;
 import mil.dod.th.core.ccomm.transport.TransportPacket;
 import mil.dod.th.core.factory.Extension;
 import mil.dod.th.core.factory.FactoryDescriptor;
+import mil.dod.th.core.pm.WakeLock;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -44,6 +45,16 @@ public class ${class} implements TransportLayerProxy
      * Reference to the class that handles listening for events.
      */
     private ${class}EventHandler m_${class}EventHandler;
+    
+    /**
+     * Reference to the wake lock used for vital transport layer operations.
+     */
+    private WakeLock m_WakeLock;
+    
+    /**
+     * Reference to the wake lock used for a transport layer when receiving data.
+     */ 
+    private WakeLock m_RecvWakeLock;
  
     /**
      * Activate the transport layer upon creation.
@@ -76,12 +87,22 @@ public class ${class} implements TransportLayerProxy
         
         // ${task}: Remove unregister call if event handler is not needed
         m_${class}EventHandler.unregisterEvents();
+        
+        // Remove the wake locks before the transport layer is deactivated.
+        m_WakeLock.delete();
+        m_RecvWakeLock.delete();
     }
 
     @Override
     public void initialize(final TransportLayerContext context, final Map<String, Object> props)
     {
         m_Context = context;
+        
+        // Retrieve a wake lock used to keep the system awake during vital transport layer operations.
+        m_WakeLock = m_Context.createPowerManagerWakeLock("${class}WakeLock");
+
+        // Retrieve a wake lock used to keep the system awake while the transport layer is receiving data.
+        m_RecvWakeLock = m_Context.createPowerManagerWakeLock("${class}RecvWakeLock");
 
         // ${task}: Replace with custom handling of properties when transport layer is created or restored. `config` 
         // object uses reflection to obtain property from map and therefore should not be used in processing intensive 
@@ -106,15 +127,34 @@ public class ${class} implements TransportLayerProxy
     @Override
     public void connect(final Address address) throws CCommException
     {
-        // ${task}: If layer is connection oriented (see capabilities XML), this method should setup the connection to 
-        // the given address. If not, this method will not be called and should be empty.
+        try
+        {
+            m_WakeLock.activate();
+       
+            // ${task}: If layer is connection oriented (see capabilities XML), this method should setup the connection 
+            // to the given address. If not, this method will not be called and should be empty.
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
     
     @Override
     public void disconnect() throws CCommException
     {
-        // ${task}: If layer is connection oriented (see capabilities XML), this method should clean up the connection 
-        // to the previously connected address. If not, this method will not be called and should be empty.
+    	try
+        {
+            m_WakeLock.activate();
+       
+            // ${task}: If layer is connection oriented (see capabilities XML), this method should clean up the 
+            // connection to the previously connected address. If not, this method will not be called and should be 
+            // empty.
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
     
     @Override
@@ -218,27 +258,36 @@ public class ${class} implements TransportLayerProxy
         @Override
         public void handleEvent(final Event event)
         {
-            // This indicates to the core that this transport layer is currently receiving data.
-            // This call must be made when processing of data begins.
-            m_Context.beginReceiving();
+            try
+            {
+                m_RecvWakeLock.activate();
+
+                // This indicates to the core that this transport layer is currently receiving data.
+                // This call must be made when processing of data begins.
+                m_Context.beginReceiving();
             
-            final Address sourceAddress = (Address)event.getProperty(Address.EVENT_PROP_SOURCE_ADDRESS_PREFIX 
-                + Address.EVENT_PROP_MESSAGE_ADDRESS_SUFFIX);
+                final Address sourceAddress = (Address)event.getProperty(Address.EVENT_PROP_SOURCE_ADDRESS_PREFIX 
+                    + Address.EVENT_PROP_MESSAGE_ADDRESS_SUFFIX);
             
-            final Address destAddress = (Address)event.getProperty(Address.EVENT_PROP_DEST_ADDRESS_PREFIX 
-                + Address.EVENT_PROP_MESSAGE_ADDRESS_SUFFIX);
+                final Address destAddress = (Address)event.getProperty(Address.EVENT_PROP_DEST_ADDRESS_PREFIX 
+                    + Address.EVENT_PROP_MESSAGE_ADDRESS_SUFFIX);
                 
-            final LinkFrame linkframe = (LinkFrame)event.getProperty(LinkLayer.EVENT_PROP_LINK_FRAME);
+                final LinkFrame linkframe = (LinkFrame)event.getProperty(LinkLayer.EVENT_PROP_LINK_FRAME);
             
-            // ${task}: Link frames would be gathered into some kind of collection that could be used 
-            // to determine, at some point in time, whether or not all frames were received. If so, then 
-            // a TransportPacket should be created and the following call should be made:
+                // ${task}: Link frames would be gathered into some kind of collection that could be used 
+                // to determine, at some point in time, whether or not all frames were received. If so, then 
+                // a TransportPacket should be created and the following call should be made:
             
-            final TransportPacket transportPkt = null;
+                final TransportPacket transportPkt = null;
             
-            // This indicates to the core that the transport layer has finished receiving data and will post 
-            // a TransportLayer.TOPIC_PACKET_RECEIVED event.
-            m_Context.endReceiving(transportPkt, sourceAddress, destAddress);
+                // This indicates to the core that the transport layer has finished receiving data and will post 
+                // a TransportLayer.TOPIC_PACKET_RECEIVED event.
+                m_Context.endReceiving(transportPkt, sourceAddress, destAddress);
+            }
+            finally
+            {
+                m_RecvWakeLock.cancel();
+            }
         }
     }
 }

@@ -32,6 +32,7 @@
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="Response">
+                <!-- TODO TH-4058: update to support agcWindow field. -->
                 <xs:sequence>
                     <xs:element name="exposureSettings" type="image:ExposureSettings" minOccurs="0" 
                         maxOccurs="1" />

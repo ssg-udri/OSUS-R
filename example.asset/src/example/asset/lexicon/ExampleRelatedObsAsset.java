@@ -38,6 +38,7 @@ import mil.dod.th.core.observation.types.RoadCondition;
 import mil.dod.th.core.observation.types.Status;
 import mil.dod.th.core.observation.types.VideoMetadata;
 import mil.dod.th.core.observation.types.Weather;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.DigitalMedia;
 import mil.dod.th.core.types.FrequencyKhz;
 import mil.dod.th.core.types.SensingModality;
@@ -78,6 +79,7 @@ public class ExampleRelatedObsAsset implements AssetProxy
 {
     private LoggingService m_Log;
     private AssetContext m_Context;
+    private WakeLock m_WakeLock;
     
     @Reference
     public void setLogService(final LoggingService loggingService)
@@ -90,26 +92,48 @@ public class ExampleRelatedObsAsset implements AssetProxy
     {
         m_Log.info("Activating example related observation instance");
         m_Context = context;
+        checkWakeLock();
     }
     
     @Deactivate
     public void deactivateInstance()
     {
         m_Log.info("Deactivating example related observation instance");
+        if (m_WakeLock != null)
+        {
+            m_WakeLock.delete();
+            m_WakeLock = null;
+        }
     }
     
     @Override
     public void onActivate() throws AssetException
     {
-        m_Context.setStatus(SummaryStatusEnum.GOOD, "Asset Activated");
+        try
+        {
+            tryActivateWakeLock();        
+            m_Context.setStatus(SummaryStatusEnum.GOOD, "Asset Activated");
+        }
+        finally
+        {
+            tryDeactivateWakeLock();
+        }
     }
 
     @Override
     public void onDeactivate() throws AssetException
     {
-        m_Log.info("Example related observation deactivated");
-        
-        m_Context.setStatus(SummaryStatusEnum.OFF, "Asset Deactivated");
+        try
+        {
+            tryActivateWakeLock();
+            m_Log.info("Example related observation deactivated");
+
+            m_Context.setStatus(SummaryStatusEnum.OFF, "Asset Deactivated");
+        }
+        finally
+        {
+            tryDeactivateWakeLock();
+        }
     }
 
     @Override
@@ -121,42 +145,51 @@ public class ExampleRelatedObsAsset implements AssetProxy
     @Override
     public Observation onCaptureData() throws AssetException
     {
-        m_Log.info("Example Related Observation Asset Data captured");
-        
-        final LatitudeWgsDegrees lat = new LatitudeWgsDegrees().withValue(50.0);
-        final LongitudeWgsDegrees lng = new LongitudeWgsDegrees().withValue(70.0);
-        final Coordinates coords = new Coordinates().withLatitude(lat).withLongitude(lng);
-        final Coordinates coords2 = new Coordinates().withLatitude(lat).withLongitude(lng);
-        
-        final Observation obs = new Observation();
-        obs.setUuid(UUID.randomUUID());
-        obs.withModalities(new SensingModality().withValue(SensingModalityEnum.ACOUSTIC));
-        
-        final Detection detection = new Detection();
-        detection.setType(DetectionTypeEnum.TEST);
-        final HeadingDegrees heading = new HeadingDegrees().withValue(50);
-        final ElevationDegrees elevation = new ElevationDegrees().withValue(90);
-        detection.withTargetLocation(coords);
-        detection.withTargetOrientation(new Orientation(heading, elevation, null));
-        detection.withTrackHistories(new TrackElement(coords, new SpeedMetersPerSecond(205.5, null, null, null, null), 
-                new Orientation(heading, elevation, null), null, 2003L));
-        detection.setTargetFrequency(new FrequencyKhz().withValue(30));
-        detection.setTargetId("example-target-id");
-        
-        obs.setDetection(detection);
-        obs.setSensorId("12345");
-        
-        obs.setAssetLocation(coords2);
-        try 
+        try
         {
-            createAndSetRelatedObservations(obs);
-        } 
-        catch (ValidationFailedException e) 
-        {
-            throw new AssetException(e);
+            tryActivateWakeLock();
+            m_Log.info("Example Related Observation Asset Data captured");
+
+            final LatitudeWgsDegrees lat = new LatitudeWgsDegrees().withValue(50.0);
+            final LongitudeWgsDegrees lng = new LongitudeWgsDegrees().withValue(70.0);
+            final Coordinates coords = new Coordinates().withLatitude(lat).withLongitude(lng);
+            final Coordinates coords2 = new Coordinates().withLatitude(lat).withLongitude(lng);
+
+            final Observation obs = new Observation();
+            obs.setUuid(UUID.randomUUID());
+            obs.withModalities(new SensingModality().withValue(SensingModalityEnum.ACOUSTIC));
+
+            final Detection detection = new Detection();
+            detection.setType(DetectionTypeEnum.TEST);
+            final HeadingDegrees heading = new HeadingDegrees().withValue(50);
+            final ElevationDegrees elevation = new ElevationDegrees().withValue(90);
+            detection.withTargetLocation(coords);
+            detection.withTargetOrientation(new Orientation(heading, elevation, null));
+            detection.withTrackHistories(new TrackElement(coords, 
+                    new SpeedMetersPerSecond(205.5, null, null, null, null), 
+                    new Orientation(heading, elevation, null), null, 2003L));
+            detection.setTargetFrequency(new FrequencyKhz().withValue(30));
+            detection.setTargetId("example-target-id");
+
+            obs.setDetection(detection);
+            obs.setSensorId("12345");
+
+            obs.setAssetLocation(coords2);
+            try 
+            {
+                createAndSetRelatedObservations(obs);
+            } 
+            catch (ValidationFailedException e) 
+            {
+                throw new AssetException(e);
+            }
+
+            return obs;
         }
-        
-        return obs;
+        finally
+        {
+            tryDeactivateWakeLock();
+        }
     }
     
     /**
@@ -362,5 +395,29 @@ public class ExampleRelatedObsAsset implements AssetProxy
     public Set<Extension<?>> getExtensions()
     {
         return null;
+    }
+    
+    private void checkWakeLock()
+    {
+        if (m_WakeLock == null)
+        {
+            m_WakeLock = m_Context.createPowerManagerWakeLock(this.getClass().getSimpleName() + "WakeLock");
+        }
+    }
+    
+    private void tryActivateWakeLock()
+    {
+        if (m_WakeLock != null)
+        {
+            m_WakeLock.activate();
+        }
+    }
+    
+    private void tryDeactivateWakeLock()
+    {
+        if (m_WakeLock != null)
+        {
+            m_WakeLock.cancel();
+        }
     }
 }

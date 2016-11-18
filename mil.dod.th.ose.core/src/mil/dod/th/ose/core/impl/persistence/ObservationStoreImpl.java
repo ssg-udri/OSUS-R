@@ -37,6 +37,7 @@ import mil.dod.th.core.persistence.ObservationQuery;
 import mil.dod.th.core.persistence.ObservationQuery.SortField;
 import mil.dod.th.core.persistence.ObservationStore;
 import mil.dod.th.core.persistence.PersistenceFailedException;
+import mil.dod.th.core.pm.PowerManager;
 import mil.dod.th.core.types.Version;
 import mil.dod.th.core.types.observation.ObservationSubTypeEnum;
 import mil.dod.th.core.validator.ValidationFailedException;
@@ -91,7 +92,7 @@ public class ObservationStoreImpl extends AbstractH2DataStore<Observation> imple
      * Service for accessing the {@link Class} class, so static methods are not called.
      */
     private ClassService m_ClassService;
-    
+
     /**
      * Constructor.
      */
@@ -147,6 +148,13 @@ public class ObservationStoreImpl extends AbstractH2DataStore<Observation> imple
         final PersistenceManagerFactoryCreator persistenceManagerFactoryCreator)
     {
         super.setPersistenceManagerFactoryCreator(persistenceManagerFactoryCreator);
+    }
+
+    @Reference
+    @Override
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        super.setPowerManager(powerManager);
     }
 
     /**
@@ -390,16 +398,18 @@ public class ObservationStoreImpl extends AbstractH2DataStore<Observation> imple
 
         postEventWithObs(topic, props, observation);
     }
-    
+
     /**
      * Method to find what type the given observation is.
+     * 
      * @param observation
      *  the observation to check what type it is
      * @return
      *  the String representation of the {@link ObservationSubTypeEnum} or NONE if no 
      *  type applies.
      */
-    private String findObservationSubType(final Observation observation)
+    private String findObservationSubType(final Observation observation) // NOCHECKSTYLE: Complexity required to check
+                                                                         // each sub-type
     {
         if (observation.isSetAudioMetadata())
         {
@@ -445,7 +455,11 @@ public class ObservationStoreImpl extends AbstractH2DataStore<Observation> imple
         {
             return ObservationSubTypeEnum.POWER.toString();
         }
-        
+        else if (observation.isSetChannelMetadata())
+        {
+            return ObservationSubTypeEnum.CHANNEL_METADATA.toString();
+        }
+
         return ObservationSubTypeEnum.NONE.toString();
     }
 

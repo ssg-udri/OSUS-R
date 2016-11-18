@@ -222,11 +222,12 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
         final Boolean analogDigitalVoltargeAvailable = false;
         final Boolean analogMagVoltageAvailable = false;
         final Boolean internalArchiveStatusAvailable = false;
+        final Boolean algorithmStatusAvailable = false;
         
-        return new StatusCapabilities(availableComponentStatuses, sensorRangeAvailable, 
-                sensorFovAvailable, batteryChargeLevelAvailable, batteryVoltageAvailable, assetOnTimeAvailable, 
-                temperatureAvailable, powerConsumptionAvailable, analogAnalogVoltageAvailable, 
-                analogDigitalVoltargeAvailable, analogMagVoltageAvailable, internalArchiveStatusAvailable);
+        return new StatusCapabilities(availableComponentStatuses, sensorRangeAvailable, sensorFovAvailable,
+                batteryChargeLevelAvailable, batteryVoltageAvailable, assetOnTimeAvailable, temperatureAvailable,
+                powerConsumptionAvailable, analogAnalogVoltageAvailable, analogDigitalVoltargeAvailable,
+                analogMagVoltageAvailable, internalArchiveStatusAvailable, algorithmStatusAvailable);
     }
     
     /**
@@ -264,7 +265,6 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
     private static DetectionCapabilities makeDetectionCapabilities()
     {
         final List<DetectionTypeEnum> typesAvailable = Arrays.asList(DetectionTypeEnum.values());
-       
         final List<TargetClassificationType> classifications = new ArrayList<TargetClassificationType>();
         
         for (TargetClassificationTypeEnum target: TargetClassificationTypeEnum.values())
@@ -283,8 +283,23 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
         final boolean trackHistory = false;
         final boolean directionOfTravel = false;
         final boolean targetId = false;
-        return new DetectionCapabilities(typesAvailable, classifications, targetLocation, targetSpeed, targetRange,
-                targetOrientation, targetLOB, targetFrequency, trackHistory, directionOfTravel, targetId);
+        final boolean algorithmId = false;
+        final boolean targetCount = false;
+        final boolean detectionProbability = false;
+        final boolean targetLobGlobal = false;
+        final boolean targetLobLocal = false;
+        final boolean detectionLength = false;
+        final boolean targetAngularVelocity = false;
+        final boolean targetRadialVelocityNormalized = false;
+        final boolean acousticSignature = false;
+        final boolean seismicSignature = false;
+        final boolean magneticSignature = false;
+        final boolean imagerSignature = false;
+        return new DetectionCapabilities(typesAvailable, classifications, null, targetLocation, targetSpeed,
+                targetRange, targetOrientation, targetLOB, targetFrequency, trackHistory, directionOfTravel, targetId,
+                algorithmId, targetCount, detectionProbability, targetLobGlobal, targetLobLocal, detectionLength,
+                targetAngularVelocity, targetRadialVelocityNormalized, acousticSignature, seismicSignature,
+                magneticSignature, imagerSignature);
     }
     
     /**
@@ -308,10 +323,11 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
     {
         final List<AudioRecorder> recorders = new ArrayList<AudioRecorder>();
         final String description = DESC_NONE;
+        final Integer id = 0;
         
         for (AudioRecorderEnum audio : AudioRecorderEnum.values())
         {
-            final AudioRecorder aud = new AudioRecorder(audio, description);
+            final AudioRecorder aud = new AudioRecorder(audio, description, id);
             recorders.add(aud);
         }
         

@@ -61,6 +61,42 @@
                   name="directionOfTravel"
                   persistence-modifier="persistent"
                   default-fetch-group="true"/>   
+            <field
+                  name="detectionProbability"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>   
+            <field
+                  name="targetLobGlobal"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>   
+            <field
+                  name="targetLobLocal"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>   
+            <field
+                  name="targetAngularVelocity"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>   
+            <field
+                  name="targetRadialVelocityNormalized"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>   
+            <field
+                  name="acousticSignature"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>   
+            <field
+                  name="seismicSignature"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>   
+            <field
+                  name="magneticSignature"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>   
+            <field
+                  name="imagerSignature"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>   
         </class>
     </package>
 </jdo>

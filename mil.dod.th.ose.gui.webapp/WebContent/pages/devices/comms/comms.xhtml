@@ -158,7 +158,9 @@
                                                                     <td style="padding-bottom: 1em; padding-top: 1em">
                                                                        <p:commandButton icon="ui-icon-gear" id="transportConfigButton"
                                                                             rendered="#{comms.transport != null}"
-                                                                            update='@([id$="mInfo"])' onclick="configDlg.show();" disabled="true">
+                                                                            update='@([id$="commsEditConfiguration"])' 
+                                                                            oncomplete="commsEditConfigurationDlg.show();" action="#{factoryObjConfigModifierView.setSelectedFactoryModel(comms.transport)}" 
+                                                                            disabled="false">
                                                                         </p:commandButton>
                                                                         <p:tooltip for="transportConfigButton" value="Configure the transport layer." /> 
                                                                     </td>
@@ -189,8 +191,10 @@
                                                                        <p:commandButton icon="ui-icon-gear"
                                                                             id="linkConfigButton"
                                                                             rendered="#{comms.link != null}"
-                                                                            update='@([id$="mInfo"])' onclick="configDlg.show();" disabled="true">
-                                                                        </p:commandButton>
+                                                                            update='@([id$="commsEditConfiguration"])' 
+                                                                            oncomplete="commsEditConfigurationDlg.show();" action="#{factoryObjConfigModifierView.setSelectedFactoryModel(comms.link)}" 
+                                                                            disabled="false">
+                                                                            </p:commandButton>
                                                                         <p:tooltip for="linkConfigButton" value="Configure the link layer." /> 
                                                                     </td>
                                                                 </tr>
@@ -221,8 +225,10 @@
                                                                     <p:commandButton icon="ui-icon-gear"
                                                                         rendered="#{comms.physical != null}"
                                                                         id="physicalConfigButton"
-                                                                        update='@([id$="mInfo"])' onclick="configDlg.show();" disabled="true">
-                                                                    </p:commandButton>
+                                                                        update='@([id$="commsEditConfiguration"])' 
+                                                                        oncomplete="commsEditConfigurationDlg.show();" action="#{factoryObjConfigModifierView.setSelectedFactoryModel(comms.physical)}"
+                                                                        disabled="false">
+                                                                        </p:commandButton>
                                                                     <p:tooltip for="transportConfigButton" value="Configure the physical layer." /> 
                                                                 </td>
                                                             </tr>
@@ -247,6 +253,7 @@
     <ui:include src="comms_validation_err_dialog.xhtml" />
     <ui:include src="comms_incomplete_info_dialog.xhtml" />
     <ui:include src="comms_remove_stack_dlg.xhtml" />
+    <ui:include src="comms_edit_config_dialog.xhtml" />    
             
   </ui:define>
 </ui:composition>

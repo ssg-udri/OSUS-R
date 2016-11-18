@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.metatype.Configurable;
 
 import com.pi4j.io.i2c.I2CBus;
@@ -38,9 +39,12 @@ import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
 import mil.dod.th.core.observation.types.Weather;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.PressureMillibars;
 import mil.dod.th.core.types.TemperatureCelsius;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
+import mil.dod.th.ose.shared.pm.CountingWakeLock;
+import mil.dod.th.ose.shared.pm.CountingWakeLock.CountingWakeLockHandle;
 
 /**
  * BMP180 Temperature/Pressure Sensor Plug-in.
@@ -75,38 +79,46 @@ public class Bmp180Sensor implements AssetProxy
 
     private int[] m_CalibrationData;
 
-    private double  m_Altitude;
-    private short   m_SamplingSetting;
-    private short   m_SleepTime;
+    private double m_Altitude;
+    private short m_SamplingSetting;
+    private short m_SleepTime;
     
     private I2CDevice m_Bmp180;
     private I2CBus m_Bus;
     
     private AssetContext m_Context;
 
+    /**
+     * Reference to the counting {@link WakeLock} used by this asset.
+     */
+    private CountingWakeLock m_CountingLock = new CountingWakeLock();
+
     @Override
     public void initialize(final AssetContext context, final Map<String, Object> props) throws FactoryException
     {
         m_Context = context;
-        
+        m_CountingLock.setWakeLock(m_Context.createPowerManagerWakeLock(getClass().getSimpleName() + "WakeLock"));
+
         final Bmp180SensorAttributes config = Configurable.createConfigurable(Bmp180SensorAttributes.class, props);
         m_SamplingSetting = config.samplingSetting();
         m_Altitude = config.altitude();
         
         switch(m_SamplingSetting)
         {
-            case 0:     m_SleepTime = FIVE_MILLISECONDS;
-                        break;
-            case 1:     m_SleepTime = EIGHT_MILLISECONDS;
-                        break;
-            case 2:     m_SleepTime = FOURTEEN_MILLISECONDS;
-                        break;
-            default:    m_SleepTime = TWENTY_SIX_MILLISECONDS;
+            case 0:     
+                m_SleepTime = FIVE_MILLISECONDS;
+                break;
+            case 1:     
+                m_SleepTime = EIGHT_MILLISECONDS;
+                break;
+            case 2:     
+                m_SleepTime = FOURTEEN_MILLISECONDS;
+                break;
+            default:    
+                m_SleepTime = TWENTY_SIX_MILLISECONDS;
         }
-        
 
         final File i2cModule = new File("/dev/i2c-1");
-        
         if (!i2cModule.exists())
         {
             m_Context.setStatus(SummaryStatusEnum.BAD, "Could not find the i2c module. Please load the required "
@@ -115,6 +127,15 @@ public class Bmp180Sensor implements AssetProxy
         }
         
         m_Context.setStatus(SummaryStatusEnum.OFF, "Initialized");
+    }
+    
+    /**
+     * OSGi deactivate method used to delete any wake locks used by the asset.
+     */
+    @Deactivate
+    public void tearDown()
+    {
+        m_CountingLock.deleteWakeLock();
     }
     
     @Override
@@ -126,76 +147,88 @@ public class Bmp180Sensor implements AssetProxy
         
         switch(m_SamplingSetting)
         {
-            case 0:     m_SleepTime = FIVE_MILLISECONDS;
-                        break;
-            case 1:     m_SleepTime = EIGHT_MILLISECONDS;
-                        break;
-            case 2:     m_SleepTime = FOURTEEN_MILLISECONDS;
-                        break;
-            default:    m_SleepTime = TWENTY_SIX_MILLISECONDS;
+            case 0:     
+                m_SleepTime = FIVE_MILLISECONDS;
+                break;
+            case 1:     
+                m_SleepTime = EIGHT_MILLISECONDS;
+                break;
+            case 2:     
+                m_SleepTime = FOURTEEN_MILLISECONDS;
+                break;
+            default:    
+                m_SleepTime = TWENTY_SIX_MILLISECONDS;
         }
     }
     
     @Override
     public void onActivate() throws AssetException
     {
-        try 
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            m_Bus = I2CFactory.getInstance(I2CBus.BUS_1);
-            m_Bmp180 = m_Bus.getDevice(I2C_ADDRESS);
-            readCalibrationData();
-        } 
-        catch (final Exception e) 
-        {
-            m_Context.setStatus(SummaryStatusEnum.BAD, "Unable to activate");
-            throw new AssetException(e);
+            try 
+            {
+                m_Bus = I2CFactory.getInstance(I2CBus.BUS_1);
+                m_Bmp180 = m_Bus.getDevice(I2C_ADDRESS);
+                readCalibrationData();
+            } 
+            catch (final Exception e) 
+            {
+                m_Context.setStatus(SummaryStatusEnum.BAD, "Unable to activate");
+                throw new AssetException(e);
+            }
+            m_Context.setStatus(SummaryStatusEnum.GOOD, "Activated");
         }
-        
-        m_Context.setStatus(SummaryStatusEnum.GOOD, "Activated");
     }
-    
+
     @Override
     public void onDeactivate() throws AssetException
     {
-        try 
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            m_Bus.close();
-        } 
-        catch (final IOException e) 
-        {
-            m_Context.setStatus(SummaryStatusEnum.BAD, "Unable to deactivate");
-            throw new AssetException(e);
+            try 
+            {
+                m_Bus.close();
+            } 
+            catch (final IOException e) 
+            {
+                m_Context.setStatus(SummaryStatusEnum.BAD, "Unable to deactivate");
+                throw new AssetException(e);
+            }
+            
+            m_Context.setStatus(SummaryStatusEnum.OFF, "Deactivated");
         }
-        
-        m_Context.setStatus(SummaryStatusEnum.OFF, "Deactivated");
     }
     
     @Override
     public Observation onCaptureData() throws AssetException
     {
-        final TemperatureCelsius temp;
-        final PressureMillibars press;
-        
-        try 
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            final Bmp180SensorCalculations calc = new Bmp180SensorCalculations(m_CalibrationData, 
-                    readTemperature(), 
-                    readPressure(), 
-                    m_SamplingSetting, 
-                    m_Altitude);
+            final TemperatureCelsius temp;
+            final PressureMillibars press;
             
-            temp = new TemperatureCelsius().withValue(calc.getTemperature());
-            press = new PressureMillibars().withValue(calc.getPressure());
-        } 
-        catch (final Exception e) 
-        {
-            m_Context.setStatus(SummaryStatusEnum.BAD, "Unable to retrieve the temperature or pressure");
-            throw new AssetException(e);
+            try 
+            {
+                final Bmp180SensorCalculations calc = new Bmp180SensorCalculations(m_CalibrationData, 
+                        readTemperature(), 
+                        readPressure(), 
+                        m_SamplingSetting, 
+                        m_Altitude);
+                
+                temp = new TemperatureCelsius().withValue(calc.getTemperature());
+                press = new PressureMillibars().withValue(calc.getPressure());
+            } 
+            catch (final Exception e) 
+            {
+                m_Context.setStatus(SummaryStatusEnum.BAD, "Unable to retrieve the temperature or pressure");
+                throw new AssetException(e);
+            }
+            
+            final Weather weather = new Weather().withTemperature(temp).withPressure(press);
+            
+            return new Observation().withWeather(weather);
         }
-        
-        final Weather weather = new Weather().withTemperature(temp).withPressure(press);
-        
-        return new Observation().withWeather(weather);
     }
     
     @Override
@@ -222,9 +255,8 @@ public class Bmp180Sensor implements AssetProxy
      *  
      * @throws IOException when failing to read a byte either from across i2c or from the data stream  
      */
-    public void readCalibrationData() throws IOException
+    private void readCalibrationData() throws IOException
     {
-        
         final byte[] bytes = new byte[CALIBRATION_BYTES];
 
         m_Bmp180.read(EEPROM_START, bytes, 0, CALIBRATION_BYTES);
@@ -260,7 +292,7 @@ public class Bmp180Sensor implements AssetProxy
      * @throws IOException when failing to read a byte either from across i2c or from the data stream
      * @throws InterruptedException when failing to sleep
      */
-    public int readTemperature() throws IOException, InterruptedException
+    private int readTemperature() throws IOException, InterruptedException
     {
         final byte[] bytesTemp = new byte[2];
         
@@ -285,7 +317,7 @@ public class Bmp180Sensor implements AssetProxy
      * @throws IOException when failing to read a byte either from across i2c or from the data stream
      * @throws InterruptedException when failing to sleep
      */
-    public long readPressure() throws IOException, InterruptedException
+    private long readPressure() throws IOException, InterruptedException
     {   
         final byte[] bytesPress = new byte[PRESSURE_DATA_SIZE];
         

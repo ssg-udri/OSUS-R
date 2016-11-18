@@ -121,7 +121,7 @@ public class TestPersistedObservations
     @Test
     public void testDetectionObservationRestored()
     {
-        for (int i = 1; i <= 2; i++)
+        for (int i = 1; i <= 4; i++)
         {
             Observation expectedObs = ObservationHelper.createDetectionObservation(i);
         

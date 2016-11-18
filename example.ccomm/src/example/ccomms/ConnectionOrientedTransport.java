@@ -16,9 +16,9 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Set;
 
-import org.osgi.service.cm.ConfigurationException;
-
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
+
 import mil.dod.th.core.ccomm.Address;
 import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.CCommException.FormatProblem;
@@ -28,6 +28,11 @@ import mil.dod.th.core.ccomm.transport.TransportLayerContext;
 import mil.dod.th.core.ccomm.transport.TransportLayerProxy;
 import mil.dod.th.core.factory.Extension;
 import mil.dod.th.core.factory.FactoryException;
+import mil.dod.th.core.pm.WakeLock;
+import mil.dod.th.ose.shared.pm.CountingWakeLock;
+import mil.dod.th.ose.shared.pm.CountingWakeLock.CountingWakeLockHandle;
+
+import org.osgi.service.cm.ConfigurationException;
 
 /**
  * This plug-in shows a very basic implementation of a connection oriented transport layer.
@@ -37,10 +42,13 @@ import mil.dod.th.core.factory.FactoryException;
 @Component(factory = TransportLayer.FACTORY)
 public class ConnectionOrientedTransport implements TransportLayerProxy
 {
-    
     private TransportLayerContext m_Context;
-    
     private boolean m_IsConnected;
+
+    /**
+     * Reference to the counting {@link WakeLock} used by this asset.
+     */
+    private CountingWakeLock m_CountingLock = new CountingWakeLock();
 
     @Override
     public void updated(Map<String, Object> props) throws ConfigurationException
@@ -51,19 +59,26 @@ public class ConnectionOrientedTransport implements TransportLayerProxy
     @Override
     public void initialize(TransportLayerContext context, Map<String, Object> props) throws FactoryException
     {
-        m_Context = context;        
+        m_Context = context;
+        m_CountingLock.setWakeLock(m_Context.createPowerManagerWakeLock(getClass().getSimpleName() + "WakeLock"));
+    }
+
+    @Deactivate
+    public void deactivateInstance()
+    {
+        m_CountingLock.deleteWakeLock();
     }
 
     @Override
     public void connect(Address address) throws CCommException, IllegalStateException
-    {       
+    {
         m_IsConnected = true;
     }
 
     @Override
     public void disconnect() throws CCommException, IllegalStateException
     {
-        m_IsConnected = false;        
+        m_IsConnected = false;     
     }
 
     @Override
@@ -81,21 +96,25 @@ public class ConnectionOrientedTransport implements TransportLayerProxy
     @Override
     public void send(ByteBuffer data, Address addr) throws CCommException
     {
-        throw 
-            new IllegalStateException("This transport layer is connection oriented, cannot send to specific address.");
+        throw new IllegalStateException("This transport layer is connection oriented, "
+                + "cannot send to specific address.");
     }
 
     @Override
     public void send(ByteBuffer data) throws CCommException
     {
-        if (m_IsConnected)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            m_Context.endReceiving(new BaseTransportPacket(data), null, null);   
-        }
-        else
-        {
-            throw new CCommException("Connection oriented transport layer must be connected before sending data.",
-                    FormatProblem.OTHER);
+            if (m_IsConnected)
+            {
+                m_Context.beginReceiving();
+                m_Context.endReceiving(new BaseTransportPacket(data), null, null);   
+            }
+            else
+            {
+                throw new CCommException("Connection oriented transport layer must be connected before sending data.",
+                        FormatProblem.OTHER);
+            }
         }
     }
 
@@ -110,5 +129,4 @@ public class ConnectionOrientedTransport implements TransportLayerProxy
     {
         return null;
     }
-
 }

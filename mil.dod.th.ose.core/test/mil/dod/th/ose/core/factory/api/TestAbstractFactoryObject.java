@@ -69,6 +69,7 @@ public class TestAbstractFactoryObject
     private FactoryServiceUtils m_FactoryServiceUtils;
     private EventAdmin m_EventAdmin;
     private PowerManagerInternal m_PowerInternal;
+    private WakeLock m_WakeLock;
     
     private FactoryRegistry<AbstractFactoryObject> m_Registry;
     private FactoryObjectProxy m_FactoryProxy;
@@ -93,6 +94,7 @@ public class TestAbstractFactoryObject
         m_FactoryServiceUtils = mock(FactoryServiceUtils.class);
         m_EventAdmin = mock(EventAdmin.class);
         m_PowerInternal = mock(PowerManagerInternal.class);
+        m_WakeLock = mock(WakeLock.class);
         
         // stub
         when(factoryInternal.getProductType()).thenReturn("product-type");
@@ -104,6 +106,9 @@ public class TestAbstractFactoryObject
         Configuration config = FactoryObjectMocker.addMockConfiguration(m_SUT, OBJ_PID);
         mockExtensions();
         
+        when(m_PowerInternal.createWakeLock(m_FactoryProxy.getClass(), m_SUT, "coreFactoryObject")).thenReturn(
+                m_WakeLock);
+
         //initialize the instance so that it can be used for testing
         m_SUT.initialize(m_Registry, m_FactoryProxy, factoryInternal,
                 m_ConfigAdmin, m_EventAdmin, m_PowerInternal,
@@ -240,14 +245,17 @@ public class TestAbstractFactoryObject
         ArgumentCaptor<Dictionary> dictionaryCap1 = ArgumentCaptor.forClass(Dictionary.class);
         verify(config, times(1)).update(dictionaryCap1.capture());
         assertThat((String)dictionaryCap1.getValue().get("test-prop"), is("test-value"));
-        
+
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
+
         // set properties again, verify merge
         properties = new Hashtable<String, Object>();
         properties.put("test-prop", "test-value1");
         properties.put("test-prop2", "test-value2");
         properties.put("test-prop3", "test-value3");
         m_SUT.setProperties(properties);
-        
+
         ArgumentCaptor<Dictionary> dictionaryCap2 = ArgumentCaptor.forClass(Dictionary.class);
         verify(config, times(2)).update(dictionaryCap2.capture());
         Dictionary<String, Object> capturedProperties = dictionaryCap2.getAllValues().get(1);
@@ -255,6 +263,9 @@ public class TestAbstractFactoryObject
         assertThat((String)capturedProperties.get("test-prop"), is("test-value1"));
         assertThat((String)capturedProperties.get("test-prop2"), is("test-value2"));
         assertThat((String)capturedProperties.get("test-prop3"), is("test-value3"));
+
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /**
@@ -274,6 +285,8 @@ public class TestAbstractFactoryObject
         m_SUT.setProperties(properties);
         
         verify(m_Registry).createConfiguration(OBJ_UUID, FACTORY_PID, m_SUT);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -292,6 +305,9 @@ public class TestAbstractFactoryObject
         
         ArgumentCaptor<Dictionary> dictionaryCap1 = ArgumentCaptor.forClass(Dictionary.class);
         verify(config).update(dictionaryCap1.capture());
+
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -315,6 +331,9 @@ public class TestAbstractFactoryObject
         {
             //expecting the exception
         }
+
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -541,6 +560,7 @@ public class TestAbstractFactoryObject
     {
         m_SUT.delete();
         verify(m_Registry).delete(m_SUT);
+        verify(m_PowerInternal).deleteWakeLock(m_WakeLock);
     }
     
     /**

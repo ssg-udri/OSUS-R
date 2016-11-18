@@ -42,6 +42,8 @@ import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.CCommException.FormatProblem;
 import mil.dod.th.core.ccomm.capability.AddressCapabilities;
 import mil.dod.th.core.factory.FactoryException;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
 import mil.dod.th.ose.core.factory.api.FactoryObjectInternal;
 import mil.dod.th.ose.core.factory.api.FactoryRegistry;
@@ -101,7 +103,10 @@ public class TestAddressManagerServiceImpl
 
     @SuppressWarnings("rawtypes")
     private ComponentInfo<FactoryServiceContext> m_ServiceContextComp;
-    
+
+    @Mock private PowerManager m_PowerManager;
+    @Mock private WakeLock m_WakeLock;
+
     @SuppressWarnings({"unchecked"})
     @Before
     public void setUp() throws Exception
@@ -120,7 +125,10 @@ public class TestAddressManagerServiceImpl
         m_SUT.setLoggingService(LoggingServiceMocker.createMock());
         m_SUT.setEventAdmin(m_EventAdmin);
         m_SUT.setAddressTranslatorManager(m_Manager);
-        
+        m_SUT.setPowerManager(m_PowerManager);
+
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), "coreAddrManagerService")).thenReturn(m_WakeLock);
+
         m_RegistryObjects = new HashSet<AddressInternal>();
         when(m_Registry.getObjects()).thenReturn(m_RegistryObjects);
                 
@@ -206,6 +214,7 @@ public class TestAddressManagerServiceImpl
         m_SUT.deactivate();
         
         verify(m_ServiceContextComp.getInstance()).dispose();
+        verify(m_WakeLock, times(1)).delete();
     }
     
     @Test
@@ -217,11 +226,16 @@ public class TestAddressManagerServiceImpl
             m_SUT.getOrCreateAddress("Example:Param1=null");
             fail("Address does not exist!");
         }
-        catch(CCommException e){}
+        catch(CCommException e)
+        {
+            verify(m_WakeLock, never()).activate();
+        }
         
         // This should not fail because BaseAddress has been registered
         Address b   = m_SUT.getOrCreateAddress("Base:noparams=null");
         assertThat(b, not(nullValue()));
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -238,7 +252,9 @@ public class TestAddressManagerServiceImpl
         verify(m_Manager).getAddressTranslator(m_Factory.getProductType());
         
         // verify service helper is passed
+        verify(m_WakeLock).activate();
         verify(m_Registry).createNewObject(eq(m_Factory), anyString(), Mockito.any(Map.class));
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -319,7 +335,7 @@ public class TestAddressManagerServiceImpl
         }
         catch (NullPointerException e)
         {
-            
+            verify(m_WakeLock, never()).activate();
         }
         
         try
@@ -329,7 +345,7 @@ public class TestAddressManagerServiceImpl
         }
         catch (IllegalArgumentException e)
         {
-            
+            verify(m_WakeLock, never()).activate();
         }
         
         try
@@ -339,7 +355,7 @@ public class TestAddressManagerServiceImpl
         }
         catch (IllegalArgumentException e)
         {
-            
+            verify(m_WakeLock, never()).activate();
         }
     }
     
@@ -390,14 +406,18 @@ public class TestAddressManagerServiceImpl
         m_SUT.getOrCreateAddress(m_Factory.getProductType(), "old-addr", properties);
         
         // verify a new address is not created
+        verify(m_WakeLock).activate();
         verify(m_Registry, times(1)).createNewObject(eq(m_Factory), anyString(), eq(properties));
+        verify(m_WakeLock).cancel();
         
         // now mock to not be equal to the address
         when(a.equalProperties(properties)).thenReturn(false);
         m_SUT.getOrCreateAddress(m_Factory.getProductType(), "new-addr", properties);
         
         // verify a new address is created
+        verify(m_WakeLock, times(2)).activate();
         verify(m_Registry, times(2)).createNewObject(eq(m_Factory), anyString(), eq(properties));
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /**
@@ -420,14 +440,18 @@ public class TestAddressManagerServiceImpl
         m_SUT.getOrCreateAddress(m_Factory.getProductType(), "old-addr", properties);
         
         // verify a new address is not created
+        verify(m_WakeLock).activate();
         verify(m_Registry, times(1)).createNewObject(eq(m_Factory), anyString(), eq(properties));
+        verify(m_WakeLock).cancel();
         
         // now mock to not be equal to the address
         when(a.equalProperties(properties)).thenReturn(false);
         m_SUT.getOrCreateAddress(m_Factory.getProductType(), "new-addr", properties);
         
         // verify a new address is created
+        verify(m_WakeLock, times(2)).activate();
         verify(m_Registry, times(2)).createNewObject(eq(m_Factory), anyString(), eq(properties));
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /*
@@ -443,6 +467,8 @@ public class TestAddressManagerServiceImpl
         Map<String, Object> props = new HashMap<String, Object>();
         props.put("prop", "abc");
         verify(m_Registry).createNewObject(m_Factory, "creationAddressName", props);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**

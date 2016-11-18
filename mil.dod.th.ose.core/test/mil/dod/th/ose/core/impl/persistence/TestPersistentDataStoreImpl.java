@@ -40,6 +40,8 @@ import javax.jdo.datastore.JDOConnection;
 import mil.dod.th.core.persistence.PersistenceFailedException;
 import mil.dod.th.core.persistence.PersistentData;
 import mil.dod.th.core.persistence.PersistentDataStore;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.shared.JdoDataStore;
 
 import org.junit.After;
@@ -69,6 +71,8 @@ public class TestPersistentDataStoreImpl
     private Collection<PersistentData> m_PersistentDataCollection;
     private FetchPlan m_FetchPlan;
     private BundleContext m_Context;
+    private PowerManager m_PowerManager;
+    private WakeLock m_WakeLock;
 
     @Before
     public void setUp()
@@ -99,8 +103,13 @@ public class TestPersistentDataStoreImpl
         m_FetchPlan = mock(FetchPlan.class);
         when(m_PersistenceManager.getFetchPlan()).thenReturn(m_FetchPlan);
         
+        m_PowerManager = mock(PowerManager.class);
+        m_WakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), "coreDataStore")).thenReturn(m_WakeLock);
+
         m_SUT.setEventAdmin(m_EventAdmin);
         m_SUT.setPersistenceManagerFactoryCreator(m_PersistenceManagerFactoryCreator);
+        m_SUT.setPowerManager(m_PowerManager);
         
         Map<String, Object> props = new HashMap<String, Object>();
         props.put("minUsableSpace", 1024L);
@@ -114,6 +123,7 @@ public class TestPersistentDataStoreImpl
         throws Exception
     {
         m_SUT.deactivate();
+        verify(m_WakeLock).delete();
     }
     
     /**
@@ -161,6 +171,8 @@ public class TestPersistentDataStoreImpl
         
         // value should be set based on framework property
         verify(statement).execute("SET CACHE_SIZE 100");
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
 
     /**
@@ -184,6 +196,8 @@ public class TestPersistentDataStoreImpl
         
         // value should be set based on framework property
         verify(statement).execute("SET CACHE_SIZE 200");
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -212,6 +226,9 @@ public class TestPersistentDataStoreImpl
         addMockEntry();
         
         assertThat(m_SUT.contains(m_PersistentData.getUUID()), is(true));
+
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
 
     @Test
@@ -227,6 +244,9 @@ public class TestPersistentDataStoreImpl
         addMockEntry();
         
         assertThat(m_SUT.find(m_PersistentData.getUUID()), is(notNullValue()));
+
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
 
     @Test
@@ -259,6 +279,9 @@ public class TestPersistentDataStoreImpl
         
         m_SUT.persist(this.getClass(), m_PersistentData.getUUID(), m_PersistentData.getDescription(), 
                 m_PersistentData.getEntity());
+
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
 
     @Test
@@ -272,30 +295,45 @@ public class TestPersistentDataStoreImpl
         when(m_PersistenceManager.makePersistent(m_PersistentData)).thenReturn(m_PersistentData);
         
         m_SUT.merge(m_PersistentData);
+
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
     public void testRemoveMatchingClass()
     {
         m_SUT.removeMatching(this.getClass());
+
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
     public void testRemoveMatchingClassDateDate()
     {
         m_SUT.removeMatching(this.getClass(), new Date(), new Date());
+
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
 
     @Test
     public void testRemoveMatchingClassString()
     {
         m_SUT.removeMatching(this.getClass(), m_PersistentData.getDescription());
+
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
 
     @Test
     public void testRemoveMatchingClassStringDateDate()
     {
         m_SUT.removeMatching(this.getClass(), m_PersistentData.getDescription(), new Date(), new Date());
+
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
 
     @Test
@@ -307,6 +345,9 @@ public class TestPersistentDataStoreImpl
         assertThat(e, is(instanceOf(IllegalArgumentException.class)));
         
         m_SUT.remove(m_PersistentData);
+
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
 
     @Test
@@ -320,6 +361,9 @@ public class TestPersistentDataStoreImpl
         addMockEntry();
         
         assertThat(m_SUT.query(this.getClass(), startTime, stopTime).size(), is(1));
+
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
 
     @Test
@@ -335,6 +379,9 @@ public class TestPersistentDataStoreImpl
         
         assertThat(m_SUT.query(this.getClass(), m_PersistentData.getDescription(), startTime, stopTime).size(), 
                 is(1));
+
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     @Test
@@ -359,5 +406,4 @@ public class TestPersistentDataStoreImpl
     {
         m_PersistentDataCollection.add(m_PersistentData);
     }
-
 }

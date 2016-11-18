@@ -31,6 +31,8 @@ import com.google.common.collect.ImmutableMap;
 
 import mil.dod.th.core.ccomm.link.capability.LinkLayerCapabilities;
 import mil.dod.th.core.ccomm.physical.capability.PhysicalLinkCapabilities;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.ccomm.PhysicalLinkTypeEnum;
 import mil.dod.th.ose.core.FactoryObjectDataManagerMocker;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
@@ -101,6 +103,9 @@ public abstract class CustomCommsServiceImpl_TestCommon
     
     protected LinkLayerCapabilities m_LinkLayerCapabilities = new LinkLayerCapabilities();
 
+    @Mock protected PowerManager m_PowerManager;
+    @Mock protected WakeLock m_WakeLock;
+
     /**
      * Mock all needed objects and stub them out.
      */
@@ -123,11 +128,14 @@ public abstract class CustomCommsServiceImpl_TestCommon
         m_PhysicalLinkProxy = mock(PhysicalLinkServiceProxy.class);
         m_LinkLayerProxy = mock(LinkLayerServiceProxy.class);
         m_TransportLayerProxy = mock(TransportLayerServiceProxy.class);
-        
+
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), "coreCustomCommsService")).thenReturn(m_WakeLock);
+
         m_SUT.setPhysicalLinkFactoryServiceProxy(m_PhysicalLinkProxy);
         m_SUT.setLinkLayerFactoryServiceProxy(m_LinkLayerProxy);
         m_SUT.setTransportLayerFactoryServiceProxy(m_TransportLayerProxy);
         m_SUT.setFactoryServiceContextFactory(serviceContextFactory);
+        m_SUT.setPowerManager(m_PowerManager);
         
         List<ComponentInfo<FactoryServiceContext>> serviceContextComps = 
                 ComponentFactoryMocker.mockComponents(FactoryServiceContext.class, serviceContextFactory, 3);

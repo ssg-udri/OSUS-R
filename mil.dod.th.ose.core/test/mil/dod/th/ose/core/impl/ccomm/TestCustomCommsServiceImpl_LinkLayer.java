@@ -75,6 +75,9 @@ public class TestCustomCommsServiceImpl_LinkLayer extends CustomCommsServiceImpl
         
         assertThat(layer, is((LinkLayer)m_LinkInternal));
         
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
+
         //verify call to link reg
         ArgumentCaptor<Map> map = ArgumentCaptor.forClass(Map.class);
         verify(m_LinkRegistry).createNewObject(eq(m_LinkFactory), Mockito.anyString(), map.capture());
@@ -145,6 +148,9 @@ public class TestCustomCommsServiceImpl_LinkLayer extends CustomCommsServiceImpl
             fail("Expecting exception as property value is empty");
         }
         catch (IllegalArgumentException e) { }
+
+        verify(m_WakeLock, never()).activate();
+        verify(m_WakeLock, never()).cancel();
     }
     
     /**
@@ -210,6 +216,8 @@ public class TestCustomCommsServiceImpl_LinkLayer extends CustomCommsServiceImpl
         Map<String, Object> props2 = new HashMap<>();
         props2.put(LinkLayerAttributes.CONFIG_PROP_PHYSICAL_LINK_NAME, physName2);
         verify(m_LinkRegistry).createNewObject(m_LinkFactory, linkName2, props2);
+        verify(m_WakeLock, times(4)).activate();
+        verify(m_WakeLock, times(4)).cancel();
     }
     
     /**
@@ -256,6 +264,9 @@ public class TestCustomCommsServiceImpl_LinkLayer extends CustomCommsServiceImpl
         {
             //expected
         }
+
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /**

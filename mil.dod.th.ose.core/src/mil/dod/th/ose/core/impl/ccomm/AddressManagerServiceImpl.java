@@ -31,6 +31,8 @@ import mil.dod.th.core.ccomm.AddressTranslator;
 import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.CCommException.FormatProblem;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.core.factory.api.DirectoryService;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
 import mil.dod.th.ose.core.factory.api.FactoryServiceContext;
@@ -70,7 +72,12 @@ public class AddressManagerServiceImpl extends DirectoryService implements Addre
      * Component wrapper for the {@link FactoryServiceContext} instance.
      */
     private SingleComponent<FactoryServiceContext<AddressInternal>> m_FactServiceContextComp;
-    
+
+    /**
+     * Wake lock used for address manager service operations.
+     */
+    private WakeLock m_WakeLock;
+
     /**
      * Bind the factory for creating {@link FactoryServiceContext} instances.
      * 
@@ -107,6 +114,7 @@ public class AddressManagerServiceImpl extends DirectoryService implements Addre
     {
         m_FactoryServiceContext = m_FactServiceContextComp.newInstance(null);
         m_FactoryServiceContext.initialize(context, m_FactoryServiceProxy, this);
+        m_WakeLock = m_PowerManager.createWakeLock(getClass(), "coreAddrManagerService");
     }
     
     /**
@@ -116,6 +124,7 @@ public class AddressManagerServiceImpl extends DirectoryService implements Addre
     public void deactivate()
     {
         m_FactServiceContextComp.tryDispose();
+        m_WakeLock.delete();
     }
 
     @Override
@@ -131,7 +140,14 @@ public class AddressManagerServiceImpl extends DirectoryService implements Addre
     {
         super.setEventAdmin(eventAdmin);
     }
-    
+
+    @Override
+    @Reference
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        super.setPowerManager(powerManager);
+    }
+
     /**
      * Bind the service. Each service type will provide a service proxy, restrict to the address one.
      * 
@@ -281,11 +297,17 @@ public class AddressManagerServiceImpl extends DirectoryService implements Addre
                 factory.getProductType(), name);
         try
         {
+            m_WakeLock.activate();
+
             return m_FactoryServiceContext.getRegistry().createNewObject(factory, name, properties);
         }
         catch (final Exception ex)
         {
             throw new CCommException("Error creating new Address from getOrCreateAddress.", ex, FormatProblem.OTHER);
+        }
+        finally
+        {
+            m_WakeLock.cancel();
         }
     }
     

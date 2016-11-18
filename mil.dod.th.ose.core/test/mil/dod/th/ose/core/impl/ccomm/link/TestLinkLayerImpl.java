@@ -42,6 +42,7 @@ import mil.dod.th.core.ccomm.link.capability.LinkLayerCapabilities;
 import mil.dod.th.core.factory.FactoryDescriptor;
 import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.factory.FactoryObjectProxy;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.core.ConfigurationAdminMocker;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
 import mil.dod.th.ose.core.factory.api.FactoryObjectInternal;
@@ -73,6 +74,7 @@ public class TestLinkLayerImpl
     private String m_BaseType = "baseType";
     private LinkLayerCapabilities m_Caps;
     private PowerManagerInternal m_PowManInternal;
+    private WakeLock m_WakeLock;
 
     @Before
     public void setUp() throws Exception
@@ -87,9 +89,14 @@ public class TestLinkLayerImpl
         m_EventAdmin = mock(EventAdmin.class);
         m_Caps = mock(LinkLayerCapabilities.class);
         m_PowManInternal = mock(PowerManagerInternal.class);
+        m_WakeLock = mock(WakeLock.class);
         
         when(m_LinkLayerFactoryInternal.getLinkLayerCapabilities()).thenReturn(m_Caps);
         doReturn(LinkLayer.class.getName()).when(m_LinkLayerFactoryInternal).getProductType();
+        when(m_PowManInternal.createWakeLock(m_LinkLayerProxy.getClass(), m_SUT, "coreFactoryObject")).thenReturn(
+                m_WakeLock);
+        when(m_PowManInternal.createWakeLock(m_LinkLayerProxy.getClass(), m_SUT, "coreLinkLayer")).thenReturn(
+                m_WakeLock);
         
         m_SUT.initialize(m_FactReg, m_LinkLayerProxy, m_LinkLayerFactoryInternal, m_ConfigurationAdmin, m_EventAdmin, 
                 m_PowManInternal, m_Uuid, m_Name, m_Pid, m_BaseType);       
@@ -114,7 +121,9 @@ public class TestLinkLayerImpl
         assertThat(status, is(LinkStatus.OK));
 
         //verify
+        verify(m_WakeLock).activate();
         verify(m_LinkLayerProxy).onPerformBit();
+        verify(m_WakeLock).cancel();
         
         ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(m_EventAdmin, times(1)).postEvent(eventCaptor.capture());
@@ -151,7 +160,9 @@ public class TestLinkLayerImpl
         assertThat(status, is(LinkStatus.LOST));
 
         //verify
+        verify(m_WakeLock).activate();
         verify(m_LinkLayerProxy).onPerformBit();
+        verify(m_WakeLock).cancel();
         
         ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(m_EventAdmin, times(1)).postEvent(eventCaptor.capture());
@@ -189,6 +200,7 @@ public class TestLinkLayerImpl
         }
 
         //verify
+        verify(m_WakeLock, never()).activate();
         verify(m_EventAdmin, never()).postEvent(Mockito.any(Event.class));
     }
 
@@ -358,7 +370,9 @@ public class TestLinkLayerImpl
                 is(destAddress.getName()));
         assertThat((String)event.getProperty("dest." + Address.EVENT_PROP_ADDRESS_TYPE_SUFFIX), is(addressType));
         
+        verify(m_WakeLock, times(2)).activate();
         verify(m_LinkLayerProxy, times(1)).send(frame, destAddress);
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /**
@@ -378,6 +392,8 @@ public class TestLinkLayerImpl
         catch (NullPointerException e)
         {
         }
+
+        verify(m_WakeLock, never()).activate();
     }
     
     /**
@@ -400,6 +416,8 @@ public class TestLinkLayerImpl
         {
             //expected
         }
+
+        verify(m_WakeLock, never()).activate();
     }
     
     /**
@@ -438,7 +456,9 @@ public class TestLinkLayerImpl
                 is(nullValue()));
         assertThat((String)event.getProperty("dest." + Address.EVENT_PROP_ADDRESS_TYPE_SUFFIX), is(nullValue()));
         
+        verify(m_WakeLock, times(2)).activate();
         verify(m_LinkLayerProxy, times(1)).send(frame, destAddress);
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /**
@@ -478,6 +498,8 @@ public class TestLinkLayerImpl
         ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
         //one for activate, last is send
         verify(m_EventAdmin, times(1)).postEvent(eventCaptor.capture());
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
         
         Event event = EventAdminVerifier.assertEventByTopicOnly(eventCaptor, LinkLayer.TOPIC_ACTIVATED);
         assertThat((LinkLayer)event.getProperty(FactoryDescriptor.EVENT_PROP_OBJ), is((LinkLayer)m_SUT));
@@ -501,6 +523,8 @@ public class TestLinkLayerImpl
         ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
         //one for activate, last is send
         verify(m_EventAdmin, times(1)).postEvent(eventCaptor.capture());
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
         
         Event event = EventAdminVerifier.assertEventByTopicOnly(eventCaptor, LinkLayer.TOPIC_DEACTIVATED);
         assertThat((LinkLayer)event.getProperty(FactoryDescriptor.EVENT_PROP_OBJ), is((LinkLayer)m_SUT));
@@ -556,6 +580,7 @@ public class TestLinkLayerImpl
     {
         m_SUT.delete();
         verify(m_FactReg).delete(m_SUT);
+        verify(m_PowManInternal, times(2)).deleteWakeLock(m_WakeLock);
     }
     
     /**
@@ -576,5 +601,6 @@ public class TestLinkLayerImpl
             
         }
         verify(m_FactReg, never()).delete(Mockito.any(FactoryObjectInternal.class));
+        verify(m_PowManInternal, never()).deleteWakeLock(m_WakeLock);
     }
 }

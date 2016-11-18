@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.transcoder.TranscoderException;
 import mil.dod.th.core.transcoder.TranscoderService;
 
@@ -61,7 +63,9 @@ public class TestVlcTranscoder
     
     @Mock private HeadlessMediaPlayer m_MediaPlayer;
     @Mock private LoggingService m_Logging;
-       
+    @Mock private PowerManager m_PowerManager;
+    @Mock private WakeLock m_WakeLock;
+
     @Before
     public void setUp() throws URISyntaxException, Exception
     {
@@ -75,10 +79,13 @@ public class TestVlcTranscoder
         PowerMockito.doNothing().when(NativeLibraryLoader.class, "load");
                 
         m_SUT = new VlcTranscoder();
+
+        when(m_PowerManager.createWakeLock(VlcTranscoder.class, "coreTranscoder")).thenReturn(m_WakeLock);
+
         m_SUT.setLoggingService(m_Logging);
+        m_SUT.setPowerManager(m_PowerManager);
         
         m_MulticastUri = new URI(null, null, m_MulticastHost, m_MulticastPort, null, null, null);
-        
         m_SourceStream = new URI("rtsp://195.168.1.254:554/mpeg4/media.amp");              
     }
             
@@ -104,12 +111,14 @@ public class TestVlcTranscoder
         
         verify(m_MediaPlayer).addMediaPlayerEventListener(Mockito.any(MediaPlayerEventListener.class));
         verify(m_MediaPlayer).playMedia(anyString(), (String)anyVararg());
+        verify(m_WakeLock).activate();
         
         assertThat(m_SUT.getActiveProcessIds(), hasItem(m_ProcessId));
         
         m_SUT.deactivate();
         verify(m_MediaPlayer).stop();
-        verify(m_MediaPlayer).release();        
+        verify(m_MediaPlayer).release();
+        verify(m_WakeLock).delete();
     }
     
     @Test(expected = IllegalStateException.class)
@@ -126,7 +135,14 @@ public class TestVlcTranscoder
         Whitebox.setInternalState(m_SUT, "m_ProcessMap", processMap);
         
         //Try to start transcoding process using the same ID
-        m_SUT.start(m_ProcessId, m_SourceStream, m_MulticastUri, configParams);        
+        try
+        {
+            m_SUT.start(m_ProcessId, m_SourceStream, m_MulticastUri, configParams);
+        }
+        finally
+        {
+            verify(m_WakeLock, never()).activate();
+        }
     }
     
     @Test(expected = TranscoderException.class)
@@ -142,8 +158,15 @@ public class TestVlcTranscoder
         assertThat(m_SUT.getActiveProcessIds(), is(Matchers.<String>empty()));
         
         when(m_MediaPlayer.playMedia(anyString(), (String)anyVararg())).thenReturn(false);
-        
-        m_SUT.start(m_ProcessId, m_SourceStream, m_MulticastUri, configParams);
+
+        try
+        {
+            m_SUT.start(m_ProcessId, m_SourceStream, m_MulticastUri, configParams);
+        }
+        finally
+        {
+            verify(m_WakeLock, never()).activate();
+        }
     }
     
     /**
@@ -169,11 +192,12 @@ public class TestVlcTranscoder
         verify(m_MediaPlayer).addMediaPlayerEventListener(Mockito.any(MediaPlayerEventListener.class));
         verify(m_MediaPlayer).playMedia(anyString(), (String)anyVararg());
         assertThat(m_SUT.getActiveProcessIds(), hasItem(m_ProcessId));
-                
+
         //Stop the transcoding process
         m_SUT.stop(m_ProcessId);
-        
-        assertThat(m_SUT.getActiveProcessIds(), not(hasItem(m_ProcessId)));        
+
+        assertThat(m_SUT.getActiveProcessIds(), not(hasItem(m_ProcessId)));
+        verify(m_WakeLock).cancel();
     }
 
     /**
@@ -187,8 +211,15 @@ public class TestVlcTranscoder
         
         m_SUT.activate();
         assertThat(m_SUT.getActiveProcessIds(), is(Matchers.<String>empty()));
-        
-        m_SUT.stop(bogusProcessId);        
+
+        try
+        {
+            m_SUT.stop(bogusProcessId);
+        }
+        finally
+        {
+            verify(m_WakeLock, never()).cancel();
+        }
     }
     
     @Test
@@ -201,6 +232,8 @@ public class TestVlcTranscoder
     @Test
     public void testErrorEvent()
     {
+        m_SUT.activate();
+
         Map<String, HeadlessMediaPlayer> processMap = new HashMap<>();
         processMap.put(m_ProcessId, m_MediaPlayer);
         Whitebox.setInternalState(m_SUT, "m_ProcessMap", processMap);
@@ -209,6 +242,7 @@ public class TestVlcTranscoder
         m_SUT.errorEvent(m_ProcessId);
         verify(m_Logging).error(anyString(), anyVararg());
         assertThat(m_SUT.getActiveProcessIds(), not(hasItem(m_ProcessId)));
+        verify(m_WakeLock).cancel();
         
         //Test when process ID is not already in the set
         processMap = new HashMap<>();
@@ -222,5 +256,5 @@ public class TestVlcTranscoder
     {
         m_SUT.stoppedEvent(m_ProcessId);
         verify(m_Logging).info(anyString(), anyVararg());
-    } 
+    }
 }

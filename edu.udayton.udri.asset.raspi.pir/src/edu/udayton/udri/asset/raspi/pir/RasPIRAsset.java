@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
@@ -41,11 +42,14 @@ import mil.dod.th.core.observation.types.Detection;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
 import mil.dod.th.core.persistence.PersistenceFailedException;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.SensingModality;
 import mil.dod.th.core.types.SensingModalityEnum;
 import mil.dod.th.core.types.detection.DetectionTypeEnum;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
 import mil.dod.th.core.validator.ValidationFailedException;
+import mil.dod.th.ose.shared.pm.CountingWakeLock;
+import mil.dod.th.ose.shared.pm.CountingWakeLock.CountingWakeLockHandle;
 
 import org.osgi.service.log.LogService;
 
@@ -62,13 +66,28 @@ public class RasPIRAsset implements AssetProxy
     private GpioController m_GpioLink;
     private GpioPinDigitalInput m_Pir;
 
+    /**
+     * Reference to the counting {@link WakeLock} used by this asset.
+     */
+    private CountingWakeLock m_CountingLock = new CountingWakeLock();
+
     @Override
     public void initialize(final AssetContext context, final Map<String, Object> props) throws FactoryException
     {
         m_GpioLink = GpioFactory.getInstance();
         
         m_Context = context;
+        m_CountingLock.setWakeLock(m_Context.createPowerManagerWakeLock(getClass().getSimpleName() + "WakeLock"));
         m_Context.setStatus(SummaryStatusEnum.GOOD, "Initialized");
+    }
+    
+    /**
+     * OSGi deactivate method used to delete any wake locks used by the asset.
+     */
+    @Deactivate
+    public void tearDown()
+    {
+        m_CountingLock.deleteWakeLock();
     }
     
     @Override
@@ -80,51 +99,57 @@ public class RasPIRAsset implements AssetProxy
     @Override
     public void onActivate() throws AssetException
     {
-        Logging.log(LogService.LOG_INFO, "Beginning activation");
-        
-        try 
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            m_Pir = m_GpioLink.provisionDigitalInputPin(RaspiPin.GPIO_07, PinPullResistance.PULL_DOWN);
-        
-            m_Pir.addListener(new GpioPinListenerDigital() 
+            Logging.log(LogService.LOG_INFO, "Beginning activation");
+            
+            try 
             {
-                @Override
-                public void handleGpioPinDigitalStateChangeEvent(final GpioPinDigitalStateChangeEvent event) 
+                m_Pir = m_GpioLink.provisionDigitalInputPin(RaspiPin.GPIO_07, PinPullResistance.PULL_DOWN);
+            
+                m_Pir.addListener(new GpioPinListenerDigital() 
                 {
-                    if (event.getState() == PinState.HIGH)
+                    @Override
+                    public void handleGpioPinDigitalStateChangeEvent(final GpioPinDigitalStateChangeEvent event) 
                     {
-                        try
+                        if (event.getState() == PinState.HIGH)
                         {
-                            onMotionDetection();
+                            try
+                            {
+                                onMotionDetection();
+                            }
+                            catch (final AssetException e)
+                            {
+                                Logging.log(LogService.LOG_ERROR, e.toString());
+                                Logging.log(LogService.LOG_ERROR, "Creation of PIR observation failed");
+                            }
                         }
-                        catch (final AssetException e)
-                        {
-                            Logging.log(LogService.LOG_ERROR, e.toString());
-                            Logging.log(LogService.LOG_ERROR, "Creation of PIR observation failed");
-                        }
-                    }
-                } 
-            });
-            Logging.log(LogService.LOG_INFO, "Raspberry Pi PIR activated");
-            m_Context.setStatus(SummaryStatusEnum.GOOD, "Activated");
-        } 
-        catch (final Exception e) 
-        {
-            Logging.log(LogService.LOG_ERROR, e.toString());
-            Logging.log(LogService.LOG_ERROR, "Raspberry Pi PIR activation failed, attempting deactivation");
-            m_Context.setStatus(SummaryStatusEnum.BAD, "Failed activation, attempting deactivation");
-            onDeactivate();
+                    } 
+                });
+                Logging.log(LogService.LOG_INFO, "Raspberry Pi PIR activated");
+                m_Context.setStatus(SummaryStatusEnum.GOOD, "Activated");
+            } 
+            catch (final Exception e) 
+            {
+                Logging.log(LogService.LOG_ERROR, e.toString());
+                Logging.log(LogService.LOG_ERROR, "Raspberry Pi PIR activation failed, attempting deactivation");
+                m_Context.setStatus(SummaryStatusEnum.BAD, "Failed activation, attempting deactivation");
+                onDeactivate();
+            }
         }
     }
     
     @Override
     public void onDeactivate() throws AssetException
     {
-        m_Pir.removeAllListeners();
-        m_GpioLink.unprovisionPin(m_Pir);
-    
-        Logging.log(LogService.LOG_INFO, "Raspberry Pi PIR deactivated");
-        m_Context.setStatus(SummaryStatusEnum.OFF, "Deactivated");
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
+        {
+            m_Pir.removeAllListeners();
+            m_GpioLink.unprovisionPin(m_Pir);
+        
+            Logging.log(LogService.LOG_INFO, "Raspberry Pi PIR deactivated");
+            m_Context.setStatus(SummaryStatusEnum.OFF, "Deactivated");
+        }
     }
     
     /**
@@ -138,27 +163,28 @@ public class RasPIRAsset implements AssetProxy
      */
     private Observation onMotionDetection() throws AssetException
     {
-        final Date date = new Date();
-        Logging.log(LogService.LOG_INFO, "Motion Detected " + date);
-
-        final SensingModality sensmod = new SensingModality(SensingModalityEnum.PIR, "PIR");
-
-        final Detection detect = new Detection();
-        detect.setType(DetectionTypeEnum.ALARM);
-        
-        final Observation obs = new Observation().withModalities(sensmod).withDetection(detect);
-        
-        try 
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            m_Context.persistObservation(obs);
-        } 
-        catch (final PersistenceFailedException | ValidationFailedException e) 
-        {
-            Logging.log(LogService.LOG_ERROR, e.toString());
-            Logging.log(LogService.LOG_ERROR, "Observation persistance failed");
+            final Date date = new Date();
+            Logging.log(LogService.LOG_INFO, "Motion Detected " + date);
+    
+            final SensingModality sensmod = new SensingModality(SensingModalityEnum.PIR, "PIR");
+    
+            final Detection detect = new Detection();
+            detect.setType(DetectionTypeEnum.ALARM);
+            
+            final Observation obs = new Observation().withModalities(sensmod).withDetection(detect);
+            try 
+            {
+                m_Context.persistObservation(obs);
+            } 
+            catch (final PersistenceFailedException | ValidationFailedException e) 
+            {
+                Logging.log(LogService.LOG_ERROR, e.toString());
+                Logging.log(LogService.LOG_ERROR, "Observation persistance failed");
+            }
+            return obs;
         }
-        
-        return obs;
     }
     
     @Override

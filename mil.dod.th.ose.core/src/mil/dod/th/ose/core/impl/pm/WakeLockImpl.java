@@ -26,6 +26,8 @@ import mil.dod.th.core.pm.PlatformPowerManager;
 import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.core.pm.api.PowerManagerInternal;
 
+import org.osgi.framework.BundleContext;
+
 /**
  * Implementation of the {@link WakeLock}.
  */
@@ -36,6 +38,11 @@ public class WakeLockImpl implements WakeLock
      * Factory name used by the component factory.
      */
     public final static String COMPONENT_FACTORY = "mil.dod.th.ose.core.impl.pm.WakeLockImpl";
+
+    /**
+     * Name of the OSGi framework property that enables log tracing of wake locks.
+     */
+    public static final String WAKELOCK_TRACE_PROPERTY = "mil.dod.th.ose.core.pm.wakelock.trace";
 
     /**
      * Wake lock ID property passed in during activation.
@@ -105,6 +112,11 @@ public class WakeLockImpl implements WakeLock
     private final Object m_PPMLock = new Object();
 
     /**
+     * Indicates whether all wake lock logging should be enabled or not.
+     */
+    private boolean m_EnableTrace;
+
+    /**
      * Binds the logging service for logging messages.
      * 
      * @param logging
@@ -150,16 +162,24 @@ public class WakeLockImpl implements WakeLock
     /**
      * Activate the component.
      * 
+     * @param bundleContext
+     *            OSGi bundle context
      * @param properties
      *            component properties
      */
     @Activate
-    public void activateInstance(final Map<String, Object> properties)
+    public void activateInstance(final BundleContext bundleContext, final Map<String, Object> properties)
     {
         m_Id = (String)properties.get(COMPONENT_PROP_ID);
         m_Context = (Class<?>)properties.get(COMPONENT_PROP_CONTEXT);
         m_SourceObject = (FactoryObject)properties.get(COMPONENT_PROP_SRC_OBJ);
         m_PowerManagerInternal = (PowerManagerInternal)properties.get(COMPONENT_PROP_POWER_MGR);
+
+        final String traceProp = bundleContext.getProperty(WAKELOCK_TRACE_PROPERTY);
+        if (traceProp != null && Boolean.TRUE.toString().equalsIgnoreCase(traceProp))
+        {
+            m_EnableTrace = true;
+        }
     }
 
     @Override
@@ -198,14 +218,14 @@ public class WakeLockImpl implements WakeLock
         {
             if (m_PlatformPowerManager == null)
             {
-                m_Logging.debug(ACTIVATE_WAKELOCK_ERR_MSG, this);
+                traceLogging(ACTIVATE_WAKELOCK_ERR_MSG, this);
             }
             else
             {
                 final long startLockTimeMs = System.currentTimeMillis();
                 final long stopLockTimeMs = startLockTimeMs + unit.toMillis(lockAwakeDuration);
     
-                m_Logging.debug(ACTIVATE_WAKELOCK_DURATION_DBG_MSG, this, startLockTimeMs, stopLockTimeMs);
+                traceLogging(ACTIVATE_WAKELOCK_DURATION_DBG_MSG, this, startLockTimeMs, stopLockTimeMs);
 
                 return new Date(m_PlatformPowerManager.activateWakeLock(this, startLockTimeMs, stopLockTimeMs));
             }
@@ -221,14 +241,14 @@ public class WakeLockImpl implements WakeLock
         {
             if (m_PlatformPowerManager == null)
             {
-                m_Logging.debug(ACTIVATE_WAKELOCK_ERR_MSG, this);
+                traceLogging(ACTIVATE_WAKELOCK_ERR_MSG, this);
             }
             else
             {
                 final long startLockTimeMs = System.currentTimeMillis();
                 final long stopLockTimeMs = lockAwakeTime.getTime();
     
-                m_Logging.debug(ACTIVATE_WAKELOCK_DURATION_DBG_MSG, this, startLockTimeMs, stopLockTimeMs);
+                traceLogging(ACTIVATE_WAKELOCK_DURATION_DBG_MSG, this, startLockTimeMs, stopLockTimeMs);
 
                 return new Date(m_PlatformPowerManager.activateWakeLock(this, startLockTimeMs, stopLockTimeMs));
             }
@@ -244,11 +264,11 @@ public class WakeLockImpl implements WakeLock
         {
             if (m_PlatformPowerManager == null)
             {
-                m_Logging.debug(ACTIVATE_WAKELOCK_ERR_MSG, this);
+                traceLogging(ACTIVATE_WAKELOCK_ERR_MSG, this);
             }
             else
             {
-                m_Logging.debug("Activate WakeLock [%s] indefinitely", this);
+                traceLogging("Activate WakeLock [%s] indefinitely", this);
 
                 m_PlatformPowerManager.activateWakeLock(this, System.currentTimeMillis(),
                         PlatformPowerManager.INDEFINITE);
@@ -263,13 +283,13 @@ public class WakeLockImpl implements WakeLock
         {
             if (m_PlatformPowerManager == null)
             {
-                m_Logging.debug("PlatformPowerManager not available to schedule future WakeLock [%s]", this);
+                traceLogging("PlatformPowerManager not available to schedule future WakeLock [%s]", this);
             }
             else
             {
                 final long wakeTimeMs = wakeTime.getTime();
 
-                m_Logging.debug("Schedule WakeLock [%s] at %d ms", this, wakeTimeMs);
+                traceLogging("Schedule WakeLock [%s] at %d ms", this, wakeTimeMs);
 
                 // Use a minimum duration of 1 milliseconds and let PlatformPowerManager adjust to its
                 // configured minimum
@@ -285,11 +305,11 @@ public class WakeLockImpl implements WakeLock
         {
             if (m_PlatformPowerManager == null)
             {
-                m_Logging.debug("PlatformPowerManager not available to cancel WakeLock [%s]", this);
+                traceLogging("PlatformPowerManager not available to cancel WakeLock [%s]", this);
             }
             else
             {
-                m_Logging.debug("Cancel WakeLock [%s]", this);
+                traceLogging("Cancel WakeLock [%s]", this);
 
                 m_PlatformPowerManager.cancelWakeLock(this);
             }
@@ -310,5 +330,26 @@ public class WakeLockImpl implements WakeLock
     private String getWakeLockName()
     {
         return (m_SourceObject == null) ? m_Context.getName() : m_SourceObject.getName();
+    }
+
+    /**
+     * Log a wake lock debug trace message through the log service, if trace logging is enabled via the
+     * {@value #WAKELOCK_TRACE_PROPERTY} framework property.
+     * 
+     * @param format
+     *      Format string, see {@link java.util.Formatter}.  The format string should be a constant and not a 
+     *      concatenation.  If the log service is not available, the format string will not be evaluated, limiting
+     *      processing.
+     * @param args
+     *      Argument list that will be inserted into the format string
+     * 
+     * @see String#format(String, Object...)
+     */
+    private void traceLogging(final String format, final Object... args)
+    {
+        if (m_EnableTrace)
+        {
+            m_Logging.debug(format, args);
+        }
     }
 }

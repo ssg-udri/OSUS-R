@@ -97,6 +97,7 @@
             <arg value="-Xfluent-api"/>
             <arg value="-Xvalue-constructor"/>
             <arg value="-Xcommons-lang"/>
+            <arg value="-Xannotate"/>
         </xjc>
     </target>
 

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import mil.dod.th.ose.remote.api.RemoteSettings;
 import mil.dod.th.ose.remote.api.RemoteSettings.EncryptionMode;
 
 import org.junit.Before;
@@ -31,7 +32,6 @@ import org.osgi.framework.BundleContext;
  * and can be modified and retrieved as expected.
  * 
  * @author cashioka
- *
  */
 public class TestRemoteSettingsImpl
 {
@@ -91,11 +91,13 @@ public class TestRemoteSettingsImpl
     public void testActivateWithPreviousProp()
     {
         m_Props = new HashMap<String, Object>();
-        m_Props.put("encryptionMode", EncryptionMode.AES_ECDH_ECDSA);
+        m_Props.put(RemoteSettings.KEY_ENCRYPTION_MODE, EncryptionMode.AES_ECDH_ECDSA);
+        m_Props.put(RemoteSettings.KEY_PREVENT_SLEEP_MODE, true);
         m_SUT.activate(m_Context, m_Props);
         
         //verify
         assertThat(m_SUT.getEncryptionMode(), is(EncryptionMode.AES_ECDH_ECDSA));
+        assertThat(m_SUT.isPreventSleepModeEnabled(), is(true));
     }
     
     /**
@@ -106,6 +108,16 @@ public class TestRemoteSettingsImpl
     {
         //default is false
         assertThat(m_SUT.isLogRemoteMessagesEnabled(), is(false));
+    }
+    
+    /**
+     * Test retrieval of the default prevent sleep mode value
+     */
+    @Test
+    public void testIsPreventSleepModeEnabledDefault()
+    {
+        //default is false
+        assertThat(m_SUT.isPreventSleepModeEnabled(), is(false));
     }
     
     /**

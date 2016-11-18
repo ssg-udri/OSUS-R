@@ -18,6 +18,7 @@ Bundle-Vendor: UDRI
 Export-Package: \
     !example.ccomms.duplicates, \
     example.ccomms.*
+Conditional-Package: mil.dod.th.ose.shared.pm
 Include-Resource: \
     capabilities-xml=capabilities-xml/exception, \
     capabilities-xml=capabilities-xml/main, \

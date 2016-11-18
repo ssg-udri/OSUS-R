@@ -17,7 +17,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetDirectoryService.ScanResults;
@@ -25,6 +27,8 @@ import mil.dod.th.core.asset.AssetException;
 import mil.dod.th.core.asset.AssetScanner;
 import mil.dod.th.core.factory.ProductType;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 
 import org.osgi.service.log.LogService;
 
@@ -49,7 +53,44 @@ public class ExampleAssetScanner implements AssetScanner
      * Reference to the logging service.
      */
     private LoggingService m_Logging;
+    
+    private PowerManager m_PowerManager;
+    
+    private WakeLock m_WakeLock;
 
+    @Reference(optional = true, dynamic = true)
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        m_PowerManager = powerManager;
+    }
+    
+    public void unsetPowerManager(final PowerManager powerManager)
+    {
+        if (m_PowerManager != null && m_PowerManager.equals(powerManager))
+        {
+            m_PowerManager = null;
+        }
+    }
+    
+    @Activate
+    public void activate()
+    {
+        if (m_PowerManager != null && m_WakeLock == null)
+        {
+            m_WakeLock = m_PowerManager.createWakeLock(this.getClass(), this.getClass().getSimpleName() + "WakeLock");
+        }
+    }
+    
+    @Deactivate
+    public void deactivate()
+    {
+        if (powerManagementExists())
+        {
+            m_WakeLock.delete();
+            m_WakeLock = null;
+        }
+    }
+    
     /**
      * Binds the logging service to this component.
      * 
@@ -65,6 +106,10 @@ public class ExampleAssetScanner implements AssetScanner
     @Override
     public void scanForNewAssets(final ScanResults results, final Set<Asset> existing) throws AssetException
     {
+        if  (powerManagementExists())
+        {
+            m_WakeLock.activate();
+        }
         
         Set<Asset> filtered = new HashSet<>();
         //Ignore assets whose name contain a certain String
@@ -86,5 +131,15 @@ public class ExampleAssetScanner implements AssetScanner
         {
             m_Logging.log(LogService.LOG_INFO, "Nothing new found");
         }
+        
+        if (powerManagementExists())
+        {
+            m_WakeLock.cancel();
+        }
+    }
+    
+    private boolean powerManagementExists()
+    {
+        return m_PowerManager != null && m_WakeLock != null;       
     }
 }

@@ -28,6 +28,7 @@ import mil.dod.th.core.ccomm.physical.PhysicalLinkProxy;
 import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.factory.FactoryObjectProxy;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.core.factory.api.AbstractFactoryObject;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
 import mil.dod.th.ose.core.factory.api.FactoryRegistry;
@@ -58,9 +59,22 @@ public class PhysicalLinkImpl extends AbstractFactoryObject implements PhysicalL
      * Physical link proxy.
      */
     private PhysicalLinkProxy m_PhysProxy;
-    
+
+    /**
+     * Reference to the logging service.
+     */
     private LoggingService m_Log;
-    
+
+    /**
+     * Reference to internal power management for factory objects.
+     */
+    private PowerManagerInternal m_PowInternal;
+
+    /**
+     * Wake lock used for link layer operations.
+     */
+    private WakeLock m_WakeLock;
+
     @Reference
     public void setLoggingService(final LoggingService loggingService)
     {
@@ -76,18 +90,38 @@ public class PhysicalLinkImpl extends AbstractFactoryObject implements PhysicalL
     {
         super.initialize(registry, proxy, factory, configAdmin, eventAdmin, powInternal, uuid, name, pid, baseType);
         m_PhysProxy = (PhysicalLinkProxy)proxy;
+        m_PowInternal = powInternal;
+        m_WakeLock = powInternal.createWakeLock(m_PhysProxy.getClass(), this, "corePhyLink");
     }
     
     @Override
     public void open() throws PhysicalLinkException
     {
-        m_PhysProxy.open();
+        try
+        {
+            m_WakeLock.activate();
+
+            m_PhysProxy.open();
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
 
     @Override
     public void close() throws PhysicalLinkException
     {
-        m_PhysProxy.close();
+        try
+        {
+            m_WakeLock.activate();
+
+            m_PhysProxy.close();
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
 
     @Override
@@ -196,7 +230,9 @@ public class PhysicalLinkImpl extends AbstractFactoryObject implements PhysicalL
         {
             throw new IllegalStateException(String.format("Physical Link [%s] is open, cannot delete.", getName()));
         }
-        
+
+        m_PowInternal.deleteWakeLock(m_WakeLock);
+
         super.delete();
     }
 }

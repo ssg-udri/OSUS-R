@@ -27,6 +27,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -44,6 +45,7 @@ import mil.dod.th.core.ccomm.physical.PhysicalLinkProxy;
 import mil.dod.th.core.ccomm.physical.capability.PhysicalLinkCapabilities;
 import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.factory.FactoryObjectProxy;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.core.ConfigurationAdminMocker;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
 import mil.dod.th.ose.core.factory.api.FactoryObjectInternal;
@@ -77,6 +79,7 @@ public class TestPhysicalLinkImpl
     private String m_BaseType = "baseType";
     private PhysicalLinkCapabilities m_Caps;
     private PowerManagerInternal m_PowManInternal;
+    private WakeLock m_WakeLock;
     private Configuration m_Configuration;
     
     @Before
@@ -92,10 +95,14 @@ public class TestPhysicalLinkImpl
         m_EventAdmin = mock(EventAdmin.class);
         m_Caps = mock(PhysicalLinkCapabilities.class);
         m_PowManInternal = mock(PowerManagerInternal.class);
+        m_WakeLock = mock(WakeLock.class);
 
         when(m_PhysicalLinkFactoryInternal.getCapabilities()).thenReturn(m_Caps);
         doReturn(PhysicalLink.class.getName()).when(m_PhysicalLinkFactoryInternal).getProductType();
-        
+        when(m_PowManInternal.createWakeLock(m_PhysLinkProxy.getClass(), m_SUT, "coreFactoryObject")).thenReturn(
+                m_WakeLock);
+        when(m_PowManInternal.createWakeLock(m_PhysLinkProxy.getClass(), m_SUT, "corePhyLink")).thenReturn(m_WakeLock);
+
         m_Configuration = mock(Configuration.class);
 
         //add a random number to the PID so that the order of tests does not depend on if the configuration has already
@@ -190,7 +197,9 @@ public class TestPhysicalLinkImpl
         //act
         m_SUT.open();
         
+        verify(m_WakeLock).activate();
         verify(m_PhysLinkProxy).open();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -202,7 +211,9 @@ public class TestPhysicalLinkImpl
         //act
         m_SUT.close();
         
+        verify(m_WakeLock).activate();
         verify(m_PhysLinkProxy).close();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -357,6 +368,7 @@ public class TestPhysicalLinkImpl
     {
         m_SUT.delete();
         verify(m_FactReg).delete(m_SUT);
+        verify(m_PowManInternal, times(2)).deleteWakeLock(m_WakeLock);
     }
     
     /**
@@ -377,6 +389,7 @@ public class TestPhysicalLinkImpl
             
         }
         verify(m_FactReg, never()).delete(Mockito.any(FactoryObjectInternal.class));
+        verify(m_WakeLock, never()).delete();
     }
     
     /**
@@ -397,5 +410,6 @@ public class TestPhysicalLinkImpl
             
         }
         verify(m_FactReg, never()).delete(Mockito.any(FactoryObjectInternal.class));
+        verify(m_WakeLock, never()).delete();
     }
 }

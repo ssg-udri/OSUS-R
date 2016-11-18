@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.UUID;
 
 import junit.framework.TestCase;
+
+import mil.dod.th.core.observation.types.AlgorithmStatus;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
 import mil.dod.th.core.persistence.PersistenceFailedException;
@@ -119,7 +121,9 @@ public class TestJaxbConverter extends TestCase
         ambientStatus.add(new AmbientStatus(
                 new AmbientType(AmbientTypeEnum.OCCLUSION, "occlusion"), 
                     new OperatingStatus(SummaryStatusEnum.BAD, "occlusions are bad")));
-        
+
+        List<AlgorithmStatus> algorithmStatus = null;
+
         Status status = new Status(new OperatingStatus(SummaryStatusEnum.GOOD, "stuff too"),
                 componentStatuses,
                 ambientStatus,
@@ -133,6 +137,7 @@ public class TestJaxbConverter extends TestCase
                 analogAnalogVoltage,
                 analogDigitalVoltage,
                 analogMagVoltage,
+                algorithmStatus,
                 assetOnTime,
                 nextStatusDurationMs);
 
@@ -145,7 +150,7 @@ public class TestJaxbConverter extends TestCase
         Version version = new Version(1,2);
         int systemId = 0123;
         return new Observation(version, null, null, null, null, null, null, null, status, null, null, null, null, null,
-                null, null, null, null, null, null, uuid, null, createdTimestamp, null, assetName, assetType, sensorId, 
-                systemInTestMode, systemId).withAssetUuid(UUID.randomUUID());
+                null, null, null, null, null, null, null, uuid, null, createdTimestamp, null, assetName, assetType,
+                sensorId, systemInTestMode, systemId).withAssetUuid(UUID.randomUUID());
     }
 }

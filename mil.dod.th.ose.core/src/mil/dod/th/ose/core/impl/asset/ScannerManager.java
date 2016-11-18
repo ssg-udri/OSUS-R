@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 
 import com.google.common.collect.BiMap;
@@ -32,6 +34,8 @@ import mil.dod.th.core.asset.AssetScanner;
 import mil.dod.th.core.factory.FactoryDescriptor;
 import mil.dod.th.core.factory.ProductType;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
@@ -66,6 +70,16 @@ public class ScannerManager
     final private BiMap<String, AssetScanner> m_AssetScanners;
 
     /**
+     * Reference to the PowerManager service.
+     */
+    private PowerManager m_PowerManager;
+
+    /**
+     * Wake lock used to keep system awake during asset scanning.
+     */
+    private WakeLock m_WakeLock;
+
+    /**
      * Constructor for the {@link ScannerManager} component.
      */
     public ScannerManager()
@@ -95,6 +109,18 @@ public class ScannerManager
     public void setLoggingService(final LoggingService logging)
     {
         m_Logging = logging;
+    }
+
+    /**
+     * Binds the power manager service.
+     * 
+     * @param powerManager
+     *      Power manager object
+     */
+    @Reference
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        m_PowerManager = powerManager;
     }
 
     /**
@@ -135,6 +161,24 @@ public class ScannerManager
     }
 
     /**
+     * The service component activation method.
+     */
+    @Activate
+    public void activate()
+    {
+        m_WakeLock = m_PowerManager.createWakeLock(getClass(), "coreAssetScanner");
+    }
+
+    /**
+     * Deactivate the service.
+     */
+    @Deactivate
+    public void deactivate()
+    {
+        m_WakeLock.delete();
+    }
+
+    /**
      * Start a scan of all assets that have a registered {@link AssetScanner}. New assets are created using the
      * {@link AssetDirectoryService} reference.
      * 
@@ -143,6 +187,8 @@ public class ScannerManager
      */
     public void scanForAllAssets(final AssetDirectoryService assetDirService)
     {
+        m_WakeLock.activate();
+
         final Runnable runnable = new ScannerManagerThread(new HashSet<>(m_AssetScanners.values()),
                 assetDirService, new ScanListenerBridge(assetDirService));
         final Thread thread = new Thread(runnable);
@@ -169,6 +215,8 @@ public class ScannerManager
         }
         else
         {
+            m_WakeLock.activate();
+
             final Set<AssetScanner> scannerList = new HashSet<>();
             scannerList.add(assetScanner);
 
@@ -270,6 +318,8 @@ public class ScannerManager
         public void allScannersCompleted()
         {
             postEvent(AssetDirectoryService.TOPIC_SCANNING_FOR_ASSETS_COMPLETE, null);
+
+            m_WakeLock.cancel();
         }
     } 
 }

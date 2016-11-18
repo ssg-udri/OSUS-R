@@ -19,7 +19,9 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 
+import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 import mil.dod.th.core.factory.FactoryObject;
 import mil.dod.th.core.pm.PlatformPowerManager;
@@ -40,9 +42,15 @@ import org.osgi.service.cm.ConfigurationAdmin;
  */
 @Component(provide = PowerManagerCommands.class, properties = {"osgi.command.scope=thpower", 
         "osgi.command.function=enable|disable|getWakeLocks|getWakeLock"
-        + "|getWakeLockContexts|getWakeLocksByContext|info|createWakeLock" })
+        + "|getWakeLockContexts|getWakeLocksByContext|info|createWakeLock"
+        + "|startwl|stopwl" })
 public class PowerManagerCommands
 {
+
+    
+    /** ID used when creating the shell wake lock. **/
+    static final private String SHELL_LOCK_ID = "shellWakeLock";
+    
     /**
      * Reference to power manager service.
      */
@@ -57,6 +65,11 @@ public class PowerManagerCommands
      * Reference to the configuration admin service.
      */
     private ConfigurationAdmin m_ConfigAdmin;
+    
+    /**
+     * String name used when creating a WakeLock for the shell.
+     */
+    private WakeLock m_ShellLock;
     
     /**
      * Sets the power manager service.
@@ -91,6 +104,24 @@ public class PowerManagerCommands
     public void setConfigurationAdmin(final ConfigurationAdmin configAdmin)
     {
         m_ConfigAdmin = configAdmin;
+    }
+    
+    /**
+     * Activate the component, creates shell wake lock.
+     */
+    @Activate
+    public void activate()
+    {
+        m_ShellLock = m_PowerManager.createWakeLock(this.getClass(), SHELL_LOCK_ID);
+    }
+    
+    /**
+     * Deactivates the component, deletes the shell wake lock.
+     */
+    @Deactivate
+    public void deactivate()
+    {
+        m_ShellLock.delete();
     }
     
     /**
@@ -406,4 +437,23 @@ public class PowerManagerCommands
         final WakeLock lock = m_PowerManager.createWakeLock(this.getClass(), lockId);
         return lock;
     }
+    
+    /**
+     * Method to activate a WakeLock on the shell.
+     */
+    @Descriptor("Activates the wake lock so the shell doesn't sleep.")
+    public void startwl()
+    {
+        m_ShellLock.activate();
+    }
+    
+    /**
+     * Method to deactivate a WakeLock on the shell.
+     */
+    @Descriptor("Cancels the wake lock so the shell is able to sleep.")
+    public void stopwl()
+    {
+        m_ShellLock.cancel();
+    }
 }
+

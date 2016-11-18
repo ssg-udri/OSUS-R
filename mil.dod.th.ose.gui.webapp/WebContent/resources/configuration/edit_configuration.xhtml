@@ -45,10 +45,12 @@
               </p:scrollPanel>
             </p:outputPanel>
             <div style="width:100%; margin-top:1em; text-align:center">
-              <p:commandButton id="saveConfig" value="Save" action="#{factoryObjConfigModifierView.updateAllPropertiesAsync()}" 
+                <p:commandButton id="saveConfig" value="Save"
+                    rendered="#{factoryObjConfigModifierView.getSelectedFactoryModel() != comms.physical.toString()}"
+                    action="#{factoryObjConfigModifierView.updateAllPropertiesAsync()}"
                     oncomplete="if (!args.validationFailed) #{cc.attrs.execSave}">
-              </p:commandButton>
-              <p:commandButton id="cancelConfig" immediate="true" value="Cancel" onclick="#{cc.attrs.execCancel}">
+                </p:commandButton>
+                <p:commandButton id="cancelConfig" immediate="true" value="Cancel" onclick="#{cc.attrs.execCancel}">
                 <p:resetInput target="configPanel" />
               </p:commandButton>
             </div>

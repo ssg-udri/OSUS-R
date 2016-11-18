@@ -236,7 +236,7 @@
                                                     </table>
                                                     </p:outputPanel>
                                                 </p:tab>                                                
-                                                <p:tab title="Select Transport Type (optional)" rendered="#{!newStackModel.forceAdd}" id="transTab">
+                                                <p:tab title="Select Transport Type (optional)" id="transTab" rendered="#{!newStackModel.forceAdd}">
                                                     <p:outputPanel id="transPanel" autoUpdate="true">
                                                         <p:dataTable styleClass="tablesNoBorderOnCells"
                                                             id="transportData" rowKey="#{transport}" var="transport"

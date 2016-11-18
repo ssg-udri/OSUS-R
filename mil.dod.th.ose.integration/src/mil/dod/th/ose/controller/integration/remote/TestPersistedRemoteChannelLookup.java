@@ -43,7 +43,7 @@ public class TestPersistedRemoteChannelLookup
         
         Map<Integer, Set<RemoteChannel>> channels = remoteChannelLookup.getAllChannels();
         
-        assertThat(channels.size(), is(5));
+        assertThat(channels.size(), is(6));
         
         // check each channel by adding the entries in a set of strings "systemId:transport:localAddress:remoteAddress"
         Set<String> channelStrings = new HashSet<String>();

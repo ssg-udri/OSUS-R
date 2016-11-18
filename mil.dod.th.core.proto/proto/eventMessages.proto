@@ -89,7 +89,6 @@ message EventRegistrationRequestData
     // Expiration of event registration in hours. Max value and default is 3 weeks (504 hours).
     required int32 expirationTimeHours = 3;
 
-    // TODO: TH-1239 Field currently ignored until TH-1239 is implemented.
     // This boolean value indicates whether the event that is being registered for can be queued.
     // If false, when the system tries to send an event to a listener who is not currently available, the message will
     // be dropped. If true, the event will be queued for later sending to the listener.

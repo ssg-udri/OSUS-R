@@ -44,8 +44,8 @@ function handleMessage(message)
      }
      else if(topic == window.thTopic.assetRemoved)
      {
-         rcUpdateAssetsList();
          rcUpdateAssetsSideList();
+         rcUpdateAssetsList();
          rcUpdateAssetCommandControl();
          rcUpdateObservations();
      }

@@ -53,6 +53,9 @@ public class SelectedAssetImpl implements SelectedAsset
     @ManagedProperty(value = "#{assetMgr}")
     private AssetMgrImpl assetMgr; //NOCHECKSTYLE - Name must match pattern / Breaks ManagedProperty
     
+    @ManagedProperty(value = "#{assetDisplay}")
+    private AssetDisplayHelper assetDisplay; //NOCHECKSTYLE - Name must match pattern / Breaks ManagedProperty
+    
     /**
      * Reference to the faces context utility.
      */
@@ -73,6 +76,16 @@ public class SelectedAssetImpl implements SelectedAsset
     public void setAssetMgr(final AssetMgrImpl assetManager)
     {
         assetMgr = assetManager;
+    }
+    
+    /**
+     * Set the asset display helper service to use.
+     * @param assetDisp
+     *      the asset display service
+     */
+    public void setAssetDisplay(final AssetDisplayHelper assetDisp)
+    {
+        assetDisplay = assetDisp;
     }
     
     /**
@@ -167,6 +180,8 @@ public class SelectedAssetImpl implements SelectedAsset
         //Set selected asset to null. This avoids a request with the wrong asset being sent if for some reason the
         //correct selected asset cannot be set.
         setSelectedAssetForDialog(null);
+        
+        assetDisplay.setSelectedFactoryObject(null);
     }
     
     @Override

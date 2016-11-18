@@ -16,6 +16,7 @@ Bundle-Name: All Example Assets
 Bundle-Description: Contains all example assets
 Bundle-Vendor: UDRI
 Private-Package: example.asset.*
+Conditional-Package: mil.dod.th.ose.shared.pm
 Include-Resource: \
     capabilities-xml=capabilities-xml/exception, \
     capabilities-xml=capabilities-xml/gui, \

@@ -37,4 +37,20 @@
     <createPolicy>IfMissing</createPolicy>
   </factoryObjects>
 
+  <!-- This configuration can be used to prevent the system from entering the power management sleep mode when a remote socket
+       channel is active or connected. This applies to both incoming and outgoing socket channels. -->
+  <!-- 
+  <osgiConfigs>
+    <pid>mil.dod.th.ose.remote.api.RemoteSettings</pid>
+    <properties key="preventSleepMode" value="true"/>
+  </osgiConfigs>
+  -->
+
+  <!-- This configuration automatically suppresses Configuration Admin debug logging that can get intertwined with OSUS-R
+       shell command output. -->
+  <osgiConfigs>
+    <factoryPid>mil.dod.th.ose.logging.LogFilterImpl</factoryPid>
+    <properties key="severity" value="Warning"/>
+    <properties key="bundleSymbolicFilter" value="org.apache.felix.configadmin"/>
+  </osgiConfigs>
 </p:Configurations>

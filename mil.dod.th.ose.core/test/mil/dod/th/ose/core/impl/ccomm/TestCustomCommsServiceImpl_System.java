@@ -96,6 +96,7 @@ public class TestCustomCommsServiceImpl_System extends CustomCommsServiceImpl_Te
         verify(m_PhysicalLinkComp).dispose();
         verify(m_LinkLayerComp).dispose();
         verify(m_TransportLayerComp).dispose();
+        verify(m_WakeLock).delete();
     }
     
     /**

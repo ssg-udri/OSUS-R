@@ -44,6 +44,7 @@ import mil.dod.th.core.commands.CommandExecutionException;
 import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.spatial.AzimuthDegrees;
 import mil.dod.th.core.types.spatial.ElevationDegrees;
 import mil.dod.th.core.types.spatial.OrientationOffset;
@@ -61,11 +62,15 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
     @Mock private AssetContext m_Context;
     @Mock private Map<String, Object> m_Props;
     @Mock private UrlUtils m_UrlUtil;
+    @Mock private WakeLock m_WakeLock;
     
     @Before
     public void setup() throws FactoryException
     {
         MockitoAnnotations.initMocks(this);
+        when(m_Context.createPowerManagerWakeLock(IpCameraAsset.class.getSimpleName() 
+                + "WakeLock")).thenReturn(m_WakeLock);
+        
         m_SUT = new IpCameraAsset();
         m_Props = new HashMap<String, Object>();
         m_Props.put(IpCameraAssetAttributes.IP, "192.168.1.55"); //NOPMD Hard Coded IP address, testing
@@ -108,6 +113,9 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
         when(m_UrlUtil.getConnection(any(URL.class))).thenReturn(urlCon);
         when(m_UrlUtil.getInputStream(any(URLConnection.class))).thenReturn(input);
         m_SUT.updated(props);
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     //Catches the IO exception when the Update method creates a URLconnection to the URL.
@@ -119,6 +127,9 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
         props.put(IpCameraAssetAttributes.IP, "https://192.186.1.55/-wvhttp-01-/");
         when(m_UrlUtil.getConnection(any(URL.class))).thenThrow(new IOException());
         m_SUT.updated(props);
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     //Catches the IO exception when the Update method creates an Input Stream to the URL.
@@ -132,6 +143,9 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
         when(m_UrlUtil.getConnection(any(URL.class))).thenReturn(urlCon);
         when(m_UrlUtil.getInputStream(any(URLConnection.class))).thenThrow(new IOException());
         m_SUT.updated(props);
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -145,6 +159,9 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
         Status status =  m_SUT.onPerformBit();
         assertThat(status.getSummaryStatus().getSummary(), equalTo(SummaryStatusEnum.GOOD));
         assertThat(status.getSummaryStatus().getDescription(), equalTo("BIT Passed"));
+    
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     //Catches the IO exception when BIT tries to create a URL connection
@@ -221,6 +238,9 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
         final byte[] finalImg = new byte[]{1, 42, 7, 56, 20};
         assertThat(infoUrl.toString(), equalTo("http://192.168.1.55/-wvhttp-01-/image.cgi"));
         assertThat(obvervation.getDigitalMedia().getValue(), equalTo(finalImg));
+    
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     //Catches IO exception when Capture data tries to make a connection to the URL
@@ -273,6 +293,9 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
         URL tiltUrl = urlCaptor.getValue();
         assertThat(tiltUrl.toString(), equalTo("http://192.168.1.55/-wvhttp-01-/control?tilt=1700"));
         assertThat(tiltResponse, instanceOf(SetPanTiltResponse.class));
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }  
     
     @Test
@@ -295,6 +318,9 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
         URL panURL = urlCaptor.getValue();
         assertThat(panURL.toString(), equalTo("http://192.168.1.55/-wvhttp-01-/control?pan=660"));
         assertThat(panResponse, instanceOf(SetPanTiltResponse.class));
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     //Catches IO exception when handleSetPan method tries to create connection to the URL
@@ -355,6 +381,9 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
         URL zoomUrl = urlCaptor.getValue();
         assertThat(zoomUrl.toString(), equalTo("http://192.168.1.55/-wvhttp-01-/control?zoom=2900"));
         assertThat(zoomResponse, instanceOf(SetCameraSettingsResponse.class));
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test(expected = CommandExecutionException.class)
@@ -446,6 +475,9 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
         assertThat(infoUrl.toString(), equalTo("http://192.168.1.55/-wvhttp-01-/info.cgi"));
         assertThat(getPanTiltResponse.getPanTilt().getAzimuth().getValue(), equalTo((double)1));
         assertThat(getPanTiltResponse.getPanTilt().getElevation().getValue(), equalTo((double)1));
+    
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     //Catches the IO exception in the handleGetTilt when trying to create a URL connection
@@ -456,7 +488,7 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
         GetPanTiltCommand fakeGetPanTilt = new GetPanTiltCommand();
         when(m_Context.getActiveStatus()).thenReturn(AssetActiveStatus.ACTIVATED);
         when(m_UrlUtil.getConnection(any(URL.class))).thenThrow(new IOException()).thenThrow(new IOException());
-        m_SUT.onExecuteCommand(fakeGetPanTilt);  
+        m_SUT.onExecuteCommand(fakeGetPanTilt); 
     }
     
     //Catches the IO exception in the handleGetTilt when trying to create an Input Stream
@@ -470,7 +502,7 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
         when(m_UrlUtil.getConnection(any(URL.class))).thenReturn(urlCon).thenReturn(urlCon);
         when(m_UrlUtil.getInputStream(any(URLConnection.class)))
             .thenThrow(new IOException()).thenThrow(new IOException());
-        m_SUT.onExecuteCommand(fakeGetPanTilt);  
+        m_SUT.onExecuteCommand(fakeGetPanTilt);
     }
     
     //Catches the IO exception in the handleGetPan when trying to create an URL connection
@@ -611,6 +643,9 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
         assertThat(getCameraSettingsResponse, instanceOf(GetCameraSettingsResponse.class));
         assertThat(infoUrl.toString(), equalTo("http://192.168.1.55/-wvhttp-01-/info.cgi"));
         assertThat(getCameraSettingsResponse.getZoom(), equalTo((float)0.9));
+    
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     //Catches the IO exception when getCameraSettings tries to create a URL connection to the URL
@@ -635,5 +670,13 @@ public class TestIpCameraAsset //NOCHECKSTYLE, Data Abstraction Coupling, Large 
         when(m_UrlUtil.getConnection(any(URL.class))).thenReturn(urlCon);
         when(m_UrlUtil.getInputStream(any(URLConnection.class))).thenThrow(new IOException());
         m_SUT.onExecuteCommand(fakeGetCameraSettings);  
+    }
+    
+    @Test
+    public void testTearDown()
+    {
+        m_SUT.tearDown();
+        
+        verify(m_WakeLock).delete();
     }
 }

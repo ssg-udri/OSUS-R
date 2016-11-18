@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.metatype.Configurable;
 
 import com.github.sarxos.webcam.Webcam;
@@ -46,6 +47,7 @@ import mil.dod.th.core.observation.types.ImageMetadata;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
 import mil.dod.th.core.persistence.PersistenceFailedException;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.DigitalMedia;
 import mil.dod.th.core.types.SensingModality;
 import mil.dod.th.core.types.SensingModalityEnum;
@@ -56,13 +58,15 @@ import mil.dod.th.core.types.image.ImageCaptureReasonEnum;
 import mil.dod.th.core.types.image.PixelResolution;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
 import mil.dod.th.core.validator.ValidationFailedException;
+import mil.dod.th.ose.shared.pm.CountingWakeLock;
+import mil.dod.th.ose.shared.pm.CountingWakeLock.CountingWakeLockHandle;
 
 import org.osgi.service.log.LogService;
 
 /**
  * An asset plug-in to capture images from a UVC webcam.
  */
-@Component(factory = Asset.FACTORY) // NOCHECKSTYLE: Large number of dependecies required
+@Component(factory = Asset.FACTORY) // NOCHECKSTYLE: Large number of dependencies required
 public class UVCWebcamAsset implements AssetProxy 
 {
     private AssetContext m_Context;
@@ -71,10 +75,16 @@ public class UVCWebcamAsset implements AssetProxy
     private Dimension m_Resolution;
     private SensingModality m_Modality;
 
+    /**
+     * Reference to the counting {@link WakeLock} used by this asset.
+     */
+    private CountingWakeLock m_CountingLock = new CountingWakeLock();
+
     @Override
     public void initialize(final AssetContext context, final Map<String, Object> props) throws FactoryException
     {
         m_Context = context;
+        m_CountingLock.setWakeLock(m_Context.createPowerManagerWakeLock(getClass().getSimpleName() + "WakeLock"));
         
         final UVCWebcamAssetAttributes attr = Configurable.createConfigurable(UVCWebcamAssetAttributes.class, props);
         m_Resolution = attr.resolution().getSize();
@@ -108,6 +118,15 @@ public class UVCWebcamAsset implements AssetProxy
         m_Context.setStatus(SummaryStatusEnum.OFF, "Initialized");
     }
     
+    /**
+     * OSGi deactivate method used to delete any wake locks used by the asset.
+     */
+    @Deactivate
+    public void tearDown()
+    {
+        m_CountingLock.deleteWakeLock();
+    }
+    
     @Override
     public void updated(final Map<String, Object> props)
     {
@@ -117,88 +136,62 @@ public class UVCWebcamAsset implements AssetProxy
     @Override
     public void onActivate() throws AssetException
     {
-        try
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            m_Webcam.open();
-            m_Context.setStatus(SummaryStatusEnum.GOOD, "Activated");
+            try
+            {
+                m_Webcam.open();
+                m_Context.setStatus(SummaryStatusEnum.GOOD, "Activated");
+            }
+            catch (final WebcamException e)
+            {
+                final String log_message = "Failed to activate";
+                Logging.log(LogService.LOG_ERROR, e.toString());
+                Logging.log(LogService.LOG_ERROR, log_message);
+                m_Context.setStatus(SummaryStatusEnum.BAD, log_message);
+                throw new AssetException(log_message);
+            }
         }
-        catch (final WebcamException e)
-        {
-            final String log_message = "Failed to activate";
-            Logging.log(LogService.LOG_ERROR, e.toString());
-            Logging.log(LogService.LOG_ERROR, log_message);
-            m_Context.setStatus(SummaryStatusEnum.BAD, log_message);
-            throw new AssetException(log_message);
-        }
-        
     }
     
     @Override
     public void onDeactivate() throws AssetException
     {
-        try
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            m_Webcam.close();
-            m_Context.setStatus(SummaryStatusEnum.OFF, "Deactivated");
-        } 
-        catch (final WebcamException e)
-        {
-            final String log_message = "Failed to deactivate";
-            Logging.log(LogService.LOG_ERROR, e.toString());
-            Logging.log(LogService.LOG_ERROR, log_message);
-            m_Context.setStatus(SummaryStatusEnum.BAD, log_message);
-            throw new AssetException(log_message);
+            try
+            {
+                m_Webcam.close();
+                m_Context.setStatus(SummaryStatusEnum.OFF, "Deactivated");
+            } 
+            catch (final WebcamException e)
+            {
+                final String log_message = "Failed to deactivate";
+                Logging.log(LogService.LOG_ERROR, e.toString());
+                Logging.log(LogService.LOG_ERROR, log_message);
+                m_Context.setStatus(SummaryStatusEnum.BAD, log_message);
+                throw new AssetException(log_message);
+            }
         }
-        
     }
     
     @Override
     public Observation onCaptureData() throws AssetException
     {
-        final DigitalMedia media = captureImage();
-        
-        final String captureReasonDescription = "OnCaptureData command was recieved, manually or from a mission.";
-        final ImageMetadata meta = createMetadata(captureReasonDescription);
-        
-        final Observation obs = new Observation()
-            .withDigitalMedia(media)
-            .withImageMetadata(meta)
-            .withModalities(m_Modality);
-        
-        return obs;
-    }
-    
-    /**
-     * Method that captures an image to send back as an observation with DigitalMedia and ImageMetadata.
-     * 
-     * @return 
-     *      the observation with image
-     * @throws AssetException when capturing the image fails
-     */
-    public Observation onCaptureImageCommand() throws AssetException
-    {
-        final DigitalMedia media = captureImage();
-        
-        final String captureReasonDescription = "Manual capture image command was recieved.";
-        final ImageMetadata meta = createMetadata(captureReasonDescription);
-        
-        final Observation obs = new Observation()
-            .withDigitalMedia(media)
-            .withImageMetadata(meta)
-            .withModalities(m_Modality);
-        
-        try 
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            m_Context.persistObservation(obs);
-        } 
-        catch (final PersistenceFailedException | ValidationFailedException e) 
-        {
-            Logging.log(LogService.LOG_ERROR, e.toString());
-            Logging.log(LogService.LOG_ERROR, m_PersistanceFailure);
-            throw new CommandExecutionException("Failed to persist observation");
+            final DigitalMedia media = captureImage();
+            
+            final String captureReasonDescription = "OnCaptureData command was recieved, manually or from a mission.";
+            final ImageMetadata meta = createMetadata(captureReasonDescription);
+            
+            final Observation obs = new Observation()
+                .withDigitalMedia(media)
+                .withImageMetadata(meta)
+                .withModalities(m_Modality);
+            
+            return obs;
         }
-        
-        return obs;
     }
     
     @Override
@@ -210,24 +203,26 @@ public class UVCWebcamAsset implements AssetProxy
     @Override
     public Response onExecuteCommand(final Command command) throws CommandExecutionException
     {
-        if (command instanceof CaptureImageCommand && m_Context.getActiveStatus().equals(AssetActiveStatus.ACTIVATED))
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            try 
+            if (command instanceof CaptureImageCommand 
+                    && m_Context.getActiveStatus().equals(AssetActiveStatus.ACTIVATED))
             {
-                onCaptureImageCommand();
-                return new CaptureImageResponse();
-            } 
-            catch (final AssetException e) 
-            {
-                final String log_message = "Failed to execute Capture Image Command";
-                Logging.log(LogService.LOG_ERROR, e.toString());
-                Logging.log(LogService.LOG_ERROR, log_message);
-                m_Context.setStatus(SummaryStatusEnum.BAD, log_message);
+                try 
+                {
+                    onCaptureImageCommand();
+                    return new CaptureImageResponse();
+                } 
+                catch (final AssetException e) 
+                {
+                    final String log_message = "Failed to execute Capture Image Command";
+                    Logging.log(LogService.LOG_ERROR, e.toString());
+                    Logging.log(LogService.LOG_ERROR, log_message);
+                    m_Context.setStatus(SummaryStatusEnum.BAD, log_message);
+                }
             }
-            
+            throw new CommandExecutionException("Failed to execute command.");
         }
-        
-        throw new CommandExecutionException("Failed to execute command.");
     }
     
     @Override
@@ -242,7 +237,7 @@ public class UVCWebcamAsset implements AssetProxy
      * @param captureReasonDescription A string describing the capture reason
      * @return The ImageMetadata
      */
-    public ImageMetadata createMetadata(final String captureReasonDescription)
+    private ImageMetadata createMetadata(final String captureReasonDescription)
     {
         final double widthDbl = m_Webcam.getViewSize().getWidth();
         final double heightDbl = m_Webcam.getViewSize().getHeight();
@@ -275,7 +270,7 @@ public class UVCWebcamAsset implements AssetProxy
      * @return The DigitalMedia with the captured image 
      * @throws AssetException when it failes to write the buffered image to the byte stream
      */
-    public DigitalMedia captureImage() throws AssetException
+    private DigitalMedia captureImage() throws AssetException
     {
         final BufferedImage bufferedImage = m_Webcam.getImage();
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -296,6 +291,39 @@ public class UVCWebcamAsset implements AssetProxy
         
         final DigitalMedia media = new DigitalMedia(bytes, "image/png");
         return media;
+    }
+    
+    /**
+     * Method that captures an image to send back as an observation with DigitalMedia and ImageMetadata.
+     * 
+     * @return 
+     *      the observation with image
+     * @throws AssetException when capturing the image fails
+     */
+    private Observation onCaptureImageCommand() throws AssetException
+    {
+        final DigitalMedia media = captureImage();
+        
+        final String captureReasonDescription = "Manual capture image command was received.";
+        final ImageMetadata meta = createMetadata(captureReasonDescription);
+        
+        final Observation obs = new Observation()
+            .withDigitalMedia(media)
+            .withImageMetadata(meta)
+            .withModalities(m_Modality);
+        
+        try 
+        {
+            m_Context.persistObservation(obs);
+        } 
+        catch (final PersistenceFailedException | ValidationFailedException e) 
+        {
+            Logging.log(LogService.LOG_ERROR, e.toString());
+            Logging.log(LogService.LOG_ERROR, m_PersistanceFailure);
+            throw new CommandExecutionException("Failed to persist observation");
+        }
+        
+        return obs;
     }
 }
     

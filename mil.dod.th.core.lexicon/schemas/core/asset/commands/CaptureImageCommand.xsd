@@ -72,6 +72,8 @@
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
+            <!-- TODO TH-4058: look at adding a configurable image resolution, don't make resolution selection stick 
+            (possibly add flag to make it stick). -->
         </xs:complexContent>
     </xs:complexType>
 

@@ -93,6 +93,20 @@
                        data="#{cc.attrs.guiObservation.observation.imageMetadata}"
                        mimeType="#{cc.attrs.guiObservation.observation.digitalMedia.encoding}"/>
                </p:outputPanel>
+               
+               <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.isSetChannelMetadata()}">
+                   <p:separator />
+                   <observation:individual_observation_display
+                       textHeading="Channel"
+                       obsType="CHANNEL_METADATA"
+                       data="#{cc.attrs.guiObservation.observation.channelMetadata}"
+                       mimeType="#{cc.attrs.guiObservation.observation.digitalMedia.encoding}"/>
+                   <p:separator />
+                   <observation:individual_observation_display
+                       textHeading="Data"
+                       obsType="DIGITAL_MEDIA"
+                       data="#{cc.attrs.guiObservation.observation.digitalMedia}"/>
+               </p:outputPanel>
 
                <p:outputPanel style="width:100%;" rendered="#{cc.attrs.guiObservation.observation.isSetWaterQuality()}">
                    <p:separator />

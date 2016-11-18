@@ -43,6 +43,8 @@ import mil.dod.th.core.ccomm.transport.TransportLayerAttributes;
 import mil.dod.th.core.ccomm.transport.TransportLayerFactory;
 import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.ccomm.PhysicalLinkTypeEnum;
 import mil.dod.th.ose.core.factory.api.DirectoryService;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
@@ -122,6 +124,11 @@ public class CustomCommsServiceImpl extends DirectoryService implements CustomCo
      */
     private FactoryServiceProxy<TransportLayerInternal> m_TransportLayerServiceProxy;
     
+    /**
+     * Wake lock used for custom comms service operations.
+     */
+    private WakeLock m_WakeLock;
+
     @Override
     @Reference
     public void setLoggingService(final LoggingService logging)
@@ -136,6 +143,13 @@ public class CustomCommsServiceImpl extends DirectoryService implements CustomCo
         super.setEventAdmin(eventAdmin);
     }
     
+    @Override
+    @Reference
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        super.setPowerManager(powerManager);
+    }
+
     /**
      * Bind the physical link factory service proxy.
      * @param factoryServiceProxy
@@ -206,6 +220,8 @@ public class CustomCommsServiceImpl extends DirectoryService implements CustomCo
         
         m_TransLayerFactContext = m_TransportContextComponent.newInstance(null);
         m_TransLayerFactContext.initialize(context, m_TransportLayerServiceProxy, this);
+
+        m_WakeLock = m_PowerManager.createWakeLock(getClass(), "coreCustomCommsService");
     }
 
     /**
@@ -218,6 +234,7 @@ public class CustomCommsServiceImpl extends DirectoryService implements CustomCo
         m_PhysicalLinkContextComponent.tryDispose();
         m_LinkLayerContextComponent.tryDispose();
         m_TransportContextComponent.tryDispose();
+        m_WakeLock.delete();
     }
     
     @Override
@@ -277,12 +294,18 @@ public class CustomCommsServiceImpl extends DirectoryService implements CustomCo
         {
             try
             {
+                m_WakeLock.activate();
+
                 // Create the configuration
                 return m_LinkLayerFactContext.getRegistry().createNewObject(factory, name, properties);
             }
             catch (final Exception ex)
             {
                 throw new CCommException("Error creating new Link Layer.", ex, FormatProblem.OTHER);
+            }
+            finally
+            {
+                m_WakeLock.cancel();
             }
         }
     }
@@ -338,12 +361,18 @@ public class CustomCommsServiceImpl extends DirectoryService implements CustomCo
         {
             try
             {
+                m_WakeLock.activate();
+
                 // Create the configuration
                 tLayer = m_TransLayerFactContext.getRegistry().createNewObject(factory, name, properties);
             }
             catch (final Exception ex)
             {
                 throw new CCommException("Error creating new Transport Layer.", ex, FormatProblem.OTHER);
+            }
+            finally
+            {
+                m_WakeLock.cancel();
             }
         }
 
@@ -558,12 +587,18 @@ public class CustomCommsServiceImpl extends DirectoryService implements CustomCo
         {
             try
             {
+                m_WakeLock.activate();
+
                 // Create the configuration
                 pLink = m_PhysLinkFactContext.getRegistry().createNewObject(factory, name, props);
             }
             catch (final Exception ex)
             {
                 throw new CCommException("Error creating new Physical Link.", ex, FormatProblem.OTHER);
+            }
+            finally
+            {
+                m_WakeLock.cancel();
             }
         }
         return pLink;

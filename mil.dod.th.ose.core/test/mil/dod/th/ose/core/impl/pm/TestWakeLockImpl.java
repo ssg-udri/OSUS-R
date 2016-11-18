@@ -32,6 +32,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.osgi.framework.BundleContext;
 
 public class TestWakeLockImpl
 {
@@ -40,24 +41,27 @@ public class TestWakeLockImpl
     private WakeLockImpl m_SUT;
     private PlatformPowerManager m_PPM;
     private PowerManagerInternal m_PowerInternal;
+    private BundleContext m_Context;
+    private LoggingService m_Logging;
 
     @Before
     public void setUp() throws Exception
     {
         m_PowerInternal = mock(PowerManagerInternal.class);
+        m_Context = mock(BundleContext.class);
         
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(WakeLockImpl.COMPONENT_PROP_ID, TEST_ID);
         props.put(WakeLockImpl.COMPONENT_PROP_CONTEXT, TestContext.class);
         props.put(WakeLockImpl.COMPONENT_PROP_POWER_MGR, m_PowerInternal);
 
-        LoggingService logging = mock(LoggingService.class);
+        m_Logging = mock(LoggingService.class);
 
         m_PPM = mock(PlatformPowerManager.class);
         m_SUT = new WakeLockImpl();
-        m_SUT.setLoggingService(logging);
+        m_SUT.setLoggingService(m_Logging);
         m_SUT.setPlatformPowerManager(m_PPM);
-        m_SUT.activateInstance(props);       
+        m_SUT.activateInstance(m_Context, props);       
     }
 
     @After
@@ -273,6 +277,26 @@ public class TestWakeLockImpl
     {
         m_SUT.delete();
         verify(m_PowerInternal).deleteWakeLock(m_SUT);
+    }
+
+    /**
+     * Verify that wake lock log tracing can be enabled.
+     */
+    @Test
+    public void testLogTracing()
+    {
+        m_SUT.activate();
+        verify(m_Logging, never()).debug(anyString(), anyVararg());
+
+        when(m_Context.getProperty(WakeLockImpl.WAKELOCK_TRACE_PROPERTY)).thenReturn("true");
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put(WakeLockImpl.COMPONENT_PROP_ID, TEST_ID);
+        props.put(WakeLockImpl.COMPONENT_PROP_CONTEXT, TestContext.class);
+        props.put(WakeLockImpl.COMPONENT_PROP_POWER_MGR, m_PowerInternal);
+        m_SUT.activateInstance(m_Context, props);
+
+        m_SUT.activate();
+        verify(m_Logging).debug(anyString(), anyVararg());
     }
 
     /**

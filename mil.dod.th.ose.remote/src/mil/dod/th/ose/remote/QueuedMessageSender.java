@@ -78,6 +78,11 @@ public class QueuedMessageSender
      * Thread continuously attempts to send messages as new ones are queued.
      */
     private Thread m_Thread;
+    
+   /**
+    * Queued message that is trying to be sent.
+    */
+    private TerraHarvestMessage m_QueueMessage;
 
     /**
      * Binds the logging service for logging messages.
@@ -147,7 +152,15 @@ public class QueuedMessageSender
      */
     public int getQueuedMessageCount()
     {
-        return m_SendMessageQueue.size();
+        if (m_QueueMessage == null)
+        {
+            return m_SendMessageQueue.size();
+        }
+        else
+        {
+            //Account for the message that is trying to be sent
+            return m_SendMessageQueue.size() + 1;
+        }
     }
 
     /**
@@ -156,7 +169,8 @@ public class QueuedMessageSender
      */
     public void clearQueue()
     {
-        m_SendMessageQueue.clear();            
+        m_SendMessageQueue.clear();
+        m_QueueMessage = null; //NOPMD: null assignment, makes getQueuedMessages return correct number.
     }
     
     /**
@@ -170,15 +184,14 @@ public class QueuedMessageSender
         @Override
         public void run()
         {
-            TerraHarvestMessage message = null;
             while (m_EnableRunning)
             {
-                if (message == null)
+                if (m_QueueMessage == null)
                 {
                     // no message to send yet, wait for one
                     try
                     {
-                        message = m_SendMessageQueue.takeFirst();
+                        m_QueueMessage = m_SendMessageQueue.takeFirst();
                     }
                     catch (final InterruptedException e)
                     {
@@ -191,10 +204,10 @@ public class QueuedMessageSender
                 else
                 {
                     // message send, try to do it
-                    if (m_Channel.trySendMessage(message))
+                    if (m_Channel.trySendMessage(m_QueueMessage))
                     {
                         // message sent, no longer needed
-                        message = null; //NOPMD: null assignment, used to keep track of state
+                        m_QueueMessage = null; //NOPMD: null assignment, used to keep track of state
                     }
                     else
                     {

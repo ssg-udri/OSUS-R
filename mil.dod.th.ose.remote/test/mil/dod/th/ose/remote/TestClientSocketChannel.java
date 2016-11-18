@@ -21,11 +21,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.remote.ChannelStatus;
 import mil.dod.th.core.remote.proto.BaseMessages.BaseNamespace;
 import mil.dod.th.core.remote.proto.RemoteBase.Namespace;
@@ -56,6 +59,8 @@ public class TestClientSocketChannel
     private QueuedMessageSender m_MessageSender;
     private ComponentFactory m_SenderFactory;
     private RemoteSettings m_RemoteSettings;
+    private PowerManager m_PowerManager;
+    private WakeLock m_WakeLock;
     private Socket m_Socket;
     
     @SuppressWarnings("unchecked")
@@ -65,7 +70,13 @@ public class TestClientSocketChannel
         m_SUT = new ClientSocketChannel();
         m_Logging = LoggingServiceMocker.createMock();
         m_SUT.setLoggingService(m_Logging);
-        
+
+        // mock out power manager
+        m_PowerManager = mock(PowerManager.class);
+        m_WakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), "remoteSocket:test:10")).thenReturn(m_WakeLock);
+        m_SUT.setPowerManager(m_PowerManager);
+
         // mock out remote settings
         m_RemoteSettings = mock(RemoteSettings.class);
         m_SUT.setRemoteSettings(m_RemoteSettings);
@@ -75,6 +86,9 @@ public class TestClientSocketChannel
         ClientSocketFactory clientSocketFactory = mock(ClientSocketFactory.class);
         m_SUT.setClientSocketFactory(clientSocketFactory);
         m_Socket = mock(Socket.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn("test:10");
+        when(m_Socket.getRemoteSocketAddress()).thenReturn(socketAddress);
         when(clientSocketFactory.createClientSocket("test", 10)).thenReturn(m_Socket);
         
         // mock out listener factory
@@ -122,14 +136,19 @@ public class TestClientSocketChannel
                 return null;
             }
         }).when(socketMessageListener).run();
-        
+
+        when(m_RemoteSettings.isPreventSleepModeEnabled()).thenReturn(false);
+
         // activate the component
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
         m_SUT.activate(props);
-        
-        //all new channels start out as unknown
+
+        // verify wake lock is activated
+        verify(m_WakeLock, never()).activate();
+
+        // all new channels start out as unknown
         assertThat(m_SUT.getStatus(), is(ChannelStatus.Unknown));
         
         // verify message listener is created and given the socket and channel instance
@@ -150,7 +169,40 @@ public class TestClientSocketChannel
         // didn't timeout waiting on the run method to exit
         verify(socketMessageListener).run();
     }
-    
+
+    /**
+     * Verify that the wake lock is activated when enabled by the remote settings.
+     */
+    @Test
+    public void testActivateWakeLock() throws IOException
+    {
+        // mock the message listener
+        SocketMessageListener socketMessageListener = mock(SocketMessageListener.class);
+        when(m_ListenerInstance.getInstance()).thenReturn(socketMessageListener);
+        doAnswer(new Answer<Object>()
+        {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                return null;
+            }
+        }).when(socketMessageListener).run();
+
+        when(m_RemoteSettings.isPreventSleepModeEnabled()).thenReturn(true);
+
+        // activate the component
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
+        props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        m_SUT.activate(props);
+
+        // verify wake lock is activated
+        verify(m_WakeLock).activate();
+
+        // all new channels start out as unknown
+        assertThat(m_SUT.getStatus(), is(ChannelStatus.Unknown));
+    }
+
     /**
      * Verify socket and output stream is closed on deactivation.
      * 
@@ -174,6 +226,7 @@ public class TestClientSocketChannel
         verify(m_Socket).close();
         verify(m_ListenerInstance).dispose();
         verify(m_SenderInstance).dispose();
+        verify(m_WakeLock).delete();
         
         // this time have both methods throw exception, should still complete deactivation and each one called
         doThrow(new IOException()).when(m_Socket).close();

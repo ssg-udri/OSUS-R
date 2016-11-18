@@ -59,6 +59,17 @@
       </xs:restriction>
     </xs:simpleContent>
   </xs:complexType>
+  <xs:complexType name="DegreesPerSecond">
+    <xs:annotation>
+      <xs:documentation>
+          Angular velocity in degrees per second.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:restriction base="shared:Measurement">
+      </xs:restriction>
+    </xs:simpleContent>
+  </xs:complexType>
   <xs:complexType name="ElevationDegrees">
     <xs:annotation>
       <xs:documentation>
@@ -195,6 +206,19 @@
     </xs:sequence>
   </xs:complexType>
   
+  <xs:complexType name="OrientationRate">
+    <xs:annotation>
+      <xs:documentation>
+        Defines the rate of change of the direction component of a vector within a three dimensional geographic context.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="azimuth" type="DegreesPerSecond" minOccurs="0" maxOccurs="1" />
+      <xs:element name="elevation" type="DegreesPerSecond" minOccurs="0" maxOccurs="1" />
+      <xs:element name="bank" type="DegreesPerSecond" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="Coordinates">
     <xs:annotation>
       <xs:documentation>

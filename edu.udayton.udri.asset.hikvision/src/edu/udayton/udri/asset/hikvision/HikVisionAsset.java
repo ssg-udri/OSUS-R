@@ -30,8 +30,10 @@ import java.util.Map;
 import java.util.Set;
 
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetContext;
 import mil.dod.th.core.asset.AssetException;
@@ -53,6 +55,7 @@ import mil.dod.th.core.log.Logging;
 import mil.dod.th.core.observation.types.ImageMetadata;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.DigitalMedia;
 import mil.dod.th.core.types.SensingModality;
 import mil.dod.th.core.types.SensingModalityEnum;
@@ -68,6 +71,9 @@ import mil.dod.th.core.types.spatial.OrientationOffset;
 import mil.dod.th.core.types.status.OperatingStatus;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
 import mil.dod.th.core.validator.ValidationFailedException;
+import mil.dod.th.ose.shared.pm.CountingWakeLock;
+import mil.dod.th.ose.shared.pm.CountingWakeLock.CountingWakeLockHandle;
+
 import org.osgi.service.log.LogService;
 
 /**
@@ -107,6 +113,11 @@ public class HikVisionAsset implements AssetProxy
     private String m_UserName;
     private String m_Password;
 
+    /**
+     * Reference to the counting {@link WakeLock} used by this asset.
+     */
+    private CountingWakeLock m_CountingLock = new CountingWakeLock();
+
     @Reference
     public void setUrlUtil(final UrlUtil urlUtil)
     {
@@ -123,13 +134,23 @@ public class HikVisionAsset implements AssetProxy
     public void initialize(final AssetContext context, final Map<String, Object> props) throws FactoryException
     {
         m_Context = context;
-        final HikVisionAssetAttributes config = Configurable.createConfigurable(HikVisionAssetAttributes.class, props);
+        m_CountingLock.setWakeLock(m_Context.createPowerManagerWakeLock(getClass().getSimpleName() + "WakeLock"));
 
         // Properties that have been defined in HikVisionAssetAttributes will be accessible through the `config` object
+        final HikVisionAssetAttributes config = Configurable.createConfigurable(HikVisionAssetAttributes.class, props);
         m_UserName = config.userName();
         m_Password = config.password();
         m_IpAddress = config.ip();        
         authenticate(m_UserName, m_Password);
+    }
+    
+    /**
+     * OSGi deactivate method used to delete any wake locks used by the asset.
+     */
+    @Deactivate
+    public void tearDown()
+    {
+        m_CountingLock.deleteWakeLock();
     }
 
     @Override
@@ -179,216 +200,225 @@ public class HikVisionAsset implements AssetProxy
     @Override
     public Observation onCaptureData()
     {
-        Logging.log(LogService.LOG_DEBUG, "Hikvision IP camera asset data captured");
-        
-        byte[] imageData = null;
-        try
-        { 
-            imageData = writeImage();
-        }
-        catch (final AssetException ex)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            Logging.log(LogService.LOG_ERROR, ex.getMessage());
+            Logging.log(LogService.LOG_DEBUG, "Hikvision IP camera asset data captured");
+            
+            byte[] imageData = null;
+            try
+            { 
+                imageData = writeImage();
+            }
+            catch (final AssetException ex)
+            {
+                Logging.log(LogService.LOG_ERROR, ex.getMessage());
+            }
+            final ImageMetadata imageMeta = new ImageMetadata();
+            imageMeta.setColor(true);
+            imageMeta.setImager(new Camera(0, "Example Camera", CameraTypeEnum.VISIBLE));
+            imageMeta.setPictureType(PictureTypeEnum.FULL_FIELD_OF_VIEW);
+            final int pixWidth = 752;
+            final int pixHeight = 480;
+            imageMeta.setResolution(new PixelResolution(pixWidth, pixHeight));
+            imageMeta.setImageCaptureReason(
+                    new ImageCaptureReason(ImageCaptureReasonEnum.MANUAL, "Manual order to capture image."));   
+    
+            final DigitalMedia digitalMedia = new DigitalMedia(imageData, "image/jpg");
+    
+            final Observation obs = new Observation().withDigitalMedia(digitalMedia).withImageMetadata(
+                    imageMeta).withModalities(new SensingModality().withValue(SensingModalityEnum.IMAGER));
+            return obs;
         }
-        final ImageMetadata imageMeta = new ImageMetadata();
-        imageMeta.setColor(true);
-        imageMeta.setImager(new Camera(0, "Example Camera", CameraTypeEnum.VISIBLE));
-        imageMeta.setPictureType(PictureTypeEnum.FULL_FIELD_OF_VIEW);
-        final int pixWidth = 752;
-        final int pixHeight = 480;
-        imageMeta.setResolution(new PixelResolution(pixWidth, pixHeight));
-        imageMeta.setImageCaptureReason(
-                new ImageCaptureReason(ImageCaptureReasonEnum.MANUAL, "Manual order to capture image."));   
-
-        final DigitalMedia digitalMedia = new DigitalMedia(imageData, "image/jpg");
-
-        final Observation obs = new Observation().withDigitalMedia(digitalMedia).withImageMetadata(
-                imageMeta).withModalities(new SensingModality().withValue(SensingModalityEnum.IMAGER));
-        return obs;
     }
 
     @Override
     public Status onPerformBit()
     {
-        Logging.log(LogService.LOG_DEBUG, "Performing BIT test");
-        final Status status = new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, BIT_FAIL));
-        URL url = null;
-        try
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            url = new URL(String.format(URL_IMAGE_CAPTURE, m_IpAddress));
-        }
-        catch (final MalformedURLException ex) 
-        {
-            Logging.log(LogService.LOG_ERROR, ex.getMessage());
-            return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, BIT_FAIL));
-        }    
-        HttpURLConnection urlConnection = null;
-        try
-        {
-            urlConnection = m_UrlUtil.getConnection(url);
-        }
-        catch (final IOException ex)
-        {  
-            Logging.log(LogService.LOG_ERROR, ex.getMessage());
-            return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, BIT_FAIL));           
-        }
-        try 
-        {
-            urlConnection.setRequestMethod(GET);        
-            urlConnection.setDoOutput(true);  
-        }
-        catch (final ProtocolException ex)
-        {
-            Logging.log(LogService.LOG_ERROR, ex.getMessage());
-            return new Status().withSummaryStatus(new OperatingStatus(
-                    SummaryStatusEnum.BAD, BIT_FAIL));                       
-        } 
-        final BufferedReader inStream;
-        try
-        {
-            inStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), UTF));
-        }
-        catch (final IOException ex) 
-        {        
-            Logging.log(LogService.LOG_ERROR, ex.getMessage());
-            return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, BIT_FAIL));
-        } 
-        String line = null;   
-        try
-        {
-            line = inStream.readLine(); 
-            inStream.close();
-        }
-        catch (final IOException ex)
-        {
-            Logging.log(LogService.LOG_ERROR, ex.getMessage());
-            return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, BIT_FAIL));
-        }
-        if (line != null)
-        {
-            return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.GOOD, "BIT Passed"));           
-        }
-        else
-        {
-            return status; 
+            Logging.log(LogService.LOG_DEBUG, "Performing BIT test");
+            final Status status = new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, BIT_FAIL));
+            URL url = null;
+            try
+            {
+                url = new URL(String.format(URL_IMAGE_CAPTURE, m_IpAddress));
+            }
+            catch (final MalformedURLException ex) 
+            {
+                Logging.log(LogService.LOG_ERROR, ex.getMessage());
+                return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, BIT_FAIL));
+            }    
+            HttpURLConnection urlConnection = null;
+            try
+            {
+                urlConnection = m_UrlUtil.getConnection(url);
+            }
+            catch (final IOException ex)
+            {  
+                Logging.log(LogService.LOG_ERROR, ex.getMessage());
+                return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, BIT_FAIL));           
+            }
+            try 
+            {
+                urlConnection.setRequestMethod(GET);        
+                urlConnection.setDoOutput(true);  
+            }
+            catch (final ProtocolException ex)
+            {
+                Logging.log(LogService.LOG_ERROR, ex.getMessage());
+                return new Status().withSummaryStatus(new OperatingStatus(
+                        SummaryStatusEnum.BAD, BIT_FAIL));                       
+            } 
+            final BufferedReader inStream;
+            try
+            {
+                inStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), UTF));
+            }
+            catch (final IOException ex) 
+            {        
+                Logging.log(LogService.LOG_ERROR, ex.getMessage());
+                return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, BIT_FAIL));
+            } 
+            String line = null;   
+            try
+            {
+                line = inStream.readLine(); 
+                inStream.close();
+            }
+            catch (final IOException ex)
+            {
+                Logging.log(LogService.LOG_ERROR, ex.getMessage());
+                return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, BIT_FAIL));
+            }
+            if (line != null)
+            {
+                return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.GOOD, "BIT Passed"));  
+            }
+            else
+            {
+                return status; 
+            }
         }
     }
  
     @Override
     public Response onExecuteCommand(final Command command) throws CommandExecutionException, InterruptedException
     {
-        Logging.log(LogService.LOG_DEBUG, "The command is : " + command);
-        if (command instanceof SetPanTiltCommand)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            int elevation = 0;
-            int azimuth = 0;
-            final SetPanTiltCommand setPanTilt = (SetPanTiltCommand)command;
-
-            try
+            Logging.log(LogService.LOG_DEBUG, "The command is : " + command);
+            if (command instanceof SetPanTiltCommand)
             {
-                final HttpURLConnection urlConnection = getAbsoluteConnection();
-                
-                if (m_CommandProcessor.isAzimuthSet(setPanTilt))
+                int elevation = 0;
+                int azimuth = 0;
+                final SetPanTiltCommand setPanTilt = (SetPanTiltCommand)command;
+    
+                try
                 {
-                    azimuth = m_CommandProcessor.getAzimuth(setPanTilt);
+                    final HttpURLConnection urlConnection = getAbsoluteConnection();
+                    
+                    if (m_CommandProcessor.isAzimuthSet(setPanTilt))
+                    {
+                        azimuth = m_CommandProcessor.getAzimuth(setPanTilt);
+                    }
+                    else
+                    {
+                        azimuth = getCurrentAzimuthConvertion();                         
+                    }                
+                    if (m_CommandProcessor.isElevationSet(setPanTilt))
+                    {
+                        elevation = m_CommandProcessor.getElevation(setPanTilt); 
+                    } 
+                    else
+                    {
+                        elevation = getCurrentElevation();
+                    }            
+           
+                    final DataOutputStream outputStream = new DataOutputStream(urlConnection.getOutputStream());
+    
+                    // sends the new values to the asset
+                    outputStream.writeBytes(String.format(DATA, elevation, azimuth, getCurrentZoom()));
+                    outputStream.close();
+    
+                    // the connection code given back from the asset
+                    Logging.log(LogService.LOG_DEBUG, CODE_RESPONSE + urlConnection.getResponseCode());
                 }
-                else
+                catch (final IOException ex)
                 {
-                    azimuth = getCurrentAzimuthConvertion();                         
-                }                
-                if (m_CommandProcessor.isElevationSet(setPanTilt))
-                {
-                    elevation = m_CommandProcessor.getElevation(setPanTilt); 
-                } 
-                else
-                {
-                    elevation = getCurrentElevation();
-                }            
-       
-                final DataOutputStream outputStream = new DataOutputStream(urlConnection.getOutputStream());
-
-                // sends the new values to the asset
-                outputStream.writeBytes(String.format(DATA, elevation, azimuth, getCurrentZoom()));
-                outputStream.close();
-
-                // the connection code given back from the asset
-                Logging.log(LogService.LOG_DEBUG, CODE_RESPONSE + urlConnection.getResponseCode());
+                    Logging.log(LogService.LOG_ERROR, ex.getMessage());
+                }
+                return new SetPanTiltResponse();
             }
-            catch (final IOException ex)
+            if (command instanceof SetCameraSettingsCommand)
             {
-                Logging.log(LogService.LOG_ERROR, ex.getMessage());
-            }
-            return new SetPanTiltResponse();
-        }
-        if (command instanceof SetCameraSettingsCommand)
-        {
-            final SetCameraSettingsCommand setCameraSettings = (SetCameraSettingsCommand)command;
-            final int zoom;
-
-            try
-            {
-                final HttpURLConnection urlConnection = getAbsoluteConnection();
-            
-                zoom = m_CommandProcessor.getZoom(setCameraSettings);           
-
-                Logging.log(LogService.LOG_DEBUG, String.format(DATA, 
-                        getCurrentElevation(), getCurrentAzimuth(), zoom));
-
-                final DataOutputStream outputStream = new DataOutputStream(urlConnection.getOutputStream());
-
-                outputStream.writeBytes(String.format(DATA, getCurrentElevation(
-                            ), getCurrentAzimuthConvertion(), zoom));
+                final SetCameraSettingsCommand setCameraSettings = (SetCameraSettingsCommand)command;
+                final int zoom;
+    
+                try
+                {
+                    final HttpURLConnection urlConnection = getAbsoluteConnection();
                 
-                outputStream.close();
-
-                // the connection code given back from the asset
-                Logging.log(LogService.LOG_DEBUG, CODE_RESPONSE + urlConnection.getResponseCode());
+                    zoom = m_CommandProcessor.getZoom(setCameraSettings);           
+    
+                    Logging.log(LogService.LOG_DEBUG, String.format(DATA, 
+                            getCurrentElevation(), getCurrentAzimuth(), zoom));
+    
+                    final DataOutputStream outputStream = new DataOutputStream(urlConnection.getOutputStream());
+    
+                    outputStream.writeBytes(String.format(DATA, getCurrentElevation(
+                                ), getCurrentAzimuthConvertion(), zoom));
+                    
+                    outputStream.close();
+    
+                    // the connection code given back from the asset
+                    Logging.log(LogService.LOG_DEBUG, CODE_RESPONSE + urlConnection.getResponseCode());
+                }
+                catch (final IOException ex)
+                {
+                    Logging.log(LogService.LOG_ERROR, ex.getMessage());
+                } 
+                return new SetCameraSettingsResponse();
+            }        
+            if (command instanceof GetPanTiltCommand)
+            {
+                final GetPanTiltResponse getPanTilt = new GetPanTiltResponse();
+    
+                try
+                {
+                    Logging.log(LogService.LOG_DEBUG, String.format(ELEVATION_AND_AZIMUTH,
+                            getCurrentElevation(), getCurrentAzimuth()));
+    
+                    final OrientationOffset orientationOffset = setCurrentAzimuthAndElevation();
+    
+                    getPanTilt.setPanTilt(orientationOffset);
+     
+                    return getPanTilt;
+                } 
+                catch (final IOException ex)
+                {
+                    Logging.log(LogService.LOG_ERROR, ex.getMessage());
+                }
+            }        
+            if (command instanceof GetCameraSettingsCommand)
+            {
+                final GetCameraSettingsResponse getCameraSettings = new GetCameraSettingsResponse();
+                final int zoom = 0;
+                try
+                {
+                    getCameraSettings.setZoom((float)getCurrentZoom() / CONVERSION_FROM_CAMERA_TO_GUI_ZOOM);
+                }
+                catch (final IOException ex) 
+                {
+                    Logging.log(LogService.LOG_ERROR, ex.getMessage());
+                } 
+                Logging.log(LogService.LOG_DEBUG, " zoom as a float " 
+                    + (float)zoom / CONVERSION_FROM_CAMERA_TO_GUI_ZOOM);
+                return getCameraSettings;
             }
-            catch (final IOException ex)
+            else
             {
-                Logging.log(LogService.LOG_ERROR, ex.getMessage());
-            } 
-            return new SetCameraSettingsResponse();
-        }        
-        if (command instanceof GetPanTiltCommand)
-        {
-            final GetPanTiltResponse getPanTilt = new GetPanTiltResponse();
-
-            try
-            {
-                Logging.log(LogService.LOG_DEBUG, String.format(ELEVATION_AND_AZIMUTH,
-                        getCurrentElevation(), getCurrentAzimuth()));
-
-                final OrientationOffset orientationOffset = setCurrentAzimuthAndElevation();
-
-                getPanTilt.setPanTilt(orientationOffset);
- 
-                return getPanTilt;
-            } 
-            catch (final IOException ex)
-            {
-                Logging.log(LogService.LOG_ERROR, ex.getMessage());
+                throw new CommandExecutionException("Could not execute specified command.");
             }
-        }        
-        if (command instanceof GetCameraSettingsCommand)
-        {
-            final GetCameraSettingsResponse getCameraSettings = new GetCameraSettingsResponse();
-            final int zoom = 0;
-            try
-            {
-                getCameraSettings.setZoom((float)getCurrentZoom() / CONVERSION_FROM_CAMERA_TO_GUI_ZOOM);
-            }
-            catch (final IOException ex) 
-            {
-                Logging.log(LogService.LOG_ERROR, ex.getMessage());
-            } 
-            Logging.log(LogService.LOG_DEBUG, " zoom as a float " 
-                + (float)zoom / CONVERSION_FROM_CAMERA_TO_GUI_ZOOM);
-            return getCameraSettings;
-        }
-        else
-        {
-            throw new CommandExecutionException("Could not execute specified command.");
         }
     }
 

@@ -18,8 +18,9 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Map;
 
-import aQute.bnd.annotation.component.Reference;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.remote.ChannelStatus;
 import mil.dod.th.core.remote.SocketChannel;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage;
@@ -79,10 +80,20 @@ abstract class AbstractSocketChannel extends AbstractRemoteChannel implements So
     private long m_BytesReceived;
 
     /**
-     * Service contains current settins from config admin.
+     * Service contains current settings from config admin.
      */
     private RemoteSettings m_RemoteSettings;
-    
+
+    /**
+     * Service used for power management.
+     */
+    private PowerManager m_PowerManager;
+
+    /**
+     * Wake lock used to keep the system awake while the socket channel is active.
+     */
+    private WakeLock m_WakeLock;
+
     /**
      * Default constructor.
      */
@@ -108,7 +119,6 @@ abstract class AbstractSocketChannel extends AbstractRemoteChannel implements So
      * @param logging
      *            Logging service object
      */
-    @Reference
     public void setLoggingService(final LoggingService logging)
     {
         m_Logging = logging;
@@ -126,6 +136,17 @@ abstract class AbstractSocketChannel extends AbstractRemoteChannel implements So
     }
     
     /**
+     * Binds the power manager service.
+     * 
+     * @param powerManager
+     *            Power manager service object
+     */
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        m_PowerManager = powerManager;
+    }
+
+    /**
      * Activate the component by getting a reference to the connected socket.
      *
      * @param socket
@@ -136,9 +157,17 @@ abstract class AbstractSocketChannel extends AbstractRemoteChannel implements So
     public void subActivate(final Socket socket, final Map<String, Object> matchProps)
     {
         m_Socket = socket;
-        
+
+        m_WakeLock = m_PowerManager.createWakeLock(getClass(),
+                String.format("remoteSocket:%s", m_Socket.getRemoteSocketAddress()));
+
+        if (m_RemoteSettings.isPreventSleepModeEnabled())
+        {
+            m_WakeLock.activate();
+        }
+
         m_Logging.info("Activated remote channel for socket (%s)", m_Socket.getRemoteSocketAddress());
-        
+
         initMessageSender(matchProps);
 
         //assign initial channel status
@@ -181,6 +210,7 @@ abstract class AbstractSocketChannel extends AbstractRemoteChannel implements So
         {
             m_Logging.warning("Failed to close socket output stream (%s)", m_Socket.getRemoteSocketAddress());
         }
+
         try
         {
             m_Socket.close();
@@ -189,6 +219,10 @@ abstract class AbstractSocketChannel extends AbstractRemoteChannel implements So
         {
             m_Logging.debug("Unable to close socket (%s), already closed? %b", m_Socket.getRemoteSocketAddress(), 
                     m_Socket.isClosed());
+        }
+        finally
+        {
+            m_WakeLock.delete();
         }
     }
     

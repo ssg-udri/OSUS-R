@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -916,6 +917,69 @@ public class TestLogWriter
         //verify that the log entry was successful, this proves that even if the config admin is unavailable and there
         //are no properties known to the framework that the log service will still function.
         assertThat(m_LogFile.length(), greaterThan(prelength));
+    }
+    
+    /**
+     * Test that the oldest log file is deleted when the maximum number of log files allowed is exceeded. Also verify 
+     * that non-log files are not deleted.
+     */
+    @Test
+    public void testLogMaxFiles() throws Exception
+    {
+        BundleContext context = mock(BundleContext.class);
+        Map<String, Object> props = new HashMap<String, Object>(getComponentProperties());
+        props.put("logMaxFileCount", 2);
+        when(context.getProperty(LogWriter.LOG_DIR_PROPERTY)).thenReturn("TempLogDir");
+        
+        File notALog = new File(m_LogFileDir, "notALog.txt");
+        File log1 = new File(m_LogFileDir, "those_1.log");
+        File log2 = new File(m_LogFileDir, "those_2.log");
+        
+        try 
+        {
+            notALog.createNewFile();
+            log1.createNewFile();
+            log2.createNewFile();
+            
+            m_SUT.activate(context, props);
+            
+            File[] allFiles = m_LogFileDir.listFiles();
+            Arrays.sort(allFiles);
+            assertThat(allFiles.length, is(4));
+            m_LogFile = allFiles[3];
+            
+
+            assertThat(notALog.exists(), is(true));
+            assertThat(log1.exists(), is(true));
+            assertThat(log2.exists(), is(true));
+            
+            // mock a log entry
+            while (m_LogFile.length() < (1 * 1024 * 1024L))
+            {
+                LogEntry logEntry = mock(LogEntry.class);
+                when(logEntry.getBundle()).thenReturn(m_Bundle);
+                when(logEntry.getLevel()).thenReturn(LogService.LOG_DEBUG);
+                when(logEntry.getTime()).thenReturn(1L);
+                when(logEntry.getMessage()).thenReturn("More bytes!");
+                m_SUT.logged(logEntry);
+            }
+            
+            assertThat(notALog.exists(), is(true));
+            assertThat(log1.exists(), is(false));
+            assertThat(log2.exists(), is(false));
+        } 
+        finally
+        {
+            notALog.delete();
+            log1.delete();
+            log2.delete();
+            
+            assertThat(notALog.exists(), is(false));
+            assertThat(log1.exists(), is(false));
+            assertThat(log2.exists(), is(false));
+        }
+        
+        m_SUT.deactivate();
     }
 
     /*

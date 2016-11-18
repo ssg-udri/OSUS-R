@@ -45,7 +45,6 @@ import mil.dod.th.core.asset.commands.GetCameraSettingsCommand;
 import mil.dod.th.core.asset.commands.GetCameraSettingsResponse;
 import mil.dod.th.core.asset.commands.GetPanTiltCommand;
 import mil.dod.th.core.asset.commands.GetPanTiltResponse;
-import mil.dod.th.core.asset.commands.Response;
 import mil.dod.th.core.asset.commands.SetCameraSettingsCommand;
 import mil.dod.th.core.asset.commands.SetCameraSettingsResponse;
 import mil.dod.th.core.asset.commands.SetPanTiltCommand;
@@ -54,6 +53,7 @@ import mil.dod.th.core.commands.CommandExecutionException;
 import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.status.OperatingStatus;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
 import mil.dod.th.core.validator.ValidationFailedException;
@@ -68,12 +68,16 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
      
     @Mock private UrlUtil m_UrlUtil;
     @Mock private CommandProcessor m_CommandProcessor;
-    @Mock private AssetContext context;
+    @Mock private AssetContext m_Context;
+    @Mock private WakeLock m_WakeLock;
     
     @Before
     public void setup() throws FactoryException
     { 
         MockitoAnnotations.initMocks(this);
+        when(m_Context.createPowerManagerWakeLock(HikVisionAsset.class.getSimpleName() 
+                + "WakeLock")).thenReturn(m_WakeLock);
+        
         m_SUT = new HikVisionAsset(); 
         m_SUT.setUrlUtil(m_UrlUtil);
         m_SUT.setCommandProcessor(m_CommandProcessor); 
@@ -82,7 +86,7 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
         props.put(HikVisionAssetAttributes.PASSWORD, "32423");
         props.put(HikVisionAssetAttributes.IP, "113243");
      
-        m_SUT.initialize(context, props);       
+        m_SUT.initialize(m_Context, props);       
     } 
     
     @Test
@@ -101,7 +105,7 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
     {
         m_SUT.onActivate();
         ArgumentCaptor<Status> statusCaptor = ArgumentCaptor.forClass(Status.class);
-        verify(context).setStatus(statusCaptor.capture());
+        verify(m_Context).setStatus(statusCaptor.capture());
         Status status = statusCaptor.getValue();
         OperatingStatus opStatus = status.getSummaryStatus();          
         assertThat(opStatus.getSummary(), equalTo(SummaryStatusEnum.GOOD));
@@ -112,7 +116,7 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
     public void testOnActivateException() throws  AssetException, ValidationFailedException
     {   
         Status status = mock(Status.class); 
-        doThrow(new ValidationFailedException()).when(context).setStatus(status);
+        doThrow(new ValidationFailedException()).when(m_Context).setStatus(status);
         m_SUT.onActivate();            
     } 
     
@@ -121,7 +125,7 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
     {
         m_SUT.onDeactivate();
         ArgumentCaptor<Status> statusCaptor = ArgumentCaptor.forClass(Status.class);
-        verify(context).setStatus(statusCaptor.capture());
+        verify(m_Context).setStatus(statusCaptor.capture());
         Status status = statusCaptor.getValue();
         OperatingStatus opStatus = status.getSummaryStatus();         
         assertThat(opStatus.getSummary(), equalTo(SummaryStatusEnum.OFF));
@@ -199,6 +203,8 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
         Observation testResult = m_SUT.onCaptureData(); 
         
         assertThat(testResult.getDigitalMedia().getValue(), is(data.getBytes(StandardCharsets.UTF_8)));
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -208,22 +214,31 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
         when(m_UrlUtil.getConnection(any(URL.class))).thenReturn(urlConnection);        
         when(urlConnection.getInputStream()).thenThrow(new IOException("ok"));  
         
-        m_SUT.onCaptureData();          
+        m_SUT.onCaptureData(); 
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
     public void testOnCaptureDataExceptionConnect() throws IOException
     { 
         when(m_UrlUtil.getConnection(any(URL.class))).thenThrow(new IOException("go"));        
-        m_SUT.onCaptureData();        
+        m_SUT.onCaptureData();  
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test (expected = CommandExecutionException.class)
     public void testOnExecuteCommandException() throws InterruptedException, CommandExecutionException
     {        
-        Command command = null;      
-        Response response = mock(Response.class);
-        when(m_SUT.onExecuteCommand(command)).thenThrow(new CommandExecutionException("")).thenReturn(response);  
+        Command command = mock(Command.class);
+        
+        m_SUT.onExecuteCommand(command);
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -247,6 +262,9 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
         verify(m_CommandProcessor).getAzimuth(any(SetPanTiltCommand.class));
         verify(m_CommandProcessor).getElevation(any(SetPanTiltCommand.class));
         assertThat(testResult, is(notNullValue()));
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -270,6 +288,9 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
         
         SetPanTiltResponse testResult = (SetPanTiltResponse)m_SUT.onExecuteCommand(new SetPanTiltCommand());
         assertThat(testResult, is(notNullValue()));
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -300,6 +321,9 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
                 new SetCameraSettingsCommand()); 
          
         assertThat(testResult, is(notNullValue()));
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -327,6 +351,9 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
                 new SetCameraSettingsCommand());          
 
         assertThat(testResult, is(notNullValue()));
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     } 
     
     @Test(expected = NullPointerException.class)
@@ -335,6 +362,9 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
     {
         when(m_UrlUtil.getConnection(any(URL.class))).thenThrow(new IOException()); 
         m_SUT.onExecuteCommand(new SetCameraSettingsCommand()); 
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
          
     @Test
@@ -355,6 +385,9 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
         
         assertThat(testResult.getPanTilt().getAzimuth().getValue(), equalTo(2.0));        
         assertThat(testResult.getPanTilt().getElevation().getValue(), equalTo(1.5));        
+    
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }    
     
     @Test(expected = NullPointerException.class)
@@ -362,7 +395,10 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
             throws IOException, CommandExecutionException, InterruptedException
     {
         when(m_UrlUtil.getConnection(Mockito.any(URL.class))).thenThrow(new IOException());
-        m_SUT.onExecuteCommand(new GetPanTiltCommand());        
+        m_SUT.onExecuteCommand(new GetPanTiltCommand());  
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -379,6 +415,9 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
                 m_SUT.onExecuteCommand(new GetCameraSettingsCommand());
         
         assertThat(testResults.getZoom(), equalTo(.3f));
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
      
     @Test(expected = NullPointerException.class)
@@ -387,5 +426,16 @@ public class TestHikVisionAsset  //NOCHECKSTYLE - Abstraction Coupling is above 
     {
         when(m_UrlUtil.getConnection(any(URL.class))).thenThrow(new IOException());
         m_SUT.onExecuteCommand(new GetCameraSettingsCommand());
+        
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
+    }
+    
+    @Test
+    public void testTearDown()
+    {
+        m_SUT.tearDown();
+        
+        verify(m_WakeLock).delete();
     }
 }

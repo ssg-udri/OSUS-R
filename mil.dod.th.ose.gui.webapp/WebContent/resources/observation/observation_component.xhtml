@@ -82,6 +82,10 @@
                                     <p:fileDownload value="#{viewObsMgr.downloadMedia()}"/>
                                 </p:commandLink>
                             </div>
+                            <div style="display: #{cc.attrs.guiObservation.observation.isSetChannelMetadata() ? 'inline' : 'none'};">
+                                <p:graphicImage id="channel" rendered="#{cc.attrs.guiObservation.observation.isSetChannelMetadata()}" library="images" name="#{obsImageService.tryGetObservationImage('CHANNEL_METADATA')}"/>
+                                <p:tooltip for="channel" value="Channel"/>
+                            </div>
                             <div style="display:inline;">
                                 <p:graphicImage id="weather" rendered="#{cc.attrs.guiObservation.observation.isSetWeather()}" library="images" name="#{obsImageService.tryGetObservationImage('WEATHER')}"/>
                                 <p:tooltip for="weather" value="Weather"/>

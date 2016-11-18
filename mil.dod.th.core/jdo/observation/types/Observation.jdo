@@ -102,6 +102,13 @@
                   <unique name="VIDEO_METADATA_CONSTRAINT" />
             </field>
             <field
+                  name="channelMetadata"
+                  persistence-modifier="persistent"
+                  dependent="true"
+                  default-fetch-group="true">
+                  <unique name="CHANNEL_METADATA_CONSTRAINT" />
+            </field>
+            <field
                   name="weather"
                   persistence-modifier="persistent"
                   dependent="true"

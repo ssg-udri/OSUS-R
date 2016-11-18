@@ -19,7 +19,8 @@ Bundle-Name: AXIS Camera Asset
 Bundle-Vendor: UDRI
 
 # Specify packages that should NOT be accessible by other bundles (separated by commas)
-Private-Package: edu.udayton.udri.asset.axis.* 
+Private-Package: edu.udayton.udri.asset.axis.*
+Conditional-Package: mil.dod.th.ose.shared.pm
 
 # Specify files that should be included within the JAR file. The default value for
 # "Include-Resource" will automatically include JARs found in the project lib/

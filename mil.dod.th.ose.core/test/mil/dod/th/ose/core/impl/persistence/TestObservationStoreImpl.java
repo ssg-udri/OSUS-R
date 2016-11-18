@@ -52,6 +52,8 @@ import mil.dod.th.core.persistence.ObservationQuery;
 import mil.dod.th.core.persistence.ObservationStore;
 import mil.dod.th.core.persistence.PersistenceFailedException;
 import mil.dod.th.core.persistence.PersistentData;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.observation.ObservationSubTypeEnum;
 import mil.dod.th.core.validator.ValidationFailedException;
 import mil.dod.th.core.validator.Validator;
@@ -87,6 +89,8 @@ public class TestObservationStoreImpl
     private FetchPlan m_FetchPlan;
     private PropertyRetriever m_Retriever;
     private BundleContext m_Context;
+    private PowerManager m_PowerManager;
+    private WakeLock m_WakeLock;
        
     @Before
     public void setUp()
@@ -112,8 +116,13 @@ public class TestObservationStoreImpl
         m_ObservationCollection = new ArrayList<Observation>();
         when(m_Query.execute()).thenReturn(m_ObservationCollection);
         
+        m_PowerManager = mock(PowerManager.class);
+        m_WakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), "coreDataStore")).thenReturn(m_WakeLock);
+
         m_SUT.setObservationValidator(m_ObsValidator);
         m_SUT.setEventAdmin(m_EventAdmin);
+        m_SUT.setPowerManager(m_PowerManager);
         m_SUT.setPersistenceManagerFactoryCreator(m_PersistenceManagerFactoryCreator);
         Connection sqlConn = mock(java.sql.Connection.class, withSettings().extraInterfaces(JDOConnection.class));
         when(m_PersistenceManager.getDataStoreConnection()).thenReturn((JDOConnection)sqlConn);
@@ -146,6 +155,7 @@ public class TestObservationStoreImpl
         throws Exception
     {
         m_SUT.deactivate();
+        verify(m_WakeLock).delete();
     }
     
     /**
@@ -255,6 +265,8 @@ public class TestObservationStoreImpl
         verify(m_PersistenceManager).makePersistent(m_Observation);
         ArgumentCaptor<Event> event = ArgumentCaptor.forClass(Event.class);
         verify(m_EventAdmin, times(2)).postEvent(event.capture());
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
  
         //check first event does not observation
         assertThat(event.getAllValues().get(0).getTopic(), is(ObservationStore.TOPIC_OBSERVATION_PERSISTED));
@@ -289,6 +301,8 @@ public class TestObservationStoreImpl
         //verify
         ArgumentCaptor<Event> event = ArgumentCaptor.forClass(Event.class);
         verify(m_EventAdmin, times(2)).postEvent(event.capture());
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
  
         //check first event does not observation
         assertThat(event.getAllValues().get(0).getTopic(), is(ObservationStore.TOPIC_OBSERVATION_MERGED));
@@ -332,7 +346,8 @@ public class TestObservationStoreImpl
         verify(jdoQuery).setFilter(String.format(ASSET_UUID_FILTER, assetUuid));
         verify(jdoQuery).deletePersistentAll();
         assertThat(obsRemoved, is(3827L));
-        
+        verify(m_WakeLock, times(5)).activate();
+        verify(m_WakeLock, times(5)).cancel();
     }
 
     /**
@@ -351,6 +366,8 @@ public class TestObservationStoreImpl
         verify(jdoQuery).setFilter("assetType == 'blah'");
         verify(jdoQuery).deletePersistentAll();
         assertThat(obsRemoved, is(3827L));
+        verify(m_WakeLock, times(5)).activate();
+        verify(m_WakeLock, times(5)).cancel();
     }
 
     /**
@@ -370,6 +387,8 @@ public class TestObservationStoreImpl
         verify(jdoQuery).setFilter(String.format(ASSET_UUID_FILTER, assetUuid));
         verify(jdoQuery).deletePersistentAll();
         assertThat(obsRemoved, is(3827L));
+        verify(m_WakeLock, times(5)).activate();
+        verify(m_WakeLock, times(5)).cancel();
     }
 
 
@@ -389,6 +408,8 @@ public class TestObservationStoreImpl
         verify(jdoQuery).setFilter("this.detection.id > 0");
         verify(jdoQuery).deletePersistentAll();
         assertThat(obsRemoved, is(3827L));
+        verify(m_WakeLock, times(5)).activate();
+        verify(m_WakeLock, times(5)).cancel();
     }
     
     /**
@@ -407,6 +428,8 @@ public class TestObservationStoreImpl
         verify(jdoQuery).setFilter("systemId == 42");
         verify(jdoQuery).deletePersistentAll();
         assertThat(obsRemoved, is(3827L));
+        verify(m_WakeLock, times(5)).activate();
+        verify(m_WakeLock, times(5)).cancel();
     }
 
     @Test
@@ -418,6 +441,8 @@ public class TestObservationStoreImpl
         assertThat(e, instanceOf(IllegalArgumentException.class));
         
         m_SUT.remove(m_Observation);
+        verify(m_WakeLock, times(5)).activate();
+        verify(m_WakeLock, times(5)).cancel();
     }
 
     @Test(expected = PersistenceFailedException.class)
@@ -461,6 +486,8 @@ public class TestObservationStoreImpl
         
         verify(jdoQuery).setFilter(String.format(ASSET_UUID_FILTER, assetUuid));
         assertThat(actualObs, contains(obs1, obs2));
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
 
     /**
@@ -484,6 +511,8 @@ public class TestObservationStoreImpl
         
         verify(jdoQuery).setFilter("assetType == 'blah'");
         assertThat(actualObs, contains(obs1, obs2));
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /**
@@ -512,6 +541,8 @@ public class TestObservationStoreImpl
         
         verify(jdoQuery).setFilter(String.format(ASSET_UUID_FILTER, assetUuid));
         assertThat(actualObs, contains(obs1, obs2));
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
 
     /**
@@ -535,6 +566,8 @@ public class TestObservationStoreImpl
         
         verify(jdoQuery).setFilter("this.detection.id > 0");
         assertThat(actualObs, contains(obs1, obs2));
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /**
@@ -558,6 +591,8 @@ public class TestObservationStoreImpl
         
         verify(jdoQuery).setFilter("systemId == 42");
         assertThat(actualObs, contains(obs1, obs2));
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /**
@@ -579,6 +614,8 @@ public class TestObservationStoreImpl
         
         assertThat((String)eventCaptor.getValue().getProperty(ObservationStore.EVENT_PROP_OBSERVATION_TYPE), 
                 is(ObservationSubTypeEnum.CHEMICAL.toString()));
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /**
@@ -600,6 +637,8 @@ public class TestObservationStoreImpl
         
         assertThat((String)eventCaptor.getValue().getProperty(ObservationStore.EVENT_PROP_OBSERVATION_TYPE), 
                 is(ObservationSubTypeEnum.BIOLOGICAL.toString()));
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
 
     /**
@@ -621,6 +660,8 @@ public class TestObservationStoreImpl
         
         assertThat((String)eventCaptor.getValue().getProperty(ObservationStore.EVENT_PROP_OBSERVATION_TYPE), 
                 is(ObservationSubTypeEnum.CBRNE_TRIGGER.toString()));
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /**
@@ -642,6 +683,8 @@ public class TestObservationStoreImpl
         
         assertThat((String)eventCaptor.getValue().getProperty(ObservationStore.EVENT_PROP_OBSERVATION_TYPE), 
                 is(ObservationSubTypeEnum.WATER_QUALITY.toString()));
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
 
     /**
@@ -663,6 +706,8 @@ public class TestObservationStoreImpl
         
         assertThat((String)eventCaptor.getValue().getProperty(ObservationStore.EVENT_PROP_OBSERVATION_TYPE), 
                 is(ObservationSubTypeEnum.POWER.toString()));
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
 
     @Test

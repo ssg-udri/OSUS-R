@@ -29,6 +29,7 @@ import mil.dod.th.core.ccomm.physical.SerialPortProxy;
 import mil.dod.th.core.ccomm.physical.capability.PhysicalLinkCapabilities;
 import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.factory.FactoryObjectProxy;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.ccomm.FlowControlEnum;
 import mil.dod.th.core.types.ccomm.ParityEnum;
 import mil.dod.th.core.types.ccomm.StopBitsEnum;
@@ -63,6 +64,7 @@ public class TestSerialPortImpl
     private String m_BaseType = "baseType";
     private PhysicalLinkCapabilities m_Caps;
     private PowerManagerInternal m_PowManInternal;
+    private WakeLock m_WakeLock;
     private Configuration m_Config;
     interface MySerialPortProxyAttributes extends SerialPortAttributes{}
     interface MySerialPortProxy extends SerialPortProxy{}
@@ -80,10 +82,14 @@ public class TestSerialPortImpl
         m_EventAdmin = mock(EventAdmin.class);
         m_Caps = mock(PhysicalLinkCapabilities.class);
         m_PowManInternal = mock(PowerManagerInternal.class);
+        m_WakeLock = mock(WakeLock.class);
 
         when(m_PhysicalLinkFactoryInternal.getCapabilities()).thenReturn(m_Caps);
         doReturn(MySerialPortProxy.class.getName()).when(m_PhysicalLinkFactoryInternal).getProductType();
         
+        when(m_PowManInternal.createWakeLock(m_SerialProxy.getClass(), m_SUT, "coreFactoryObject")).thenReturn(
+                m_WakeLock);
+
         m_SUT.initialize(m_FactReg, m_SerialProxy, m_PhysicalLinkFactoryInternal, m_ConfigurationAdmin, m_EventAdmin, 
                 m_PowManInternal, m_Uuid, m_Name, m_Pid, m_BaseType);
         

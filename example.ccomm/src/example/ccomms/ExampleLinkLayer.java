@@ -15,10 +15,10 @@ package example.ccomms;
 import java.util.Map;
 import java.util.Set;
 
-import org.osgi.service.log.LogService;
-
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.ccomm.Address;
 import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.link.LinkFrame;
@@ -30,6 +30,11 @@ import mil.dod.th.core.ccomm.physical.PhysicalLinkException;
 import mil.dod.th.core.factory.Extension;
 import mil.dod.th.core.log.Logging;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.WakeLock;
+import mil.dod.th.ose.shared.pm.CountingWakeLock;
+import mil.dod.th.ose.shared.pm.CountingWakeLock.CountingWakeLockHandle;
+
+import org.osgi.service.log.LogService;
 
 /**
  * @author dhumeniuk
@@ -38,10 +43,13 @@ import mil.dod.th.core.log.LoggingService;
 @Component(factory = LinkLayer.FACTORY)
 public class ExampleLinkLayer implements LinkLayerProxy
 {
-
     private LoggingService m_Logging;
-    
     private LinkLayerContext m_Context;
+
+    /**
+     * Reference to the counting {@link WakeLock} used by this asset.
+     */
+    private CountingWakeLock m_CountingLock = new CountingWakeLock();
     
     @Reference
     public void setLoggingService(final LoggingService logging)
@@ -53,6 +61,13 @@ public class ExampleLinkLayer implements LinkLayerProxy
     public void initialize(final LinkLayerContext context, final Map<String, Object> props)
     {
         m_Context = context;
+        m_CountingLock.setWakeLock(m_Context.createPowerManagerWakeLock(getClass().getSimpleName() + "WakeLock"));
+    }
+
+    @Deactivate
+    public void deactivateInstance()
+    {
+        m_CountingLock.deleteWakeLock();
     }
 
     @Override
@@ -64,36 +79,42 @@ public class ExampleLinkLayer implements LinkLayerProxy
     @Override
     public void onActivate()
     {
-        Logging.log(LogService.LOG_INFO, "Example LinkLayer activated");
-        
-        try
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            m_Context.getPhysicalLink().open();
-        }
-        catch (PhysicalLinkException e)
-        {
-            m_Logging.error(e, "Could not activate example link layer.");
+            Logging.log(LogService.LOG_INFO, "Example LinkLayer activated");
+
+            try
+            {
+                m_Context.getPhysicalLink().open();
+            }
+            catch (PhysicalLinkException e)
+            {
+                m_Logging.error(e, "Could not activate example link layer.");
+            }
         }
     }
-    
+
     @Override
     public void onDeactivate()
     {
-        try
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            m_Context.getPhysicalLink().close();
+            try
+            {
+                m_Context.getPhysicalLink().close();
+            }
+            catch (PhysicalLinkException e)
+            {
+                m_Logging.error(e, "Could not deactivate example link layer.");
+            }
+
+            m_Logging.info("ExampleLinkLayer deactivated");
         }
-        catch (PhysicalLinkException e)
-        {
-            m_Logging.error(e, "Could not deactivate example link layer.");
-        }
-        
-        m_Logging.info("ExampleLinkLayer deactivated");
     }
     
     @Override
     public boolean isAvailable(final Address address)
-    {        
+    {
         return true;
     }
 

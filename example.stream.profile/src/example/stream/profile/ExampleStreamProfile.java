@@ -76,8 +76,8 @@ public class ExampleStreamProfile implements StreamProfileProxy
 
         for (StreamFormat format : capabilities.getFormat())
         {
-            if (format.getMimeFormat().equals(m_Attributes.format()) 
-                    || format.getCustomFormat().equals(m_Attributes.format()))
+            if ((format.isSetMimeFormat() && format.getMimeFormat().equals(m_Attributes.format()))
+                    || (format.isSetCustomFormat() && format.getCustomFormat().equals(m_Attributes.format())))
             {
                 formatAllowed = true;
                 break;

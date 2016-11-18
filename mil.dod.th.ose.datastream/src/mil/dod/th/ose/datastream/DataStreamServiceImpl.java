@@ -43,6 +43,8 @@ import mil.dod.th.core.datastream.StreamProfileFactory;
 import mil.dod.th.core.factory.FactoryDescriptor;
 import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.config.event.constants.ConfigurationEventConstants;
 import mil.dod.th.ose.core.factory.api.DirectoryService;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
@@ -104,6 +106,11 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
      */
     private int m_StartPort;
     
+    /**
+     * Wake lock used for data stream service operations.
+     */
+    private WakeLock m_WakeLock;
+
     private BundleContext m_Context;
     private ConfigurationListener m_ConfigListener;
     private PidRemovedListener m_PidRemovedListener;
@@ -124,6 +131,13 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
     public void setEventAdmin(final EventAdmin eventAdmin)
     {
         super.setEventAdmin(eventAdmin);
+    }
+
+    @Override
+    @Reference
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        super.setPowerManager(powerManager);
     }
 
     /**
@@ -177,7 +191,9 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
         
         m_FactoryContext = m_FactServiceContextComp.newInstance(null);
         m_FactoryContext.initialize(coreContext, m_FactoryServiceProxy, this);
-        
+
+        m_WakeLock = m_PowerManager.createWakeLock(getClass(), "coreDataStreamService");
+
         setMulticastHost("");
         setStartPort(-1);
         
@@ -204,6 +220,8 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
         
         //dispose of factory service component
         m_FactServiceContextComp.tryDispose();
+
+        m_WakeLock.delete();
     }
     
     /**
@@ -244,6 +262,8 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
 
         try
         {
+            m_WakeLock.activate();
+
             final StreamProfileInternal spi;
             synchronized (m_FactoryContext)
             {
@@ -260,36 +280,33 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
         catch (final Exception e)
         {
             throw new StreamProfileException("Unable to create StreamProfile.", e);
-        }   
-
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
 
     @Override
     public StreamProfile getStreamProfile(final UUID profileId) throws IllegalArgumentException
     {
-        
         return m_FactoryContext.getRegistry().getObjectByUuid(profileId);
-
     }
 
     @Override
     public Set<StreamProfile> getStreamProfiles(final Asset asset)
     {
-        
         final Set<StreamProfile> streamProfiles = Collections.unmodifiableSet(new HashSet<StreamProfile>(
                 m_FactoryContext.getRegistry().getObjects()));
         
         return Sets.filter(streamProfiles, new Predicate<StreamProfile>()
         {
-
             @Override
             public boolean apply(final StreamProfile profile)
             {
                 return profile.getAsset().getName().equals(asset.getName());
             }
-            
         });
-        
     }
 
     @Override
@@ -298,7 +315,6 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
         return Collections.unmodifiableSet(new HashSet<StreamProfile>(
                 m_FactoryContext.getRegistry().getObjects()));
     }    
-    
   
     @Override
     public Set<StreamProfileFactory> getStreamProfileFactories()
@@ -313,6 +329,7 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
     ////////////////////////////////////////////////////////
     // Private methods
     ////////////////////////////////////////////////////////
+
     /**
      * Returns a multicast URI to be assigned to newly created {@link StreamProfile}
      * instances.
@@ -324,12 +341,10 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
      */
     private URI getAvailableURI() throws URISyntaxException
     {
-              
         //Find highest port number currently in use by a StreamProfile instance
         int maxPortNum = -1;
         for (StreamProfile profile : getStreamProfiles())
         {
-            
             final URI uri = profile.getStreamPort();
             if (uri != null)
             {
@@ -339,8 +354,7 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
                 {
                     maxPortNum = portNum;
                 }
-            }            
-            
+            }
         }
         
         int newPortNum;//NOCHECKSTYLE will get assigned in if statement
@@ -355,7 +369,6 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
         }
         
         return new URI(null, null, m_MulticastHost, newPortNum, null, null, null);
-        
     }
     
     /**
@@ -473,6 +486,7 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
             final StreamProfileInternal spi;
             try
             {
+                m_WakeLock.activate();
                 spi = m_FactoryContext.getRegistry().createNewObjectForConfig(m_StreamProfileFactory, null, m_Pid);
             }
             catch (final IllegalArgumentException | FactoryException | FactoryObjectInformationException | IOException 
@@ -481,6 +495,10 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
                 m_Logging.error(ex, "Unable to automatically create a stream profile object for "
                         + "the configuration with PID: %s", m_Pid);
                 return;
+            }
+            finally
+            {
+                m_WakeLock.cancel();
             }
             
             try
@@ -492,7 +510,6 @@ public class DataStreamServiceImpl extends DirectoryService implements DataStrea
             {
                 m_Logging.error(ex, "Unable to set stream port for the stream profile: %s", spi.getName());
             }
-
         }
     }
     

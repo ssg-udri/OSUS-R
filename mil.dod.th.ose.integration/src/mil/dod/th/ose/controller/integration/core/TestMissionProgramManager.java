@@ -218,8 +218,9 @@ public class TestMissionProgramManager
         InterruptedException
     {
         MissionProgramSchedule schedule = new MissionProgramSchedule().
-                withStopInterval(System.currentTimeMillis() + 500).
-                withImmediately(true).withActive(true);
+                withStartInterval(System.currentTimeMillis() + 500).
+                withStopInterval(System.currentTimeMillis() + 1000).
+                withActive(true);
         MissionProgramParameters params = new MissionProgramParameters().withTemplateName("simple-template").
             withSchedule(schedule).withParameters(new MapEntry("a", 10)).withProgramName("Removal");
         EventHandlerSyncer syncer = new EventHandlerSyncer(Program.TOPIC_PROGRAM_SHUTDOWN);

@@ -20,7 +20,9 @@ import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
 import mil.dod.th.ose.remote.api.RemoteSettings;
 
 import org.osgi.service.component.ComponentFactory;
@@ -84,7 +86,14 @@ public class ServerSocketChannel extends AbstractSocketChannel
     {
         super.setRemoteSettings(remoteSettings);
     }
-    
+
+    @Override
+    @Reference
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        super.setPowerManager(powerManager);
+    }
+
     /**
      * Activate the component by getting a reference to the connected socket.
      * 

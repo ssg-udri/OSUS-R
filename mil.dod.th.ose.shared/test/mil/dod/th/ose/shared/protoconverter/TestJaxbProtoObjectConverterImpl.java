@@ -28,6 +28,7 @@ import mil.dod.th.core.mp.model.MissionProgramSchedule;
 import mil.dod.th.core.mp.model.MissionProgramTemplate;
 import mil.dod.th.core.mp.model.MissionVariableMetaData;
 import mil.dod.th.core.mp.model.MissionVariableTypesEnum;
+import mil.dod.th.core.observation.types.AlgorithmStatus;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
 import mil.dod.th.core.remote.objectconverter.ObjectConverterException;
@@ -319,7 +320,9 @@ public class TestJaxbProtoObjectConverterImpl
         ambientStatus.add(new AmbientStatus(
                 new AmbientType(AmbientTypeEnum.OCCLUSION, "occlusion"), 
                     new OperatingStatus(SummaryStatusEnum.BAD, "occlusions are bad")));
-        
+
+        List<AlgorithmStatus> algorithmStatus = null;
+
         Status status = new Status(new OperatingStatus(SummaryStatusEnum.GOOD, "stuff too"),
                 componentStatuses,
                 ambientStatus,
@@ -333,6 +336,7 @@ public class TestJaxbProtoObjectConverterImpl
                 analogAnalogVoltage,
                 analogDigitalVoltage,
                 analogMagVoltage,
+                algorithmStatus,
                 assetOnTime,
                 nextStatusDurationMs);
 
@@ -345,7 +349,7 @@ public class TestJaxbProtoObjectConverterImpl
         Version version = new Version(1,2);
         int systemId = 0123;
         return new Observation(version, null, null, null, null, null, null, null, status, null, null, null, null, null,
-                null, null, null, null, null, null, uuid, null, createdTimestamp, null, assetName, assetType, sensorId, 
-                systemInTestMode, systemId).withAssetUuid(UUID.randomUUID());
+                null, null, null, null, null, null, null, uuid, null, createdTimestamp, null, assetName, assetType,
+                sensorId, systemInTestMode, systemId).withAssetUuid(UUID.randomUUID());
     }
 }

@@ -81,6 +81,11 @@ public class LogWriter implements LogListener
      * Name of the OSGi framework property containing the default log file size.
      */
     public static final String LOG_SIZE_PROPERTY = "mil.dod.th.ose.logging.logMBSizeLimit";
+    
+    /**
+     * Name of the OSGI framework property containing the default maximum log file count.
+     */
+    public static final String LOG_FILE_COUNT_PROPERTY = "mil.dod.th.ose.logging.logMaxFileCount";
 
     /**
      * Name of the OSGi framework property containing the default bundle filter value.
@@ -93,6 +98,16 @@ public class LogWriter implements LogListener
      */
     public static final String LOG_BUNDLE_FILTER_PROFILE_PREFIX_PROPERTY = "mil.dod.th.ose.logging.filter.profile";
 
+    /**
+     * Prefix for log files.
+     */
+    private static final String LOG_FILE_PREFIX = "those_";
+    
+    /**
+     * Extension for log files.
+     */
+    private static final String LOG_FILE_EXTENSION = ".log";
+    
     /**
      * Reference to the OSGi log reader service.
      */    
@@ -147,6 +162,12 @@ public class LogWriter implements LogListener
      * The size limit in bytes that a log file can be. Once this limit is reached a new log will be started.
      */
     private long m_LogMaxByteLimit;
+    
+    /**
+     * The maximum amount of log files kept in the designated log directory. When there are more logs than this
+     * number, the oldest log file will be deleted. 0 represents no maximum amount of log files.
+     */
+    private int m_LogMaxFileCount;
     
     /**
      * The log file name.
@@ -430,7 +451,7 @@ public class LogWriter implements LogListener
         }
         final Locale locale = Locale.US;
         final FastDateFormat fileDateFormatter = FastDateFormat.getInstance("yyyyMMdd'_'HHmm", locale);
-        final String fileName = "those_" + fileDateFormatter.format(new Date()) + ".log";
+        final String fileName = LOG_FILE_PREFIX + fileDateFormatter.format(new Date()) + LOG_FILE_EXTENSION;
         m_LogFile = new File(m_LogFileDir, fileName);
         try
         {
@@ -490,6 +511,7 @@ public class LogWriter implements LogListener
             setLogDaysAlive(config.logDaysAlive());
             setLogSizeLimit(config.logMBSizeLimit());
             setLogLevel(config.logLevel());
+            setLogMaxFileCount(config.logMaxFileCount());
         }
         else
         {
@@ -516,6 +538,14 @@ public class LogWriter implements LogListener
             final int defaultLogSize = 1;
             final int logSize = logSizeProp == null ? defaultLogSize : Integer.parseInt(logSizeProp);
             setLogSizeLimit(logSize);
+            
+            //framework property for the maximum amount of log files
+            final String maxLogsProp = m_Context.getProperty(LOG_FILE_COUNT_PROPERTY);
+            
+            //if the property from the context is null then use a default
+            final int defaultMaxLogs = 25;
+            final int maxLogs = maxLogsProp == null ? defaultMaxLogs : Integer.parseInt(maxLogsProp);
+            setLogMaxFileCount(maxLogs);
 
             //framework property for log level
             final String levelProp = m_Context.getProperty(LOG_LEVEL_PROPERTY);
@@ -576,6 +606,17 @@ public class LogWriter implements LogListener
     }
     
     /**
+     * Sets the amount of log files allowed before the oldest log files are deleted.
+     * 
+     * @param count
+     *      the maximum amount of log files
+     */
+    private void setLogMaxFileCount(final int count)
+    {
+        m_LogMaxFileCount = count;
+    }
+    
+    /**
      * Sets the log level. If the string parameter is invalid, log level is not changed.
      * 
      * @param logLevel
@@ -596,7 +637,51 @@ public class LogWriter implements LogListener
         {
             closeLogFile();
             openLogFile();
+            
+            if (m_LogMaxFileCount != 0) 
+            {
+                checkNumberOfLogFiles(); 
+            }
         }
+    }
+    
+    /**
+     * Method that checks the number of log files that are currently existing and determines whether or not the total 
+     * number of files is greater than the maximum allowed. If the total is greater than the maximum, then the oldest 
+     * log files in the designated log directory are deleted.
+     */
+    private void checkNumberOfLogFiles()
+    {
+        final int numberOfLogFiles = getAllLogFiles().length; 
+        
+        for (int timesToDelete = numberOfLogFiles - m_LogMaxFileCount; timesToDelete >= 1; timesToDelete--)
+        {
+            final File[] existingLogFiles = getAllLogFiles();
+            File logToBeDeleted = existingLogFiles[0];
+            
+            for (int i = 1; i < existingLogFiles.length; i++)
+            {
+                final File logBeingChecked = existingLogFiles[i];
+                
+                logToBeDeleted = 
+                        logBeingChecked.lastModified() > logToBeDeleted.lastModified() 
+                        ? logToBeDeleted : logBeingChecked;
+            }
+            
+            logToBeDeleted.delete();
+        }
+    }
+    
+    /**
+     * Gets all existing files within the logs directory. 
+     * 
+     * @return
+     *      an array of existing files.
+     */
+    private File[] getAllLogFiles()
+    {
+        return m_LogFileDir.listFiles((dir, name) -> //NOCHECKSTYLE: Variables can't be final in lambda
+            { return name.startsWith(LOG_FILE_PREFIX) && name.endsWith(LOG_FILE_EXTENSION) ? true : false; });
     }
     
     /**

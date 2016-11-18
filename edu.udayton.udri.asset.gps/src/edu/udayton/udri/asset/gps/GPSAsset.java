@@ -18,8 +18,10 @@ import java.util.Set;
 import java.util.UUID;
 
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetContext;
 import mil.dod.th.core.asset.AssetException;
@@ -36,6 +38,7 @@ import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.log.Logging;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.ccomm.FlowControlEnum;
 import mil.dod.th.core.types.ccomm.ParityEnum;
 import mil.dod.th.core.types.ccomm.PhysicalLinkTypeEnum;
@@ -44,6 +47,8 @@ import mil.dod.th.core.types.status.ComponentStatus;
 import mil.dod.th.core.types.status.OperatingStatus;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
 import mil.dod.th.core.validator.ValidationFailedException;
+import mil.dod.th.ose.shared.pm.CountingWakeLock;
+import mil.dod.th.ose.shared.pm.CountingWakeLock.CountingWakeLockHandle;
 
 import org.osgi.service.log.LogService;
 
@@ -96,6 +101,11 @@ public class GPSAsset implements AssetProxy
     private UUID m_UUID;
     
     /**
+     * Reference to the counting {@link WakeLock} used by this asset.
+     */
+    private CountingWakeLock m_CountingLock = new CountingWakeLock();
+    
+    /**
      * Bind the custom comms service.
      * 
      * @param commsService
@@ -116,64 +126,76 @@ public class GPSAsset implements AssetProxy
         m_PhysicalLinkName = gpsAtrb.physLinkName();
 
         m_Context = context;
+        m_CountingLock.setWakeLock(m_Context.createPowerManagerWakeLock(getClass().getSimpleName() + "WakeLock"));
         m_Context.setStatus(SummaryStatusEnum.GOOD, "Initialized");
+    }
+    
+    /**
+     * OSGi deactivate method used to delete any wake locks used by the asset.
+     */
+    @Deactivate
+    public void tearDown()
+    {
+        m_CountingLock.deleteWakeLock();
     }
 
     @Override
     public void updated(final Map<String, Object> props)
     {
-        final GPSAssetAttributes gpsAtrb = Configurable.createConfigurable(GPSAssetAttributes.class, props);
-        m_BaudRate = gpsAtrb.baudRate();
-        m_DataBits = gpsAtrb.dataBits();
-        m_PhysicalLinkName = gpsAtrb.physLinkName();
-
-        if (m_SerialPort != null && !m_SerialPort.isOpen())
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            try
+            final GPSAssetAttributes gpsAtrb = Configurable.createConfigurable(GPSAssetAttributes.class, props);
+            m_BaudRate = gpsAtrb.baudRate();
+            m_DataBits = gpsAtrb.dataBits();
+            m_PhysicalLinkName = gpsAtrb.physLinkName();
+    
+            if (m_SerialPort != null && !m_SerialPort.isOpen())
             {
-                m_SerialPort.setSerialPortProperties(
-                        m_BaudRate, 
-                        m_DataBits, 
-                        ParityEnum.NONE, 
-                        StopBitsEnum.ONE_STOP_BIT, 
-                        FlowControlEnum.NONE);
-            }
-            catch (final PhysicalLinkException e)
-            {
-                Logging.log(LogService.LOG_ERROR, e,
-                        "PhysicalLinkException while updating the connection of GPS asset [%s].",
-                        m_Context.getName());
+                try
+                {
+                    m_SerialPort.setSerialPortProperties(
+                            m_BaudRate, 
+                            m_DataBits, 
+                            ParityEnum.NONE, 
+                            StopBitsEnum.ONE_STOP_BIT, 
+                            FlowControlEnum.NONE);
+                }
+                catch (final PhysicalLinkException e)
+                {
+                    Logging.log(LogService.LOG_ERROR, e,
+                            "PhysicalLinkException while updating the connection of GPS asset [%s].",
+                            m_Context.getName());
+                } 
             } 
-        } 
-        else if (m_SerialPort != null && m_SerialPort.isOpen())
-        {
-            //refresh the connection and update the properties
-            try
+            else if (m_SerialPort != null && m_SerialPort.isOpen())
             {
-                m_SerialPort.close();
-                m_SerialPort.setSerialPortProperties(
-                        m_BaudRate,
-                        m_DataBits,
-                        ParityEnum.NONE,
-                        StopBitsEnum.ONE_STOP_BIT, 
-                        FlowControlEnum.NONE);
-                m_SerialPort.open();
-            }
-            
-            catch (final PhysicalLinkException | IllegalArgumentException | IllegalStateException e)
-            {
-                Logging.log(LogService.LOG_ERROR, e,
-                        "Exception while refreshing the connection of GPS asset [%s].",
-                        m_Context.getName());
+                //refresh the connection and update the properties
+                try
+                {
+                    m_SerialPort.close();
+                    m_SerialPort.setSerialPortProperties(
+                            m_BaudRate,
+                            m_DataBits,
+                            ParityEnum.NONE,
+                            StopBitsEnum.ONE_STOP_BIT, 
+                            FlowControlEnum.NONE);
+                    m_SerialPort.open();
+                }
+                
+                catch (final PhysicalLinkException | IllegalArgumentException | IllegalStateException e)
+                {
+                    Logging.log(LogService.LOG_ERROR, e,
+                            "Exception while refreshing the connection of GPS asset [%s].",
+                            m_Context.getName());
+                }
             }
         }
-        
     }
     
     @Override
     public void onActivate() throws AssetException
     {
-        try
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
             //Activate the comms port connection.
             try
@@ -208,7 +230,6 @@ public class GPSAsset implements AssetProxy
                         new OperatingStatus(SummaryStatusEnum.BAD, "Asset Deactivated due to connection exception.")));
                 
                 return;
-                
             }
             catch (final FactoryException e)
             {
@@ -238,37 +259,40 @@ public class GPSAsset implements AssetProxy
     @Override
     public void onDeactivate() throws AssetException
     {
-        if (m_SerialPort != null)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            Logging.log(LogService.LOG_DEBUG, "Closing Serial Port"); 
-            try
+            if (m_SerialPort != null)
             {
-                m_SerialPort.close();
-                m_SerialPort.release();
-            }
-            catch (final PhysicalLinkException e)
-            {
-                Logging.log(LogService.LOG_ERROR, e,
-                        "PhysicalLinkException while deactivating GPS asset [%s].",
-                        m_Context.getName());
-            }
-            catch (final IllegalArgumentException e)
-            {
-                Logging.log(LogService.LOG_ERROR, e,
-                        "IllegalArgumentException while deactivating GPS asset [%s].",
-                        m_Context.getName());
-            }
-            catch (final IllegalStateException e)
-            {
-                Logging.log(LogService.LOG_ERROR, e,
-                        "IllegalStateException while deactivating GPS asset [%s].",
-                        m_Context.getName());
-            }
-            catch (final NullPointerException e)
-            {
-                Logging.log(LogService.LOG_ERROR, e,
-                        "NullPointerException while deactivating GPS asset [%s].",
-                        m_Context.getName());
+                Logging.log(LogService.LOG_DEBUG, "Closing Serial Port"); 
+                try
+                {
+                    m_SerialPort.close();
+                    m_SerialPort.release();
+                }
+                catch (final PhysicalLinkException e)
+                {
+                    Logging.log(LogService.LOG_ERROR, e,
+                            "PhysicalLinkException while deactivating GPS asset [%s].",
+                            m_Context.getName());
+                }
+                catch (final IllegalArgumentException e)
+                {
+                    Logging.log(LogService.LOG_ERROR, e,
+                            "IllegalArgumentException while deactivating GPS asset [%s].",
+                            m_Context.getName());
+                }
+                catch (final IllegalStateException e)
+                {
+                    Logging.log(LogService.LOG_ERROR, e,
+                            "IllegalStateException while deactivating GPS asset [%s].",
+                            m_Context.getName());
+                }
+                catch (final NullPointerException e)
+                {
+                    Logging.log(LogService.LOG_ERROR, e,
+                            "NullPointerException while deactivating GPS asset [%s].",
+                            m_Context.getName());
+                }
             }
         }
         

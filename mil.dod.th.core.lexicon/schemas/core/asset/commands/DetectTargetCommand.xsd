@@ -96,6 +96,13 @@
                       </xs:documentation>
                   </xs:annotation>
               </xs:attribute>
+              <xs:attribute name="pictureType" type="image:PictureTypeEnum" use="optional">
+                <xs:annotation>
+                    <xs:documentation>
+                        The type of picture to be captured (area of interest or full field of view).
+                    </xs:documentation>
+                </xs:annotation>
+              </xs:attribute>
           </xs:extension>
       </xs:complexContent>
     </xs:complexType>

@@ -95,4 +95,7 @@
     
   <transportChannels transportLayerName="nonConfigsTransportLayer" localAddress="Example:1" remoteAddress="Example:2"
     systemId="250"/>
+    
+  <transportChannels transportLayerName="secondNonConfigsTransportLayer" localAddress="Example:1" remoteAddress="Example:2"
+    systemId="150"/>
 </config:Configurations>

@@ -75,6 +75,10 @@
                   name="analogMagVoltage"
                   persistence-modifier="persistent"
                   default-fetch-group="true"/>
+            <field
+                  name="algorithmStatus"
+                  persistence-modifier="persistent"
+                  default-fetch-group="true"/>
         </class>
     </package>
 </jdo>

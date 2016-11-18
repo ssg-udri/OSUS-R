@@ -22,6 +22,8 @@ import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.transcoder.TranscoderException;
 import mil.dod.th.core.transcoder.TranscoderService;
 import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
@@ -43,7 +45,13 @@ public class VlcTranscoder implements TranscoderService
     
     /** Logging service instance. */
     private LoggingService m_LoggingService;
-    
+
+    /** Power manager service instance. */
+    private PowerManager m_PowerManager;
+
+    /** Wake lock used for keeping system awake during an archive process. */
+    private WakeLock m_WakeLock;
+
     static
     {
         NativeLibraryLoader.load();
@@ -61,13 +69,24 @@ public class VlcTranscoder implements TranscoderService
     }
 
     /**
+     * Bind the power manager.
+     * @param powerManager
+     *      service to bind.
+     */
+    @Reference
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        m_PowerManager = powerManager;
+    }
+
+    /**
      * Method called when component is activated.
-     * 
      */
     @Activate
     public void activate()
     {
         m_ProcessMap = new HashMap<>();
+        m_WakeLock = m_PowerManager.createWakeLock(getClass(), "coreTranscoder");
     }
 
 
@@ -85,14 +104,13 @@ public class VlcTranscoder implements TranscoderService
         }
 
         m_ProcessMap = null;
-
+        m_WakeLock.delete();
     }
 
     @Override
     public void start(final String processId, final URI sourceUri, final URI outputUri, 
             final Map<String, Object> configParams) throws IllegalStateException, TranscoderException
     {
-
         if (m_ProcessMap.containsKey(processId))
         {
             throw new IllegalStateException("Transcoding process for ID: " + processId + " is already running");
@@ -109,12 +127,13 @@ public class VlcTranscoder implements TranscoderService
         {
             //If media item is created successfully, keep track in process map
             m_ProcessMap.put(processId, player);
+
+            m_WakeLock.activate();
         }
         else
         {
             throw new TranscoderException("Error creating transcoding process with processId: " + processId);
         }
-
     }
 
     @Override
@@ -128,8 +147,7 @@ public class VlcTranscoder implements TranscoderService
 
         player.stop();
         player.release();
-        m_ProcessMap.remove(processId);
-
+        removeProcess(processId);
     }
 
     /**
@@ -167,10 +185,7 @@ public class VlcTranscoder implements TranscoderService
     public void errorEvent(final String eventListenerId)
     {
         m_LoggingService.error("Received error event for event listener ID: %s", eventListenerId);
-        if (m_ProcessMap.containsKey(eventListenerId))
-        {
-            m_ProcessMap.remove(eventListenerId);
-        }
+        removeProcess(eventListenerId);
     }
 
     /**
@@ -186,4 +201,22 @@ public class VlcTranscoder implements TranscoderService
         m_LoggingService.info("Received stopped event for event listener ID: %s", eventListenerId);
     }
 
+    /**
+     * Remove process from the map and release wake lock if no other processes are still running.
+     * 
+     * @param processId
+     *      String identifier which refers to an archiving process
+     */
+    private void removeProcess(final String processId)
+    {
+        if (m_ProcessMap.containsKey(processId))
+        {
+            m_ProcessMap.remove(processId);
+        }
+
+        if (m_ProcessMap.isEmpty())
+        {
+            m_WakeLock.cancel();
+        }
+    }
 }

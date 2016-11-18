@@ -128,9 +128,15 @@ public class RemoteChannelLookupImpl implements RemoteChannelLookup
      * Message Router the remote channel lookup service will be bound to.
      */
     private MessageRouterInternal m_MessageRouter;
-    
+
+    /**
+     * Controller system information.
+     */
     private TerraHarvestSystem m_TerraHarvestSystem;
-    
+
+    /**
+     * Remote interface configuration settings.
+     */
     private RemoteSettings m_RemoteSettings;
 
     /**

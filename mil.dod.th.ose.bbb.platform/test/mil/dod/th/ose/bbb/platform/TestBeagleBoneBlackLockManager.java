@@ -59,8 +59,6 @@ public class TestBeagleBoneBlackLockManager
         
         m_SUT.addWakeLock(m_Lock1, 0, -1);
         
-        verify(m_LogService).debug("Added active wake lock: [%s]", "test");
-        
         final List<BeagleBoneBlackLockInfo> activeLocks = new ArrayList<>(m_SUT.getActiveLocks());
         assertThat(activeLocks.size(), equalTo(1));
         final BeagleBoneBlackLockInfo lock = activeLocks.get(0);
@@ -76,8 +74,6 @@ public class TestBeagleBoneBlackLockManager
         
         final long startTime = System.currentTimeMillis() + 1000000;
         m_SUT.addWakeLock(m_Lock1, startTime, -1);
-        
-        verify(m_LogService).debug("Added scheduled wake lock: [%s]", "test");
         
         final List<BeagleBoneBlackLockInfo> scheduledLocks = new ArrayList<>(m_SUT.getScheduledLocks());
         assertThat(scheduledLocks.size(), equalTo(1));
@@ -111,13 +107,11 @@ public class TestBeagleBoneBlackLockManager
         
         activeLocks = new ArrayList<>(m_SUT.getActiveLocks());
         assertThat(activeLocks.size(), equalTo(1));
-        verify(m_LogService).debug("Removed active lock: [%s]", "active");
         
         m_SUT.removeWakeLock(m_Lock2);
         
         scheduledLocks = new ArrayList<>(m_SUT.getScheduledLocks());
         assertThat(scheduledLocks.size(), equalTo(1));
-        verify(m_LogService).debug("Removed scheduled lock: [%s]", "scheduled");
     }
     
     @Test

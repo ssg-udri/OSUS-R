@@ -34,6 +34,7 @@ import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.types.ccomm.PhysicalLinkTypeEnum;
 import mil.dod.th.ose.core.factory.api.data.FactoryObjectInformationException;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,7 +53,14 @@ public class TestCustomCommsServiceImpl_Physical extends CustomCommsServiceImpl_
     {
         stubServices();
     }
-    
+
+    @After
+    public void tearDown()
+    {
+        m_SUT.deactivate();
+        verify(m_WakeLock, times(1)).delete();
+    }
+
     /**
      * Verify that a physical link can be created when the physical link factory is known to the service.
      */
@@ -66,6 +74,8 @@ public class TestCustomCommsServiceImpl_Physical extends CustomCommsServiceImpl_
 
         assertThat(physicalLink, is(notNullValue()));
         verify(m_PhysRegistry).createNewObject(m_PhysFactory, name, new Hashtable<String, Object>());
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -85,6 +95,8 @@ public class TestCustomCommsServiceImpl_Physical extends CustomCommsServiceImpl_
         assertThat(physicalLink, is(notNullValue()));
         verify(m_PhysRegistry).createNewObject(m_PhysFactory, name, props);
         verify(m_PhysInternal, never()).setProperties(props);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -117,6 +129,8 @@ public class TestCustomCommsServiceImpl_Physical extends CustomCommsServiceImpl_
         
         //verify create ONLY called once since reg is mocked to return the same link
         verify(m_PhysRegistry, times(1)).createNewObject(m_PhysFactory, name, new Hashtable<String, Object>());
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
         
         //verify set props called
         verify(m_PhysInternal, times(1)).setProperties(props);
@@ -139,6 +153,8 @@ public class TestCustomCommsServiceImpl_Physical extends CustomCommsServiceImpl_
         m_SUT.tryCreatePhysicalLink(PhysicalLinkTypeEnum.SERIAL_PORT, name);
 
         verify(m_PhysRegistry, times(1)).createNewObject(m_PhysFactory, name, new Hashtable<String, Object>());
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -162,6 +178,8 @@ public class TestCustomCommsServiceImpl_Physical extends CustomCommsServiceImpl_
         m_SUT.tryCreatePhysicalLink(PhysicalLinkTypeEnum.SERIAL_PORT, name, props);
 
         verify(m_PhysRegistry, times(1)).createNewObject(m_PhysFactory, name, props);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -214,6 +232,8 @@ public class TestCustomCommsServiceImpl_Physical extends CustomCommsServiceImpl_
         //verify
         verify(m_PhysRegistry, times(1)).createNewObject(m_PhysFactory, name, new Hashtable<String, Object>());
         verify(m_PhysRegistry, times(1)).createNewObject(m_PhysFactory, name2, new Hashtable<String, Object>());
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /**

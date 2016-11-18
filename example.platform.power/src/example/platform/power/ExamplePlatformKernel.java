@@ -193,7 +193,7 @@ public class ExamplePlatformKernel implements EventHandler
         m_InactiveLocks = new HashSet<WakeLocks>();
         m_WakeSources = new HashSet<PhysicalLink>();
         m_Registrations = registerEvents(context);
-        m_Scheduler = Executors.newScheduledThreadPool(1);
+        m_Scheduler = Executors.newScheduledThreadPool(4);
     }
     
     @Deactivate
@@ -413,33 +413,36 @@ public class ExamplePlatformKernel implements EventHandler
      */
     public void enableLowPowerMode()
     {
-        m_Logging.debug("Enabling low power mode.");
-        Long shutdownDelay = m_StandbyNoticeTimeMs;
-        
-        final Map<String, Object> eventProps = new HashMap<>();
-        eventProps.put(PlatformPowerManager.EVENT_PROP_STANDBY_TIME, shutdownDelay);
-        
-        final Event lowPowerModeEvent = new Event(PlatformPowerManager.TOPIC_STANDBY_NOTICE_EVENT, eventProps);
-        m_EventAdmin.postEvent(lowPowerModeEvent);
-        
-        // Schedule shutdown       
-        if(m_LowPowerThread == null)
+        if (m_PowerModeHandler == null || m_PowerModeHandler.isDone())
         {
-            m_LowPowerThread = new Thread(new ShutdownTask(shutdownDelay, m_Logging, this, m_EventAdmin));
-        }
-        
-        m_PowerModeHandler = 
-            m_Scheduler.scheduleWithFixedDelay(m_LowPowerThread, 0, m_StartupTimeMs, MILLISECONDS);
-        
-        //Schedule a wake up for the max sleep time
-        m_Scheduler.schedule(new Runnable()
-        {            
-            @Override
-            public void run()
-            {                
-                disableLowPowerMode();
+            m_Logging.debug("Enabling low power mode.");
+            Long shutdownDelay = m_StandbyNoticeTimeMs;
+            
+            final Map<String, Object> eventProps = new HashMap<>();
+            eventProps.put(PlatformPowerManager.EVENT_PROP_STANDBY_TIME, shutdownDelay);
+            
+            final Event lowPowerModeEvent = new Event(PlatformPowerManager.TOPIC_STANDBY_NOTICE_EVENT, eventProps);
+            m_EventAdmin.postEvent(lowPowerModeEvent);
+            
+            // Schedule shutdown       
+            if(m_LowPowerThread == null)
+            {
+                m_LowPowerThread = new Thread(new ShutdownTask(shutdownDelay, m_Logging, this, m_EventAdmin));
             }
-        }, m_MaxSleepTimeMs, MILLISECONDS);
+        
+            m_PowerModeHandler = 
+                m_Scheduler.scheduleWithFixedDelay(m_LowPowerThread, 0, m_StartupTimeMs, MILLISECONDS);
+            
+            //Schedule a wake up for the max sleep time
+            m_Scheduler.schedule(new Runnable()
+            {            
+                @Override
+                public void run()
+                {                
+                    disableLowPowerMode();
+                }
+            }, m_MaxSleepTimeMs, MILLISECONDS);
+        }
     }
 
     @Override

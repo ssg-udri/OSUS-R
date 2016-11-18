@@ -23,6 +23,7 @@ import mil.dod.th.core.observation.types.ImageMetadata;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
 import mil.dod.th.core.observation.types.Weather;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.ComponentType;
 import mil.dod.th.core.types.ComponentTypeEnum;
 import mil.dod.th.core.types.DigitalMedia;
@@ -57,14 +58,22 @@ import org.osgi.service.log.LogService;
 public class ${class} implements AssetProxy
 { 
     /**
-    * Reference to the context which provides this class with methods to interact with the rest of the system.
-    */
+     * Reference to the context which provides this class with methods to interact with the rest of the system.
+     */
     private AssetContext m_Context;
+    
+    /**
+     * Reference to the wake lock used for vital asset operations.
+     */
+    private WakeLock m_WakeLock;
 
     @Override
     public void initialize(final AssetContext context, final Map<String, Object> props) throws FactoryException
     {
         m_Context = context;
+        
+        // Retrieve a wake lock used to keep the system awake during vital asset operations. 
+        m_WakeLock = m_Context.createPowerManagerWakeLock("${class}WakeLock");
         
         // ${task}: Replace with custom handling of properties when asset is created or restored. `config` object uses
         // reflection to obtain property from map and therefore should not be used in processing intensive code.
@@ -78,7 +87,7 @@ public class ${class} implements AssetProxy
         // persistObservation() method to post observations asynchronously.
         final Observation obs = new Observation().withWeather(new Weather()
                 .withTemperature(new TemperatureCelsius().withValue(98.6)));
-            
+
         try
         {
             m_Context.persistObservation(obs);
@@ -88,7 +97,17 @@ public class ${class} implements AssetProxy
             throw new AssetException(e);
         }
     }
-    
+
+    /**
+     * Deactivate the asset when removed or core is shutdown.
+     */
+    @Deactivate
+    public void release()
+    {
+        // Remove the wake lock before the asset is deactivated.
+        m_WakeLock.delete();
+    }
+
     @Override
     public void updated(final Map<String, Object> props)
     {
@@ -103,46 +122,65 @@ public class ${class} implements AssetProxy
     @Override
     public void onActivate() throws AssetException
     {
-        Logging.log(LogService.LOG_INFO, "${description} activated");
-
-        // ${task}: Handle asset activation by AssetDirectoryService, i.e. initialize hardware, input/output streams, when
-        // the asset is active, it should be collecting data, doing processing, whatever it means to be in an active 
-        // state
-        
-        //The below is an example of setting the asset's status using a Status object.
-        //Assume this information would be fetched from the physical asset itself. Therefore,
-        //establishing an relevant status for the asset and also checking communication with the physical device. If
-        //for some reason the information could not be gathered the asset generally should not be activated like seen
-        //below, if the status observation is not valid an exception is thrown which would prevent the asset from 
-        //assuming the 'Activated' status.
-        final AmbientStatus ambientStatus = new AmbientStatus(
-                new AmbientType(AmbientTypeEnum.TEMPERATURE, "temperature is low"), 
-                    new OperatingStatus(SummaryStatusEnum.GOOD, "warming up"));
-        final BatteryChargeLevel batLevel = new BatteryChargeLevel().withChargeLevel(ChargeLevelEnum.FULL);
-        final Status status = new Status()
-            .withSummaryStatus(new OperatingStatus(SummaryStatusEnum.GOOD, "Asset Activated"))
-            .withAmbientStatus(ambientStatus)
-            .withBatteryChargeLevel(batLevel);
-            
         try
         {
-            m_Context.setStatus(status);
+            // Use a wake lock to ensure the system stays awake while activating
+            m_WakeLock.activate();
+
+            Logging.log(LogService.LOG_INFO, "${description} activated");
+
+            // ${task}: Handle asset activation by AssetDirectoryService, i.e. initialize hardware, input/output 
+            // streams, when the asset is active, it should be collecting data, doing processing, whatever it means to 
+            // be in an active state
+            
+            // The below is an example of setting the asset's status using a Status object.
+            // Assume this information would be fetched from the physical asset itself. Therefore,
+            // establishing an relevant status for the asset and also checking communication with the physical device. 
+            // If for some reason the information could not be gathered the asset generally should not be activated like
+            // seen below, if the status observation is not valid an exception is thrown which would prevent the asset 
+            // from assuming the 'Activated' status.
+            final AmbientStatus ambientStatus = new AmbientStatus(
+                    new AmbientType(AmbientTypeEnum.TEMPERATURE, "temperature is low"), 
+                        new OperatingStatus(SummaryStatusEnum.GOOD, "warming up"));
+            final BatteryChargeLevel batLevel = new BatteryChargeLevel().withChargeLevel(ChargeLevelEnum.FULL);
+            final Status status = new Status()
+                .withSummaryStatus(new OperatingStatus(SummaryStatusEnum.GOOD, "Asset Activated"))
+                .withAmbientStatus(ambientStatus)
+                .withBatteryChargeLevel(batLevel);
+            
+            try
+            {
+                m_Context.setStatus(status);
+            }
+            catch (final ValidationFailedException e)
+            {
+                throw new AssetException(e);
+            }
         }
-        catch (final ValidationFailedException e)
+        finally
         {
-            throw new AssetException(e);
+            // Ensure that the wake lock is cancelled regardless of whether or not the asset successfully activated.
+            m_WakeLock.cancel();
         }
     }
     
     @Override
     public void onDeactivate() throws AssetException
     {
-        Logging.log(LogService.LOG_INFO, "${description} deactivated");
+        try
+        {
+            m_WakeLock.activate();
+            Logging.log(LogService.LOG_INFO, "${description} deactivated");
 
-        // ${task}: Handle asset deactivation by AssetDirectoryService, i.e. release hardware resources, power off devices,
-        // should no longer be collecting data, processing data, etc., whatever it means to be in an inactive state,
-        // this asset can be later activated again
-        m_Context.setStatus(SummaryStatusEnum.OFF, "Asset Deactivated");
+            // ${task}: Handle asset deactivation by AssetDirectoryService, i.e. release hardware resources, power off 
+            // devices, should no longer be collecting data, processing data, etc., whatever it means to be in an 
+            // inactive state, this asset can be later activated again
+            m_Context.setStatus(SummaryStatusEnum.OFF, "Asset Deactivated");
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
     
     @Override
@@ -211,7 +249,6 @@ public class ${class} implements AssetProxy
         {
             throw new CommandExecutionException("Could not execute specified command.");
         }
-        
     }
     
     @Override

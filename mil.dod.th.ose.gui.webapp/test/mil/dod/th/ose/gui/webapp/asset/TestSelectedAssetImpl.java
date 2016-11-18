@@ -35,6 +35,7 @@ import mil.dod.th.core.remote.proto.AssetMessages.DeleteRequestData;
 import mil.dod.th.core.remote.proto.AssetMessages.PerformBitRequestData;
 import mil.dod.th.core.remote.proto.AssetMessages.SetNameRequestData;
 import mil.dod.th.ose.gui.webapp.factory.AbstractFactoryBaseModel;
+import mil.dod.th.ose.gui.webapp.factory.FactoryBaseModel;
 import mil.dod.th.ose.gui.webapp.utils.FacesContextUtil;
 import mil.dod.th.ose.shared.SharedMessageUtils;
 import mil.dod.th.remote.lexicon.types.remote.RemoteTypesGen;
@@ -57,6 +58,7 @@ public class TestSelectedAssetImpl
     private SelectedAssetImpl m_SUT;
     private MessageFactory m_MessageFactory;
     private AssetMgrImpl m_AssetMgr;
+    private AssetDisplayHelper m_AssetDisplay;
     private MessageWrapper m_MessageWrapper;
     
     private RequestContext m_RequestContext;
@@ -72,6 +74,7 @@ public class TestSelectedAssetImpl
     {
         m_MessageFactory = mock(MessageFactory.class);
         m_AssetMgr = mock(AssetMgrImpl.class);
+        m_AssetDisplay = mock(AssetDisplayHelper.class);
         m_MessageWrapper = mock(MessageWrapper.class);
         
         m_RequestContext = mock(RequestContext.class);
@@ -82,6 +85,7 @@ public class TestSelectedAssetImpl
         
         //set injected service
         m_SUT.setAssetMgr(m_AssetMgr);
+        m_SUT.setAssetDisplay(m_AssetDisplay);
         m_SUT.setMessageFactory(m_MessageFactory);
         
         m_SUT.setFacesContextUtil(m_FacesUtil);
@@ -269,6 +273,11 @@ public class TestSelectedAssetImpl
         
         //Verify that the selected asset is returned to null after the request.
         assertThat(m_SUT.getSelectedAssetForDialog(), is(nullValue()));
+        
+        //Verify that the selected asset is set to null
+        ArgumentCaptor<FactoryBaseModel> argument = ArgumentCaptor.forClass(FactoryBaseModel.class);
+        verify(m_AssetDisplay).setSelectedFactoryObject(argument.capture());
+        assertThat(argument.getValue(), is(nullValue()));
     }
     
        

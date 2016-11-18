@@ -12,13 +12,14 @@
 //==============================================================================
 package example.platform.power;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -37,10 +38,9 @@ import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Modified;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import mil.dod.th.core.ccomm.physical.PhysicalLink;
 import mil.dod.th.core.log.LoggingService;
-import mil.dod.th.core.persistence.PersistenceFailedException;
-import mil.dod.th.core.persistence.PersistentDataStore;
 import mil.dod.th.core.pm.PlatformPowerManager;
 import mil.dod.th.core.pm.WakeLock;
 
@@ -62,11 +62,6 @@ public class ExamplePlatformPowerManager implements PlatformPowerManager, EventH
      * Reference to the OS/hardware level example kernel code
      */
     private ExamplePlatformKernel m_ExamplePlatformKernel;
-    
-    /** 
-     * Used to persist method call parameters for verification 
-     */
-    private PersistentDataStore m_PersistDataStore; 
     
     /** 
      * Reference to registered event handler registrations 
@@ -102,7 +97,12 @@ public class ExamplePlatformPowerManager implements PlatformPowerManager, EventH
      * Startup sleep delay time, in milliseconds
      */
     private long m_StartupTimeMs;
-     
+
+    /**
+     * Keeps a log of power management method calls made for testing purposes.
+     */
+    private List<ExamplePowerManagerMethodLog> m_MethodLog;
+
     /**
      * Binds the logging service for logging messages.
      * 
@@ -115,29 +115,18 @@ public class ExamplePlatformPowerManager implements PlatformPowerManager, EventH
         m_Logging = logging;
     }
     
-    /**
-     * Binds the persistent data store service for storing method parameter values.
-     * 
-     * @param datastore
-     *          PersistentDataStore service object
-     */
-    @Reference
-    public void setPersistentDataStore(final PersistentDataStore datastore)
-    {
-        m_PersistDataStore = datastore;
-    }
-    
     @Reference
     public void setPlatformKernel(final ExamplePlatformKernel kernel)
     {
         m_ExamplePlatformKernel = kernel;
     }
-        
+
     @Activate
     public void activate(final BundleContext context, final Map<String, Object> props)
     {
+        m_MethodLog = new ArrayList<>();
         m_Registration = registerEvents(context);
-        m_Scheduler = Executors.newScheduledThreadPool(1);
+        m_Scheduler = Executors.newScheduledThreadPool(2);
         update(props);
     }
     
@@ -151,6 +140,7 @@ public class ExamplePlatformPowerManager implements PlatformPowerManager, EventH
     public void deactivate()
     {
         m_Registration.unregister();
+        m_MethodLog.clear();
     }
      
     private void update(final Map<String, Object> props)
@@ -316,7 +306,26 @@ public class ExamplePlatformPowerManager implements PlatformPowerManager, EventH
         
         return context.registerService(EventHandler.class, this, props);
     }
+
+    /**
+     * Retrieve the log of power management methods called. Used for testing purposes.
+     * 
+     * @return
+     *      array of method log calls
+     */
+    public ExamplePowerManagerMethodLog[] getMethodLog()
+    {
+        return m_MethodLog.toArray(new ExamplePowerManagerMethodLog[]{});
+    }
     
+    /**
+     * Clear the power management method call log.
+     */
+    public void clearMethodLog()
+    {
+        m_MethodLog.clear();
+    }
+
     /**
      * Writes an {@link ExamplePowerManagerMethodLog} to the persistent data store.
      * 
@@ -324,27 +333,17 @@ public class ExamplePlatformPowerManager implements PlatformPowerManager, EventH
      *      the description to use for querying purposes
      * @param methodLog
      *      the {@link ExamplePowerManagerMethodLog} object to persist
+     * @param caller
+     *      the method called
      */
     private void logMethodCall(String description, ExamplePowerManagerMethodLog methodLog, 
             ExamplePowerManagerMethodLog.MethodCalled caller)
     {           
         methodLog.setCalledMethod(caller);
-        
-        try
-        {
-            m_PersistDataStore.persist(ExamplePowerManagerMethodLog.class, UUID.randomUUID(), description,
-                    methodLog);
-        }
-        catch (IllegalArgumentException e)
-        {
-            throw new RuntimeException("Unable to persist method call log, parameter is null.", e);
-        }
-        catch (PersistenceFailedException e)
-        {
-            throw new RuntimeException("Unable to persist method call log, persist failed.", e);
-        }
+
+        m_MethodLog.add(methodLog);
     }
-    
+
     /**
      * Gets the current values of the configuration properties for the {@link PlatformPowerManager}
      * @return

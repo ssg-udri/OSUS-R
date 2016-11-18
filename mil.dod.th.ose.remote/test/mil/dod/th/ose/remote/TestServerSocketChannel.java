@@ -21,11 +21,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.remote.ChannelStatus;
 import mil.dod.th.core.remote.proto.BaseMessages.BaseNamespace;
 import mil.dod.th.core.remote.proto.RemoteBase.Namespace;
@@ -47,6 +50,8 @@ import org.osgi.service.component.ComponentInstance;
 
 public class TestServerSocketChannel
 {
+    private static final String REMOTE_SOCKET_ADDR = "test:100";
+
     private ServerSocketChannel m_SUT;
     private LoggingService m_Logging;
     private ComponentFactory m_ListenerFactory;
@@ -55,6 +60,8 @@ public class TestServerSocketChannel
     private QueuedMessageSender m_MessageSender;
     private ComponentFactory m_SenderFactory;
     private RemoteSettings m_RemoteSettings;
+    private PowerManager m_PowerManager;
+    private WakeLock m_WakeLock;
     
     @SuppressWarnings("unchecked")
     @Before
@@ -63,18 +70,24 @@ public class TestServerSocketChannel
         m_SUT = new ServerSocketChannel();
         m_Logging = LoggingServiceMocker.createMock();
         m_SUT.setLoggingService(m_Logging);
-        
+
+        // mock out power manager
+        m_PowerManager = mock(PowerManager.class);
+        m_WakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), "remoteSocket:test:100")).thenReturn(m_WakeLock);
+        m_SUT.setPowerManager(m_PowerManager);
+
         // mock out remote settings
         m_RemoteSettings = mock(RemoteSettings.class);
         m_SUT.setRemoteSettings(m_RemoteSettings);
         when(m_RemoteSettings.isLogRemoteMessagesEnabled()).thenReturn(true);
-        
+
         // mock out listener factory
         m_ListenerFactory = mock(ComponentFactory.class);
         m_SUT.setSocketMessageListenerFactory(m_ListenerFactory);
         m_ListenerInstance = mock(ComponentInstance.class);
         when(m_ListenerFactory.newInstance(Mockito.any(Dictionary.class))).thenReturn(m_ListenerInstance);
-    
+
         // mock out message sender factory
         m_MessageSender = mock(QueuedMessageSender.class);
         m_SenderFactory = mock(ComponentFactory.class);
@@ -103,6 +116,9 @@ public class TestServerSocketChannel
     {
         // mock the input
         Socket socket = mock(Socket.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
 
         // mock the message listener and its run method to block, need to block to verify run method is called on 
         // separate thread
@@ -117,13 +133,18 @@ public class TestServerSocketChannel
                 return null;
             }
         }).when(socketMessageListener).run();
-        
+
+        when(m_RemoteSettings.isPreventSleepModeEnabled()).thenReturn(false);
+
         // activate the component
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ServerSocketChannel.SOCKET_PROP_KEY, socket);
         m_SUT.activate(props);
-        
-        //all new channels start out as unknown
+
+        // verify wake lock is activated
+        verify(m_WakeLock, never()).activate();
+
+        // all new channels start out as unknown
         assertThat(m_SUT.getStatus(), is(ChannelStatus.Unknown));
         
         // verify message listener is created and given the socket and channel instance
@@ -144,7 +165,45 @@ public class TestServerSocketChannel
         // didn't timeout waiting on the run method to exit
         verify(socketMessageListener).run();
     }
-    
+
+    /**
+     * Verify that the wake lock is activated when enabled by the remote settings.
+     */
+    @Test
+    public void testActivateWakeLock() throws InterruptedException
+    {
+        // mock the input
+        Socket socket = mock(Socket.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
+
+        // mock the message listener
+        SocketMessageListener socketMessageListener = mock(SocketMessageListener.class);
+        when(m_ListenerInstance.getInstance()).thenReturn(socketMessageListener);
+        doAnswer(new Answer<Object>()
+        {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                return null;
+            }
+        }).when(socketMessageListener).run();
+
+        when(m_RemoteSettings.isPreventSleepModeEnabled()).thenReturn(true);
+
+        // activate the component
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put(ServerSocketChannel.SOCKET_PROP_KEY, socket);
+        m_SUT.activate(props);
+
+        // verify wake lock is activated
+        verify(m_WakeLock).activate();
+
+        // all new channels start out as unknown
+        assertThat(m_SUT.getStatus(), is(ChannelStatus.Unknown));
+    }
+
     /**
      * Verify socket and output stream is closed on deactivation.
      * 
@@ -157,6 +216,9 @@ public class TestServerSocketChannel
         Socket socket = mock(Socket.class);
         OutputStream outStream = mock(OutputStream.class);
         when(socket.getOutputStream()).thenReturn(outStream);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
         
         // activate method expects a connected socket to be passed in and remote channel
         Map<String, Object> props = new HashMap<String, Object>();
@@ -168,6 +230,7 @@ public class TestServerSocketChannel
         verify(socket).close();
         verify(m_ListenerInstance).dispose();
         verify(m_SenderInstance).dispose();
+        verify(m_WakeLock).delete();
         
         // this time have both methods throw exception, should still complete deactivation and each one called
         doThrow(new IOException()).when(socket).close();
@@ -192,6 +255,9 @@ public class TestServerSocketChannel
         Socket socket = mock(Socket.class);
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         when(socket.getOutputStream()).thenReturn(outStream);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
         
         // activate method expects a connected socket to be passed in
         Map<String, Object> props = new HashMap<String, Object>();
@@ -231,6 +297,9 @@ public class TestServerSocketChannel
         Socket socket = mock(Socket.class);
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         when(socket.getOutputStream()).thenReturn(outStream);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
         
         // activate method expects a connected socket to be passed in
         Map<String, Object> props = new HashMap<String, Object>();
@@ -265,6 +334,9 @@ public class TestServerSocketChannel
     {
         // mock the socket that will be used to send the message
         Socket socket = mock(Socket.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
         
         // activate method expects a connected socket to be passed in
         Map<String, Object> props = new HashMap<String, Object>();
@@ -315,6 +387,9 @@ public class TestServerSocketChannel
             }
         };
         when(socket.getOutputStream()).thenReturn(outStream);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
         
         // activate method expects a connected socket to be passed in
         Map<String, Object> props = new HashMap<String, Object>();
@@ -336,6 +411,9 @@ public class TestServerSocketChannel
     {
         // mock the socket that will be used to send the message
         Socket socket = mock(Socket.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
         
         // activate method expects a connected socket to be passed in
         Map<String, Object> props = new HashMap<String, Object>();
@@ -372,6 +450,10 @@ public class TestServerSocketChannel
     {
         // activate the component with mocked socket
         Socket socket = mock(Socket.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
+
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ServerSocketChannel.SOCKET_PROP_KEY, socket);
         m_SUT.activate(props);
@@ -391,6 +473,10 @@ public class TestServerSocketChannel
     {
         // activate the component with mocked socket
         Socket socket = mock(Socket.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
+
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ServerSocketChannel.SOCKET_PROP_KEY, socket);
         m_SUT.activate(props);
@@ -408,6 +494,9 @@ public class TestServerSocketChannel
     {
         // mock some different property values
         Socket socket1 = mock(Socket.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket1.getRemoteSocketAddress()).thenReturn(socketAddress);
         Socket socket2 = mock(Socket.class);
         
         // setup a channel
@@ -436,6 +525,9 @@ public class TestServerSocketChannel
     {
         // mock the socket
         Socket socket = mock(Socket.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
         
         // activate the component
         Map<String, Object> props = new HashMap<String, Object>();
@@ -453,14 +545,17 @@ public class TestServerSocketChannel
     {
         // mock the socket
         Socket socket = mock(Socket.class);
-        when(socket.getPort()).thenReturn(1000);
+        when(socket.getPort()).thenReturn(100);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
         
         // activate the component
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ServerSocketChannel.SOCKET_PROP_KEY, socket);
         m_SUT.activate(props);
         
-        assertThat(m_SUT.getPort(), is(1000));
+        assertThat(m_SUT.getPort(), is(100));
     }
     
     /**
@@ -471,6 +566,9 @@ public class TestServerSocketChannel
     {
         // mock the socket and its InetAddress as it contains the hostname used by the method
         Socket socket = mock(Socket.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
         InetAddress inetAddress = mock(InetAddress.class);
         when(socket.getInetAddress()).thenReturn(inetAddress);
         when(inetAddress.getHostName()).thenReturn("test-host");
@@ -491,6 +589,9 @@ public class TestServerSocketChannel
     {
         // mock the socket so getHost and getPort work
         Socket socket = mock(Socket.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
+        when(socketAddress.toString()).thenReturn(REMOTE_SOCKET_ADDR);
+        when(socket.getRemoteSocketAddress()).thenReturn(socketAddress);
         InetAddress inetAddress = mock(InetAddress.class);
         when(socket.getInetAddress()).thenReturn(inetAddress);
         when(inetAddress.getHostName()).thenReturn("test-host");

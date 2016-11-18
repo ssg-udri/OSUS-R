@@ -21,6 +21,7 @@ import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetContext;
 import mil.dod.th.core.asset.AssetException;
@@ -35,8 +36,8 @@ import mil.dod.th.core.observation.types.Status;
 
 /**
  * This asset updates its configuration values SLOWLY.
+ * 
  * @author Cheryl
- *
  */
 @Component(factory = Asset.FACTORY)
 public class ExampleSlowUpdateAsset implements AssetProxy 
@@ -70,7 +71,8 @@ public class ExampleSlowUpdateAsset implements AssetProxy
     {
         if (m_Property.equals("default"))
         {
-            throw new IllegalStateException("Property is still set to default, set property didn't update property");
+            throw new IllegalStateException("Property is still set to default, "
+                    + "set property didn't update property");
         }
     }
     
@@ -91,7 +93,8 @@ public class ExampleSlowUpdateAsset implements AssetProxy
         {
             throw new ConfigurationException("Some property from exampleSlowUpdateAsset", "It is slow!", e);
         }
-        m_Property = Configurable.createConfigurable(ExampleSlowUpdateAssetAttributes.class, props).exampleProperty();
+        m_Property = Configurable.createConfigurable(ExampleSlowUpdateAssetAttributes.class, props)
+                .exampleProperty();
     }
 
     @Override
@@ -112,7 +115,7 @@ public class ExampleSlowUpdateAsset implements AssetProxy
     {
         throw new CommandExecutionException("Example slow update assets don't support commands.");
     }
-    
+
     @Override
     public Set<Extension<?>> getExtensions()
     {

@@ -24,6 +24,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -56,6 +57,7 @@ import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
 import mil.dod.th.core.persistence.ObservationStore;
 import mil.dod.th.core.persistence.PersistenceFailedException;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.Version;
 import mil.dod.th.core.types.factory.SpatialTypesFactory;
 import mil.dod.th.core.types.spatial.Coordinates;
@@ -111,6 +113,7 @@ public class TestAssetImpl
     private EventAdmin m_EventAdmin;
     private AssetFactoryObjectDataManager m_ObjectDataManager;
     private PowerManagerInternal m_PowerInternal;
+    private WakeLock m_WakeLock;
     private Configuration m_Configuration;
 
     @Mock
@@ -135,6 +138,7 @@ public class TestAssetImpl
         m_ObjectDataManager = mock(AssetFactoryObjectDataManager.class);
         m_PowerInternal = mock(PowerManagerInternal.class);
         m_Configuration = mock(Configuration.class);
+        m_WakeLock = mock(WakeLock.class);
 
         // stub
         when(factoryInternal.getProductType()).thenReturn(PRODUCT_TYPE);
@@ -169,7 +173,10 @@ public class TestAssetImpl
             }
         }).when(m_Configuration).update(Mockito.any(Dictionary.class));
         when(m_ConfigAdmin.listConfigurations(anyString())).thenReturn(new Configuration[] {m_Configuration});
-        
+
+        when(m_PowerInternal.createWakeLock(m_Proxy.getClass(), m_SUT, "coreFactoryObject")).thenReturn(m_WakeLock);
+        when(m_PowerInternal.createWakeLock(m_Proxy.getClass(), m_SUT, "coreAsset")).thenReturn(m_WakeLock);
+
         m_SUT.initialize(m_FactoryRegistry, m_Proxy, factoryInternal, 
                 m_ConfigAdmin, m_EventAdmin, m_PowerInternal, OBJ_UUID, OBJ_NAME, OBJ_PID, OBJ_BASETYPE);
     }
@@ -201,7 +208,9 @@ public class TestAssetImpl
     {
         m_SUT.onActivate();
 
+        verify(m_WakeLock).activate();
         verify(m_Proxy).onActivate();
+        verify(m_WakeLock).cancel();
     }
 
     /**
@@ -211,7 +220,9 @@ public class TestAssetImpl
     public void testDeactivate() throws AssetException
     {
         m_SUT.onDeactivate();
+        verify(m_WakeLock).activate();
         verify(m_Proxy).onDeactivate();
+        verify(m_WakeLock).cancel();
     }
 
     /**
@@ -225,7 +236,9 @@ public class TestAssetImpl
         when(m_Proxy.onCaptureData()).thenReturn(observation);
         assertThat(m_SUT.captureData(), is(observation));
 
+        verify(m_WakeLock).activate();
         verify(m_Proxy).onCaptureData();
+        verify(m_WakeLock).cancel();
 
         verify(m_ObservationStore, atLeastOnce()).persist(Mockito.any(Observation.class));
 
@@ -252,6 +265,9 @@ public class TestAssetImpl
         {
             // expected exception
         }
+
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
 
     /**
@@ -359,6 +375,9 @@ public class TestAssetImpl
 
         final Observation status = m_SUT.performBit();
 
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
+
         assertThat(status, is(m_SUT.getLastStatus()));
         final ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(m_EventAdmin, atLeastOnce()).postEvent(eventCaptor.capture());
@@ -389,6 +408,9 @@ public class TestAssetImpl
 
         m_SUT.performBit();
 
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
+
         // last event should be bad status
         Map<String, Object> map = new HashMap<>();
         map.put(Asset.EVENT_PROP_ASSET_STATUS_DESCRIPTION, "Invalid data received from perform BIT");
@@ -405,6 +427,10 @@ public class TestAssetImpl
         when(m_Proxy.onPerformBit()).thenThrow(new AssetException("exception"));
 
         m_SUT.performBit();
+
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
+
         Observation status = m_SUT.getLastStatus();
 
         assertThat(status.isSetStatus(), notNullValue());
@@ -442,6 +468,9 @@ public class TestAssetImpl
         {
             // expecting exception
         }
+
+        verify(m_WakeLock, never()).activate();
+        verify(m_WakeLock, never()).cancel();
     }
 
     /**
@@ -466,6 +495,9 @@ public class TestAssetImpl
 
         verify(m_Proxy).onExecuteCommand(command);
 
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
+
         Map<String, Object> props = new HashMap<>();
         props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE_TYPE, response.getClass().getName());
         props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE, response);
@@ -486,6 +518,8 @@ public class TestAssetImpl
         m_SUT.executeCommand(command);
 
         verify(m_Proxy, never()).onExecuteCommand(command);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
 
         Map<String, Object> props = new HashMap<>();
         props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE_TYPE, SetPositionResponse.class.getName());
@@ -510,6 +544,8 @@ public class TestAssetImpl
         m_SUT.executeCommand(command);
 
         verify(m_Proxy, never()).onExecuteCommand(command);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
 
         Map<String, Object> props = new HashMap<>();
         props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE_TYPE, SetPositionResponse.class.getName());
@@ -544,6 +580,8 @@ public class TestAssetImpl
         m_SUT.executeCommand(command);
 
         verify(m_Proxy).onExecuteCommand(command);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
 
         Map<String, Object> props = new HashMap<>();
         props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE_TYPE, response.getClass().getName());
@@ -562,6 +600,8 @@ public class TestAssetImpl
         GetPositionResponse response = (GetPositionResponse)m_SUT.executeCommand(command);
 
         verify(m_Proxy, never()).onExecuteCommand(command);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
 
         Map<String, Object> props = new HashMap<>();
         props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE_TYPE, response.getClass().getName());
@@ -585,6 +625,8 @@ public class TestAssetImpl
         m_SUT.executeCommand(command);
 
         verify(m_Proxy).onExecuteCommand(command);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
 
         Map<String, Object> props = new HashMap<>();
         props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE_TYPE, response.getClass().getName());
@@ -914,6 +956,7 @@ public class TestAssetImpl
     {
         m_SUT.delete();
         verify(m_FactoryRegistry).delete(m_SUT);
+        verify(m_PowerInternal, times(2)).deleteWakeLock(m_WakeLock);
     }
 
     /**
@@ -934,6 +977,7 @@ public class TestAssetImpl
 
         }
         verify(m_FactoryRegistry, never()).delete(Mockito.any(FactoryObjectInternal.class));
+        verify(m_PowerInternal, never()).deleteWakeLock(m_WakeLock);
     }
 
     /**

@@ -15,7 +15,8 @@ package example.asset;
 import java.util.Map;
 import java.util.Set;
 
-import org.osgi.service.cm.ConfigurationException;
+import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.metatype.Configurable;
 
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetContext;
@@ -29,8 +30,8 @@ import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.metatype.Configurable;
+
+import org.osgi.service.cm.ConfigurationException;
 
 /**
  * Example asset that has required configuration properties. Used to test that an asset with required properties can be 

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.xml.bind.MarshalException;
 import javax.xml.bind.UnmarshalException;
 
 import mil.dod.th.core.log.LoggingService;
@@ -775,6 +776,14 @@ public class TestEventAdminMessageService
     {
         Map<String, Object> properties = new HashMap<String, Object>();
         Event event = new Event("FAKE_EVENT", properties);
+
+        EventRegistrationRequestData requestData = EventRegistrationRequestData.newBuilder()
+                .setCanQueueEvent(false)
+                .setExpirationTimeHours(-1)
+                .setObjectFormat(RemoteTypesGen.LexiconFormat.Enum.XML)
+                .setFilter("(something.id=Gold)")
+                .addTopic("Silver")
+                .build();        
         
         //conversion behavior
         List<ComplexTypesMapEntry> props = new ArrayList<ComplexTypesMapEntry>();
@@ -788,7 +797,7 @@ public class TestEventAdminMessageService
                 (RemoteTypesGen.LexiconFormat.Enum)any())).thenReturn(props);
 
         m_SUT.new EventHandlerImpl(200, EncryptType.AES_ECDH_ECDSA, 
-                RemoteTypesGen.LexiconFormat.Enum.XML).handleEvent(event);
+                requestData).handleEvent(event);
         
         // verify format is passed properly
         verify(m_ConversionService, timeout(1000)).mapToComplexTypesMap(anyMap(), 
@@ -819,12 +828,18 @@ public class TestEventAdminMessageService
     {
         Map<String, Object> properties = new HashMap<String, Object>();
         Event event = new Event("FAKE_EVENT", properties);
-        
+        EventRegistrationRequestData request = EventRegistrationRequestData.newBuilder()
+                .setCanQueueEvent(true)
+                .setExpirationTimeHours(-1)
+                .setObjectFormat(RemoteTypesGen.LexiconFormat.Enum.UUID_ONLY)
+                .setFilter("(something.id=Red)")
+                .addTopic("Blue")
+                .build();
         //conversion behavior
         when(m_ConversionService.mapToComplexTypesMap(anyMap(), (RemoteTypesGen.LexiconFormat.Enum)any())).
             thenThrow(new ObjectConverterException("Exception"));
 
-        m_SUT.new EventHandlerImpl(200, EncryptType.NONE, null).handleEvent(event);
+        m_SUT.new EventHandlerImpl(200, EncryptType.NONE, request).handleEvent(event);
 
         // wait to give thread time to start and try to read message
         Thread.sleep(500);
@@ -845,6 +860,14 @@ public class TestEventAdminMessageService
         Map<String, Object> properties = new HashMap<String, Object>();
         Event event = new Event("EVENT", properties);
         
+        EventRegistrationRequestData requestData = EventRegistrationRequestData.newBuilder()
+                .setCanQueueEvent(false)
+                .setExpirationTimeHours(-1)
+                .setObjectFormat(RemoteTypesGen.LexiconFormat.Enum.UUID_ONLY)
+                .setFilter("(something.id=Ruby)")
+                .addTopic("Sapphire")
+                .build();   
+        
         //conversion behavior
         List<ComplexTypesMapEntry> props = new ArrayList<ComplexTypesMapEntry>();
         when(m_ConversionService. mapToComplexTypesMap(anyMap(), 
@@ -854,7 +877,7 @@ public class TestEventAdminMessageService
         doThrow(new IllegalArgumentException("Exception!")).when(m_MessageWrapper).trySend(anyInt(), 
                 Mockito.any(EncryptType.class));
         
-        EventHandlerImpl handler = m_SUT.new EventHandlerImpl(200, EncryptType.AES_ECDH_ECDSA, null);
+        EventHandlerImpl handler = m_SUT.new EventHandlerImpl(200, EncryptType.AES_ECDH_ECDSA, requestData);
         //handle event 4 times, the fourth time should not throw exception
         int tries = 0;
         while (tries < 5)
@@ -1069,5 +1092,54 @@ public class TestEventAdminMessageService
                 setRegMessage(data).
                 setSystemId(0).
                 setEncryptionType(EncryptType.AES_ECDH_ECDSA).build();
+    }
+    @Test
+    public void testQueueingMessage() throws MarshalException, ObjectConverterException
+    {
+        Map<String, Object> properties = new HashMap<String, Object>();
+        Event event = new Event("Jhoto", properties);
+        
+        EventRegistrationRequestData requestData = EventRegistrationRequestData.newBuilder()
+                .setCanQueueEvent(true)
+                .setExpirationTimeHours(-1)
+                .setObjectFormat(RemoteTypesGen.LexiconFormat.Enum.XML)
+                .setFilter("(something.id=Pearl)")
+                .addTopic("Diamond")
+                .build();   
+        
+        //Conversion behavior
+        List<ComplexTypesMapEntry> props = new ArrayList<ComplexTypesMapEntry>();
+        ComplexTypesMapEntry entry = ComplexTypesMapEntry.newBuilder().
+            setKey("fakeKey").
+            setMulti(Multitype.newBuilder().
+                setType(Type.STRING).
+                setStringValue("fakeValue").build()).build();
+        props.add(entry);
+        when(m_ConversionService. mapToComplexTypesMap(anyMap(), 
+                (RemoteTypesGen.LexiconFormat.Enum)any())).thenReturn(props);
+        
+        EventHandlerImpl handler = m_SUT.new EventHandlerImpl(200, EncryptType.AES_ECDH_ECDSA, 
+                requestData);
+        handler.handleEvent(event);
+        
+        // verify format is passed properly
+        verify(m_ConversionService, timeout(1000)).mapToComplexTypesMap(anyMap(), 
+                eq(RemoteTypesGen.LexiconFormat.Enum.XML));
+
+        ArgumentCaptor<SendEventData> messageCaptor = ArgumentCaptor.forClass(SendEventData.class);
+        verify(m_MessageFactory, timeout(1000)).createEventAdminMessage(eq(EventAdminMessageType.SendEvent), 
+                messageCaptor.capture());
+        verify(m_MessageWrapper, timeout(1000)).queue(200, EncryptType.AES_ECDH_ECDSA,null);
+
+        // verify content of message
+        SendEventData eventMessage = messageCaptor.getValue();
+        assertThat(eventMessage.getTopic(), is("Jhoto"));
+
+        ComplexTypesMapEntry entry1 = eventMessage.getProperty(0);
+        assertThat(entry1.getKey(), is("fakeKey"));
+        assertThat(entry1.getMulti().getStringValue(), is("fakeValue"));
+        ComplexTypesMapEntry entry2 = eventMessage.getProperty(1);
+        assertThat(entry2.getKey(), is(RemoteConstants.REMOTE_EVENT_PROP));
+        assertThat(entry2.getMulti().getBoolValue(), is(true));
     }
 }

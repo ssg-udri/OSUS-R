@@ -28,6 +28,7 @@ import mil.dod.th.core.datastream.StreamProfileException;
 import mil.dod.th.core.datastream.StreamProfileProxy;
 import mil.dod.th.core.factory.FactoryObjectProxy;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.transcoder.TranscoderService;
 import mil.dod.th.ose.core.factory.api.AbstractFactoryObject;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
@@ -42,13 +43,10 @@ import org.osgi.service.event.EventAdmin;
  * StreamProfile implementation of a {@link mil.dod.th.core.factory.FactoryObject}.
  * 
  * @author jmiller
- * 
- *
  */
 @Component(factory = StreamProfileInternal.COMPONENT_FACTORY_REG_ID)
 public class StreamProfileImpl extends AbstractFactoryObject implements StreamProfileInternal
 {
-        
     /**
      * The {@link StreamProfileProxy} that is associated with this implementation.
      */
@@ -84,6 +82,11 @@ public class StreamProfileImpl extends AbstractFactoryObject implements StreamPr
      */
     private StreamProfileFactoryObjectDataManager m_StreamProfileFactoryObjectDataManager;
     
+    /**
+     * Wake lock used to keep system awake when the stream is enabled.
+     */
+    private WakeLock m_WakeLock;
+
     /**
      * Method to set the {@link LoggingService} to use.
      * @param loggingService interface for logging service
@@ -128,10 +131,10 @@ public class StreamProfileImpl extends AbstractFactoryObject implements StreamPr
             final String baseType) 
                     throws IllegalStateException
     {
-
         super.initialize(registry, proxy, factory, configAdmin, eventAdmin, powerMgr, uuid, name, pid, baseType);
         m_StreamProfileProxy = (StreamProfileProxy)proxy;
         m_Enabled = false;
+        m_WakeLock = powerMgr.createWakeLock(m_StreamProfileProxy.getClass(), this, "coreStreamProfile");
         
         try
         {
@@ -183,7 +186,6 @@ public class StreamProfileImpl extends AbstractFactoryObject implements StreamPr
     @Override
     public URI getStreamPort()
     {
-        
         return m_StreamPort;
     }
 
@@ -198,7 +200,6 @@ public class StreamProfileImpl extends AbstractFactoryObject implements StreamPr
     {
         if (enable)
         {
-            
             if (m_Enabled)
             {
                 m_Log.warning("Stream profile with UUID %s is already enabled.", getUuid());
@@ -208,6 +209,10 @@ public class StreamProfileImpl extends AbstractFactoryObject implements StreamPr
             try 
             {
                 m_StreamProfileProxy.onEnabled();
+
+                // Prevent the system from sleeping when the stream profile is enabled
+                m_WakeLock.activate();
+
                 m_Enabled = true;
                 
                 final Map<String, Object> transcoderProps = new HashMap<>();
@@ -218,9 +223,8 @@ public class StreamProfileImpl extends AbstractFactoryObject implements StreamPr
                 props.put(DataStreamService.EVENT_PROP_STREAM_PROFILE, this);
                 props.put(DataStreamService.EVENT_PROP_STREAM_PROFILE_ENABLED, true);
                 postEvent(DataStreamService.TOPIC_STREAM_PROFILE_STATE_CHANGED, props);
-                
+
                 m_TranscoderService.start(getUuid().toString(), getDataSource(), getStreamPort(), transcoderProps);
-                
             } 
             catch (final StreamProfileException spe)
             {
@@ -256,8 +260,11 @@ public class StreamProfileImpl extends AbstractFactoryObject implements StreamPr
                 m_Log.error("Stream profile with UUID %s could not be disabled.", getUuid());
 
             }
+            finally
+            {
+                m_WakeLock.cancel();
+            }
         }
-        
     }
 
     @Override
@@ -277,4 +284,18 @@ public class StreamProfileImpl extends AbstractFactoryObject implements StreamPr
         }
     }
 
+    @Override
+    public void delete() throws IllegalStateException
+    {
+        if (isEnabled())
+        {
+            throw new IllegalStateException(
+                    String.format("Stream Profile is enabled, cannot remove Stream Profile [%s]",
+                    getName()));
+        }
+
+        m_WakeLock.delete();
+
+        super.delete();
+    }
 }

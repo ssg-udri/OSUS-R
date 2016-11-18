@@ -567,7 +567,7 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
         
         // register event handler for the given channel
         final ServiceRegistration<EventHandler> reg = m_Context.registerService(EventHandler.class, 
-                new EventHandlerImpl(systemId, encryptionType, message.getObjectFormat()), properties);
+                new EventHandlerImpl(systemId, encryptionType, message), properties);
         m_Registrations.put(regId, new RemoteEventRegistration(systemId, reg, message));
     }
 
@@ -607,6 +607,8 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
          */
         private RemoteTypesGen.LexiconFormat.Enum m_LexiconFormat;
         
+        private boolean m_CanQueueEvents;
+        
         /**
          * Construct an event handler.
          * 
@@ -614,23 +616,23 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
          *      the system id of the controller registering for the event handled by this class
          * @param encryptionType
          *      the type of encryption to applied to messages that are sent because of this registration
-         * @param format
-         *      format to use for all lexicon based event properties
+         * @param requestData
+         *      Request Data used to get Lexicon Format and the canQueuEvents Flag
          */
         EventHandlerImpl(final int registeredSystemId, final EncryptType encryptionType, final 
-                RemoteTypesGen.LexiconFormat.Enum format)
+                EventRegistrationRequestData requestData)
         {
             m_RegisteredSystemId = registeredSystemId;
             m_EncryptionType = encryptionType;
-            m_LexiconFormat = format;
+            m_LexiconFormat = requestData.getObjectFormat();
+            m_CanQueueEvents = requestData.getCanQueueEvent();
         }
-        
+ 
         @Override
         public void handleEvent(final Event event)
         {
-            m_ExecutorService.execute(new Runnable()
+            m_ExecutorService.execute(new Runnable()//NOCHECKSTYLE Need long inner class to support Queuing
             {
-                
                 @Override
                 public void run()
                 {
@@ -667,14 +669,26 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
                     //try to send the message
                     try
                     {
-                        final boolean sent = m_MessageFactory.createEventAdminMessage(
-                            EventAdminMessageType.SendEvent, sendEventMsg.build()).
-                            trySend(m_RegisteredSystemId, m_EncryptionType);
-                        m_Logging.debug("Tried to send event %s to remote service, result=%b", 
-                                event.getTopic(), sent);
-                        
-                        //set failure count to 0 
-                        m_FailedAttemptsSinceLastSuccess = 0;
+                        if (m_CanQueueEvents)
+                        {
+                            final boolean queued = m_MessageFactory.createEventAdminMessage(
+                                    EventAdminMessageType.SendEvent, sendEventMsg.build()).
+                                    queue(m_RegisteredSystemId, m_EncryptionType, null);
+                            m_Logging.debug("Tried to queue event %s to remote service, result:%b", 
+                                    event.getTopic(), queued);
+                            //set failure count to 0 
+                            m_FailedAttemptsSinceLastSuccess = 0;
+                        }
+                        else
+                        {
+                            final boolean sent = m_MessageFactory.createEventAdminMessage(
+                                    EventAdminMessageType.SendEvent, sendEventMsg.build()).
+                                    trySend(m_RegisteredSystemId, m_EncryptionType);
+                            m_Logging.debug("Tried to send event %s to remote service, result:%b", 
+                                    event.getTopic(), sent);
+                            //set failure count to 0 
+                            m_FailedAttemptsSinceLastSuccess = 0;
+                        }
                     }
                     catch (final IllegalArgumentException e)
                     {

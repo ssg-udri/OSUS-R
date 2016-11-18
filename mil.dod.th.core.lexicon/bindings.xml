@@ -13,10 +13,12 @@
 ==============================================================================
 -->
 <jaxb:bindings version="1.0" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
     xmlns:ci="http://jaxb.dev.java.net/plugin/code-injector" 
+    xmlns:annox="http://annox.dev.java.net"
     xmlns:shared="http://th.dod.mil/core/types"
-    jaxb:extensionBindingPrefixes="xjc">
+    jaxb:extensionBindingPrefixes="xjc annox">
     <jaxb:globalBindings
         fixedAttributeAsConstantProperty="true" typesafeEnumBase="xs:string"
         typesafeEnumMemberName="generateName" generateIsSetMethod="true">
@@ -90,6 +92,17 @@
         </jaxb:bindings>        
        <jaxb:bindings schemaLocation="schemas/core/observation/types/Image.xsd">
         <jaxb:bindings node="//xs:complexType[@name='ImageMetadata']">
+            <ci:code>
+                @javax.xml.bind.annotation.XmlTransient
+                private Long id;
+
+                @javax.xml.bind.annotation.XmlTransient
+                private Object[] dnDetachedState;
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="schemas/core/observation/types/Channel.xsd">
+        <jaxb:bindings node="//xs:complexType[@name='ChannelMetadata']">
             <ci:code>
                 @javax.xml.bind.annotation.XmlTransient
                 private Long id;

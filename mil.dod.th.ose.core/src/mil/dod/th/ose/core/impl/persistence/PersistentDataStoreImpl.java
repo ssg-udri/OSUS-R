@@ -29,6 +29,7 @@ import aQute.bnd.annotation.component.Reference;
 import mil.dod.th.core.persistence.PersistenceFailedException;
 import mil.dod.th.core.persistence.PersistentData;
 import mil.dod.th.core.persistence.PersistentDataStore;
+import mil.dod.th.core.pm.PowerManager;
 import mil.dod.th.ose.shared.H2DataStore;
 import mil.dod.th.ose.shared.JdoDataStore;
 import mil.dod.th.ose.utils.FileUtils;
@@ -132,6 +133,13 @@ public class PersistentDataStoreImpl extends AbstractH2DataStore<PersistentData>
     public void setEventAdmin(final EventAdmin eventAdmin)
     {
         super.setEventAdmin(eventAdmin);
+    }
+
+    @Reference
+    @Override
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        super.setPowerManager(powerManager);
     }
 
     @Reference
@@ -353,5 +361,4 @@ public class PersistentDataStoreImpl extends AbstractH2DataStore<PersistentData>
     {
         return FileUtils.getPartition(new File(DATABASE_FILE_BASE)).getUsableSpace();
     }
-
 }

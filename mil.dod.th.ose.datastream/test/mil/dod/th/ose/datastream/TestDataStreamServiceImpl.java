@@ -36,6 +36,8 @@ import mil.dod.th.core.datastream.StreamProfileFactory;
 import mil.dod.th.core.factory.FactoryDescriptor;
 import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.config.event.constants.ConfigurationEventConstants;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
 import mil.dod.th.ose.core.factory.api.FactoryRegistry;
@@ -86,6 +88,8 @@ public class TestDataStreamServiceImpl
     @Mock private EventAdmin m_EventAdmin;
     @Mock private ServiceRegistration<EventHandler> m_ServiceReg;
     @Mock private LoggingService m_Logging;
+    @Mock private PowerManager m_PowerManager;
+    @Mock private WakeLock m_WakeLock;
     
     @SuppressWarnings("rawtypes")
     @Mock private FactoryServiceContext m_ServiceContext;
@@ -104,11 +108,15 @@ public class TestDataStreamServiceImpl
         when(m_StreamProfileFactory.getProductName()).thenReturn(m_ProductName);
         when(m_StreamProfileFactory.getProductType()).thenReturn(PRODUCT_TYPE);
         m_StreamProfileFactories.put(PRODUCT_TYPE, m_StreamProfileFactory);
-        
+
+        when(m_PowerManager.createWakeLock(DataStreamServiceImpl.class, "coreDataStreamService")).thenReturn(
+                m_WakeLock);
+
         m_SUT.setLoggingService(m_Logging);
         m_SUT.setEventAdmin(m_EventAdmin);
         m_SUT.setFactoryServiceProxy(m_FactoryServiceProxy);
         m_SUT.setFactoryServiceContextFactory(m_ServiceContextFactory);
+        m_SUT.setPowerManager(m_PowerManager);
         m_FactoryServiceContextInstance = ComponentFactoryMocker.mockSingleComponent(
                 FactoryServiceContext.class, m_ServiceContextFactory).getInstance();
         m_ServiceContext = (FactoryServiceContext)m_FactoryServiceContextInstance.getInstance();
@@ -123,6 +131,7 @@ public class TestDataStreamServiceImpl
     {
         m_SUT.deactivate();
         verify(m_FactoryServiceContextInstance).dispose();
+        verify(m_WakeLock).delete();
     }
     
     /**
@@ -172,7 +181,8 @@ public class TestDataStreamServiceImpl
         }
         catch (IllegalArgumentException e)
         {
-            
+            verify(m_WakeLock, never()).activate();
+            verify(m_WakeLock, never()).cancel();
         }
     }
     
@@ -199,6 +209,8 @@ public class TestDataStreamServiceImpl
         assertThat(streamProfile, is(notNullValue()));
         
         verify(m_Registry).createNewObject(m_StreamProfileFactory, m_ProductName, new HashMap<String, Object>());
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
         
         Set<StreamProfile> profileSet = new HashSet<>();
         profileSet.add(streamProfile);
@@ -215,6 +227,8 @@ public class TestDataStreamServiceImpl
         
         verify(m_Registry).createNewObject(m_StreamProfileFactory, "StreamProfileProxy2", 
                 new HashMap<String, Object>());
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /**
@@ -238,11 +252,11 @@ public class TestDataStreamServiceImpl
         {
             m_SUT.createStreamProfile(PRODUCT_TYPE, m_ProductName, new HashMap<String, Object>());
             fail("Expected exception from createStreamProfile");
-            
         }
         catch (StreamProfileException e)
         {
-            
+            verify(m_WakeLock).activate();
+            verify(m_WakeLock).cancel();
         }
     }
     
@@ -429,6 +443,8 @@ public class TestDataStreamServiceImpl
         Thread.sleep(500);
         
         verify(m_Registry).createNewObjectForConfig(m_StreamProfileFactory, null, "config.pid");
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
         ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
         verify(spi).setStreamPort(uriCaptor.capture());
         URI uri = uriCaptor.getValue();
@@ -473,6 +489,8 @@ public class TestDataStreamServiceImpl
         Thread.sleep(500);
         
         verify(m_Registry, never()).createNewObjectForConfig(m_StreamProfileFactory, null, "config.pid");
+        verify(m_WakeLock, never()).activate();
+        verify(m_WakeLock, never()).cancel();
     }
     
     /**
@@ -509,6 +527,8 @@ public class TestDataStreamServiceImpl
         
         verify(m_Registry, never()).createNewObjectForConfig(m_StreamProfileFactory, null, "config.pid");
         verify(m_ServiceContext, never()).getFactories();
+        verify(m_WakeLock, never()).activate();
+        verify(m_WakeLock, never()).cancel();
     }
     
     /**
@@ -557,6 +577,8 @@ public class TestDataStreamServiceImpl
         verify(m_Registry).createNewObjectForConfig(m_StreamProfileFactory, null, "config.pid");
         verify(m_Logging).error(Mockito.any(FactoryException.class), eq("Unable to automatically create a stream "
                 + "profile object for the configuration with PID: %s"), eq("config.pid"));
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -606,6 +628,8 @@ public class TestDataStreamServiceImpl
         verify(spi).setStreamPort(Mockito.any(URI.class));
         verify(m_Logging).error(Mockito.any(URISyntaxException.class), eq("Unable to set stream port for the stream "
                 + "profile: %s"), eq(spiName));
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**

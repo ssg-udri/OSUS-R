@@ -473,18 +473,7 @@ public class ObservationMgrImpl implements ObservationMgr
         }
         else if (observation.isSetDigitalMedia())
         {
-            if (observation.isSetAudioMetadata())
-            {
-                type = ObservationSubTypeEnum.AUDIO_METADATA;
-            }
-            else if (observation.isSetImageMetadata())
-            {
-                type = ObservationSubTypeEnum.IMAGE_METADATA;
-            }
-            else
-            {
-                type = ObservationSubTypeEnum.VIDEO_METADATA;
-            }
+            type = determineDigitalMediaSubType(observation);
         }
         else if (observation.isSetBiological())
         {
@@ -508,6 +497,35 @@ public class ObservationMgrImpl implements ObservationMgr
         }
         
         return type;
+    }
+    
+    /**
+     * Method used to determine the sub type of a digital media observation.
+     * 
+     * @param observation
+     *      Observation to determine the digital media sub type of.
+     * @return
+     *      The observation sub type of the digital media observation.
+     */
+    private ObservationSubTypeEnum determineDigitalMediaSubType(final Observation observation)
+    {
+        if (observation.isSetAudioMetadata())
+        {
+            return ObservationSubTypeEnum.AUDIO_METADATA;
+        }
+        else if (observation.isSetImageMetadata())
+        {
+            return ObservationSubTypeEnum.IMAGE_METADATA;
+        }
+        else if (observation.isSetVideoMetadata())
+        {
+            return ObservationSubTypeEnum.VIDEO_METADATA;
+        }
+        else if (observation.isSetChannelMetadata())
+        {
+            return ObservationSubTypeEnum.CHANNEL_METADATA;
+        }
+        return ObservationSubTypeEnum.NONE;
     }
 
     /**

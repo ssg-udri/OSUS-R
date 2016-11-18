@@ -76,6 +76,8 @@ public class TestCustomCommsServiceImpl_Transport extends CustomCommsServiceImpl
         Map<String, Object> props = new HashMap<>();
         props.put(TransportLayerAttributes.CONFIG_PROP_LINK_LAYER_NAME, name);
         verify(m_TransRegistry).createNewObject(m_TransFactory, transName, props);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -101,6 +103,8 @@ public class TestCustomCommsServiceImpl_Transport extends CustomCommsServiceImpl
         Map<String, Object> props = new HashMap<>();
         props.put(TransportLayerAttributes.CONFIG_PROP_LINK_LAYER_NAME, name);
         verify(m_TransRegistry).createNewObject(m_TransFactory, transName, props);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
         
         //reg mocking
         Set<TransportLayerInternal> transList = new HashSet<>();
@@ -117,6 +121,8 @@ public class TestCustomCommsServiceImpl_Transport extends CustomCommsServiceImpl
 
         //verify call to reg only made once
         verify(m_TransRegistry, times(1)).createNewObject(m_TransFactory, transName, props);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -134,7 +140,8 @@ public class TestCustomCommsServiceImpl_Transport extends CustomCommsServiceImpl
         }
         catch (CCommException e)
         {
-            
+            verify(m_WakeLock, never()).activate();
+            verify(m_WakeLock, never()).cancel();
         }
     }
     

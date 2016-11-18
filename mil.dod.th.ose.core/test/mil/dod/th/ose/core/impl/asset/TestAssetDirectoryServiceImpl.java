@@ -32,6 +32,8 @@ import mil.dod.th.core.asset.AssetAttributes;
 import mil.dod.th.core.asset.AssetException;
 import mil.dod.th.core.asset.AssetFactory;
 import mil.dod.th.core.factory.FactoryException;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
 import mil.dod.th.ose.core.factory.api.FactoryRegistry;
 import mil.dod.th.ose.core.factory.api.FactoryServiceContext;
@@ -76,6 +78,9 @@ public class TestAssetDirectoryServiceImpl
     @SuppressWarnings("rawtypes")
     private FactoryServiceContext m_ServiceContext;
 
+    @Mock private PowerManager m_PowerManager;
+    @Mock private WakeLock m_WakeLock;
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Before
     public void setUp() throws Exception
@@ -98,13 +103,16 @@ public class TestAssetDirectoryServiceImpl
         when(m_AssetFactory.getProductName()).thenReturn("AssetProxy1");
         when(m_AssetFactory.getProductType()).thenReturn(PRODUCT_TYPE);
         m_AssetFactories.put(PRODUCT_TYPE, m_AssetFactory);
-        
+
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), "coreAssetDirService")).thenReturn(m_WakeLock);
+
         m_SUT.setLoggingService(LoggingServiceMocker.createMock());
         
         m_SUT.setScannerManager(m_ScannerManager);
         m_SUT.setEventAdmin(m_EventAdmin);     
         m_SUT.setFactoryServiceProxy(m_FactoryServiceProxy);
         m_SUT.setFactoryServiceContextFactory(serviceContextFactory);
+        m_SUT.setPowerManager(m_PowerManager);
         m_FactServiceContextInstance = ComponentFactoryMocker.mockSingleComponent(
                 FactoryServiceContext.class, serviceContextFactory).getInstance();
         m_ServiceContext = (FactoryServiceContext)m_FactServiceContextInstance.getInstance();
@@ -112,6 +120,7 @@ public class TestAssetDirectoryServiceImpl
         when(m_ServiceContext.getRegistry()).thenReturn(m_Registry);
 
         m_SUT.activate(m_BundleContext);
+        verify(m_PowerManager).createWakeLock(m_SUT.getClass(), "coreAssetDirService");
     }
 
     @After
@@ -119,8 +128,9 @@ public class TestAssetDirectoryServiceImpl
     {
         m_SUT.deactivate();
         verify(m_FactServiceContextInstance).dispose();
+        verify(m_WakeLock).delete();
     }
-    
+
     /**
      * Verify registry and service context are initialized properly.
      */
@@ -131,7 +141,7 @@ public class TestAssetDirectoryServiceImpl
         verify(serviceContextFactory).newInstance(null);
         verify(m_ServiceContext).initialize(m_BundleContext, m_FactoryServiceProxy, m_SUT);
     }
-    
+
     /**
      * Verify an invalidate product type name will cause an exception.
      */
@@ -175,6 +185,8 @@ public class TestAssetDirectoryServiceImpl
         assertThat(asset, is(notNullValue()));
         
         verify(m_Registry).createNewObject(m_AssetFactory, null, new Hashtable<String, Object>());
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -196,6 +208,9 @@ public class TestAssetDirectoryServiceImpl
         catch (AssetException e)
         {
         }
+
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -214,6 +229,8 @@ public class TestAssetDirectoryServiceImpl
         
         m_SUT.createAsset(PRODUCT_TYPE, "asset");
         verify(m_Registry).createNewObject(m_AssetFactory, "asset", new Hashtable<String, Object>());
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -234,6 +251,8 @@ public class TestAssetDirectoryServiceImpl
         assertThat(asset, is(notNullValue()));
         
         verify(m_Registry).createNewObject(m_AssetFactory, "asset", props);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**

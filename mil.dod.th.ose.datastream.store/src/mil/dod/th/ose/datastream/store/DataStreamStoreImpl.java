@@ -62,7 +62,6 @@ import mil.dod.th.ose.datastream.store.data.StreamArchiveMetadata;
     configurationPolicy = ConfigurationPolicy.require)
 public class DataStreamStoreImpl implements DataStreamStore, ThreadStatusListener 
 {
-    
     /**
      * Persistent identity (PID) for the configuration.
      */
@@ -103,13 +102,12 @@ public class DataStreamStoreImpl implements DataStreamStore, ThreadStatusListene
      */
     private String m_FileStoreTopDir;
     
-    
     /**
      * Ordering to arrange PersistentData records in chronological order.
      */
     private Ordering<PersistentData> m_RecordOrdering;
-   
-    
+
+
     ///////////////////////////////////////////////////////////////////////////
     // OSGi binding methods
     ///////////////////////////////////////////////////////////////////////////
@@ -136,7 +134,8 @@ public class DataStreamStoreImpl implements DataStreamStore, ThreadStatusListene
     {
         m_ArchiverService = archiverService;
     }
-    
+
+
     ///////////////////////////////////////////////////////////////////////////
     // OSGi Declarative Services methods.
     ///////////////////////////////////////////////////////////////////////////
@@ -256,15 +255,13 @@ public class DataStreamStoreImpl implements DataStreamStore, ThreadStatusListene
                         streamProfile.getUuid().toString());
             }
         }
-        
-           
+
         //Start a thread that monitors if a client acknowledgement has been received within the
         //heartbeat period. If so, the countdown resets.  If not, the archiving process begins.
         final ClientResponseThread thread = new ClientResponseThread(
                 this, streamProfile, heartbeatPeriod, delay, useSourceBitrate);
         m_ClientResponseThreads.put(streamProfile, thread);
         thread.start();
-
     }
 
 

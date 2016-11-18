@@ -18,6 +18,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 import java.security.PrivilegedActionException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -28,6 +29,8 @@ import mil.dod.th.core.mp.MissionScript.TestResult;
 import mil.dod.th.core.mp.Program;
 import mil.dod.th.core.mp.Program.ProgramStatus;
 import mil.dod.th.core.mp.model.MissionProgramSchedule;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.mp.runtime.MissionProgramRuntime;
 import mil.dod.th.ose.test.LoggingServiceMocker;
 
@@ -46,6 +49,9 @@ import org.osgi.service.event.EventAdmin;
  */
 public class TestMissionProgramSchedulerImpl
 {
+    private static final String PROG1_NAME = "program1";
+    private static final String PROG2_NAME = "program2";
+
     private MissionProgramSchedulerImpl m_SUT;
     private ProgramImpl m_Program1;
     private ProgramImpl m_Program2;
@@ -53,7 +59,9 @@ public class TestMissionProgramSchedulerImpl
     
     @Mock private EventAdmin m_EventAdmin;
     @Mock private MissionProgramRuntime m_Runtime;
-    
+
+    @Mock private PowerManager m_PowerManager;
+
     @Before
     public void setUp()
     {
@@ -63,6 +71,7 @@ public class TestMissionProgramSchedulerImpl
         m_SUT.setEventAdmin(m_EventAdmin);
         m_SUT.setMissionProgramRuntime(m_Runtime);
         m_SUT.setLoggingService(LoggingServiceMocker.createMock());
+        m_SUT.setPowerManager(m_PowerManager);
         
         // must set to valid class loader, any will do since running in single class loader environment, if not mocked
         // class loader will be null and nothing can be loaded
@@ -71,8 +80,8 @@ public class TestMissionProgramSchedulerImpl
         //programs
         m_Program1 = mock(ProgramImpl.class);
         m_Program2 = mock(ProgramImpl.class);
-        when(m_Program1.getProgramName()).thenReturn("namer");
-        when(m_Program2.getProgramName()).thenReturn("namer2");
+        when(m_Program1.getProgramName()).thenReturn(PROG1_NAME);
+        when(m_Program2.getProgramName()).thenReturn(PROG2_NAME);
         Map<String, Object> props = getEventPropsForMock(m_Program1);
         when(m_Program1.getEventProperties()).thenReturn(props);
         Map<String, Object> props2 = getEventPropsForMock(m_Program2);
@@ -92,7 +101,7 @@ public class TestMissionProgramSchedulerImpl
     {
         //activate the component
         m_SUT.activate();
-        
+
         //deactivate the component
         m_SUT.deactivate();
     }
@@ -108,25 +117,34 @@ public class TestMissionProgramSchedulerImpl
         m_SUT.activate();
         
         //schedule
-        MissionProgramSchedule schedule = TestProgramImpl.createMissionSchedule(System.currentTimeMillis() + 100L, 
+        long startInterval = System.currentTimeMillis() + 100L;
+        MissionProgramSchedule schedule = TestProgramImpl.createMissionSchedule(startInterval, 
                 null, true, null, false, true);
         
         //more behavior for the program instance
         when(m_Program1.getMissionSchedule()).thenReturn(schedule);
         
+        //mock power management
+        WakeLock wakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG1_NAME)).thenReturn(wakeLock);
+
         //load the program
         m_SUT.executeProgram(m_Program1);
         
         //wait for it....
         Thread.sleep(200);
         
+        verify(wakeLock).scheduleWakeTime(new Date(startInterval));
+
         //should just be once for execution
         ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(m_EventAdmin).postEvent(eventCaptor.capture());
-        
+
         assertThat(eventCaptor.getValue().getTopic(), 
             is(Program.TOPIC_PROGRAM_EXECUTED));
         assertProgramEventProps(eventCaptor.getValue(), m_Program1);
+
+        verify(wakeLock).delete();
     }
     
     /**
@@ -149,6 +167,12 @@ public class TestMissionProgramSchedulerImpl
         when(m_Program1.getMissionSchedule()).thenReturn(schedule);
         when(m_Program2.getMissionSchedule()).thenReturn(schedule2);
         
+        //mock power management
+        WakeLock wakeLock1 = mock(WakeLock.class);
+        WakeLock wakeLock2 = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG1_NAME)).thenReturn(wakeLock1);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG2_NAME)).thenReturn(wakeLock2);
+
         ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
         
         //execute
@@ -157,6 +181,9 @@ public class TestMissionProgramSchedulerImpl
         
         Thread.sleep(150);
         
+        verify(wakeLock1).scheduleWakeTime(new Date(schedule.getStartInterval()));
+        verify(wakeLock2).scheduleWakeTime(new Date(schedule2.getStartInterval()));
+
         //once for the first program executing
         verify(m_EventAdmin).postEvent(eventCaptor.capture());
         
@@ -179,6 +206,9 @@ public class TestMissionProgramSchedulerImpl
         
         //verify no more events
         verify(m_EventAdmin, times(2)).postEvent(Mockito.any(Event.class));
+
+        verify(wakeLock1).delete();
+        verify(wakeLock2).delete();
     }
     
     /**
@@ -200,8 +230,15 @@ public class TestMissionProgramSchedulerImpl
         when(m_Program1.getMissionSchedule()).thenReturn(schedule);
         when(m_Program2.getMissionSchedule()).thenReturn(schedule2);
         
+        //mock power management
+        WakeLock wakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG2_NAME)).thenReturn(wakeLock);
+
         m_SUT.executeProgram(m_Program1);
+        verify(m_PowerManager, never()).createWakeLock(m_SUT.getClass(), PROG1_NAME);
+
         m_SUT.executeProgram(m_Program2);
+        verify(wakeLock).scheduleWakeTime(new Date(schedule2.getStartInterval()));
         
         Thread.sleep(100);
         
@@ -221,6 +258,8 @@ public class TestMissionProgramSchedulerImpl
         assertThat(eventCaptor.getValue().getTopic(), 
             is(Program.TOPIC_PROGRAM_EXECUTED));
         assertProgramEventProps(eventCaptor.getValue(), m_Program2);
+
+        verify(wakeLock).delete();
     }
     
     /**
@@ -243,8 +282,15 @@ public class TestMissionProgramSchedulerImpl
         when(m_Program1.getMissionSchedule()).thenReturn(schedule);
         when(m_Program2.getMissionSchedule()).thenReturn(schedule2);
         
+        //mock power management
+        WakeLock wakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG1_NAME)).thenReturn(wakeLock);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG2_NAME)).thenReturn(wakeLock);
+
         m_SUT.executeProgram(m_Program1);
         m_SUT.executeProgram(m_Program2);
+
+        verify(wakeLock, times(2)).scheduleWakeTime(anyObject());
         
         //wait for execution
         Thread.sleep(250);
@@ -257,7 +303,7 @@ public class TestMissionProgramSchedulerImpl
         assertProgramEventProps(eventCaptor.getValue(), m_Program1);
 
         //remove the remaining one
-        assertThat(m_SUT.cancelScheduledProgram("namer2"), is(true));
+        assertThat(m_SUT.cancelScheduledProgram(PROG2_NAME), is(true));
         
         //sleep again to make sure the removed program does NOT execute.
         Thread.sleep(450);
@@ -265,7 +311,7 @@ public class TestMissionProgramSchedulerImpl
         //try again for exception
         try
         {
-            m_SUT.cancelScheduledProgram("namer2");
+            m_SUT.cancelScheduledProgram(PROG2_NAME);
             fail("expecting exception the program was already removed");
         }
         catch (IllegalArgumentException e)
@@ -275,6 +321,8 @@ public class TestMissionProgramSchedulerImpl
         
        //verify there was only one invocation for the execution of the first program
         verify(m_EventAdmin, times(1)).postEvent(Mockito.any(Event.class));
+
+        verify(wakeLock, times(2)).delete();
     }
     
     /**
@@ -293,10 +341,14 @@ public class TestMissionProgramSchedulerImpl
         
         when(m_Program1.getMissionSchedule()).thenReturn(schedule);
         
+        //mock power management
+        WakeLock wakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG1_NAME)).thenReturn(wakeLock);
+
         m_SUT.executeProgram(m_Program1);
         
         //remove the remaining one
-        assertThat(m_SUT.cancelScheduledProgram("namer"), is(true));
+        assertThat(m_SUT.cancelScheduledProgram(PROG1_NAME), is(true));
         
         //sleep again to make sure the removed program does NOT execute.
         Thread.sleep(185);
@@ -304,6 +356,8 @@ public class TestMissionProgramSchedulerImpl
         //verify there was only one invocation for the execution of the program and not of the shutdown because that
         //should of been cancelled.
         verify(m_EventAdmin, never()).postEvent(Mockito.any(Event.class));
+
+        verify(wakeLock).delete();
     }
     
     /**
@@ -367,6 +421,10 @@ public class TestMissionProgramSchedulerImpl
         
         when(m_Program1.getMissionSchedule()).thenReturn(schedule);
         
+        //mock power management
+        WakeLock wakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG1_NAME)).thenReturn(wakeLock);
+
         m_SUT.executeProgram(m_Program1);
         
         //try to execute the same program again
@@ -381,6 +439,8 @@ public class TestMissionProgramSchedulerImpl
         assertThat(eventCaptor.getValue().getTopic(), 
             is(Program.TOPIC_PROGRAM_EXECUTED));
         assertProgramEventProps(eventCaptor.getValue(), m_Program1);
+
+        verify(wakeLock).delete();
     }
     
     /**
@@ -394,16 +454,23 @@ public class TestMissionProgramSchedulerImpl
         
         //quick schedule, shouldn't be able to remove will already be gone
         MissionProgramSchedule schedule = TestProgramImpl.createMissionSchedule(System.currentTimeMillis() + 200L, 
-            System.currentTimeMillis() + 201L, 
+            System.currentTimeMillis() + 205L, 
             false, true, true, true);
         
         when(m_Program1.getMissionSchedule()).thenReturn(schedule);
         
+        //mock power management
+        WakeLock wakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG1_NAME)).thenReturn(wakeLock);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG1_NAME + "_Stop")).thenReturn(wakeLock);
+
         m_SUT.executeProgram(m_Program1);
-        
+
         //verify interactions
         verify(m_Script, timeout(1000)).execute();
         verify(m_Script, timeout(1500)).shutdown();
+
+        verify(wakeLock, timeout(1000).times(2)).delete();
     }
     
     /**
@@ -423,8 +490,12 @@ public class TestMissionProgramSchedulerImpl
         
         when(m_Program1.getMissionSchedule()).thenReturn(schedule);
         
+        //mock power management
+        WakeLock wakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG1_NAME)).thenReturn(wakeLock);
+
         m_SUT.executeProgram(m_Program1);
-        
+
         //verify interactions
         verify(m_Script, timeout(500)).execute();
 
@@ -436,6 +507,8 @@ public class TestMissionProgramSchedulerImpl
         
         //verify it was unsuccessful because the status change was denied
         verify(m_Script, never()).shutdown();
+
+        verify(wakeLock).delete();
     }
     
     /**
@@ -514,6 +587,11 @@ public class TestMissionProgramSchedulerImpl
         when(m_Program1.getMissionSchedule()).thenReturn(schedule);
         when(m_Program1.getProgramStatus()).thenReturn(ProgramStatus.WAITING_INITIALIZED);
         
+        //mock power management
+        WakeLock wakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG1_NAME)).thenReturn(wakeLock);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG1_NAME + "_Stop")).thenReturn(wakeLock);
+
         //load the program
         m_SUT.executeProgram(m_Program1);
         
@@ -531,6 +609,8 @@ public class TestMissionProgramSchedulerImpl
                 is(Program.TOPIC_PROGRAM_SHUTDOWN));
         
         assertThat(m_Program1.getProgramStatus(), is(ProgramStatus.WAITING_INITIALIZED));
+
+        verify(wakeLock).delete();
     }
     
     /**
@@ -590,6 +670,11 @@ public class TestMissionProgramSchedulerImpl
         //more behavior for the program instance
         when(m_Program1.getMissionSchedule()).thenReturn(schedule);
         
+        //mock power management
+        WakeLock wakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG1_NAME)).thenReturn(wakeLock);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), PROG1_NAME + "_Stop")).thenReturn(wakeLock);
+
         //load the program
         m_SUT.executeProgram(m_Program1);
         
@@ -606,6 +691,8 @@ public class TestMissionProgramSchedulerImpl
         //verify no more status changes
         verify(m_Program1, times(1)).changeStatus(ProgramStatus.SHUTDOWN);
         verify(m_Program1, times(1)).changeStatus(ProgramStatus.EXECUTED);
+
+        verify(wakeLock, times(2)).delete();
     }
     
     /**

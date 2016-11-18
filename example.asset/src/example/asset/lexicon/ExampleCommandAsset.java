@@ -19,6 +19,7 @@ import java.util.Set;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetContext;
 import mil.dod.th.core.asset.AssetException;
@@ -98,7 +99,6 @@ import mil.dod.th.core.types.status.SummaryStatusEnum;
  * An Example Asset that supports all the known canned commands.
  * 
  * @author nickmarcucci
- *
  */
 @Component(factory = Asset.FACTORY)
 public class ExampleCommandAsset implements AssetProxy
@@ -129,7 +129,6 @@ public class ExampleCommandAsset implements AssetProxy
     public void onDeactivate() throws AssetException
     {
         m_Logging.info("Example command asset deactivated");
-        
         m_Context.setStatus(SummaryStatusEnum.OFF, "Asset Deactivated");
     }
 
@@ -152,6 +151,7 @@ public class ExampleCommandAsset implements AssetProxy
     {
         m_Logging.info(capabilityCommand.getClass().getSimpleName());
         m_Logging.info(capabilityCommand.toString());
+
         if (capabilityCommand instanceof SetPanTiltCommand)
         {
             return new SetPanTiltResponse();
@@ -195,7 +195,7 @@ public class ExampleCommandAsset implements AssetProxy
             HeadingDegrees rotation = new HeadingDegrees(0.07, 0.07, 0.07, 0.07, 0.07);
             Ellipse ellipseRegion = new Ellipse(majorAxis, minorAxis, rotation);
             Coordinates coordinates = new Coordinates(longitude, latitude, hae, ellipseRegion);
-            
+
             return new GetPointingLocationResponse(ExampleAssetUtils.buildReservedList(), coordinates);
         }
         else if (capabilityCommand instanceof SetTuneSettingsCommand)

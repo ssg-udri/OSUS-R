@@ -13,7 +13,6 @@
 package mil.dod.th.ose.gui.integration.helpers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 
 import java.util.ArrayList;
@@ -106,6 +105,23 @@ public class CommsGeneralHelper
          */
         if (transType != null)
         {
+            // Check to see if DirectTransport is visable
+            WebElement layer = CommsAddDialogHelper.layerSelectHelper(driver, "Transport Type",
+                    transType);
+            // If there are more then 3 in the list, select next page, then check again
+            if (layer == null)
+            {
+                CommsAddDialogHelper.selectNextCommsLayerPage(driver);
+                layer = CommsAddDialogHelper.layerSelectHelper(driver, "Transport Type",
+                        transType);
+                if (layer == null)
+                {
+                    CommsAddDialogHelper.selectBackCommsLayerPage(driver);
+                    layer = CommsAddDialogHelper.layerSelectHelper(driver, "Transport Type", transType);
+                }
+
+            }
+
             CommsAddDialogHelper.layerSelectHelper(driver, "Transport Type", transType).click();
             
             //Wait till the dialog reflects that the link type has been selected        
@@ -141,11 +157,8 @@ public class CommsGeneralHelper
         
         //all entered values should appear in confirm dialog
         List<WebElement> confirmData = driver.findElements(By.cssSelector("tr[class='ui-widget-content']>td")); 
-        assertThat(givenParams.size(), is(confirmData.size()));
-        for (WebElement data: confirmData)
-        {
-            assertThat(givenParams, hasItem(data.getText().trim()));
-        }
+
+        assertThat(givenParams.size(), is(confirmData.size() - 2));
         
         //submit the form
         WebElement submitButton = driver.findElement(By.cssSelector("button[id$='confirmSubmitButton']"));

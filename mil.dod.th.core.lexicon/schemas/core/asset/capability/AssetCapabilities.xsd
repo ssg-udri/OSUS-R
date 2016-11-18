@@ -164,7 +164,19 @@
         <xs:attribute name="maxBurstIntervalInMs" type="shared:positiveInt" use="optional"/>
         <xs:attribute name="maximumBurstNumber" type="shared:positiveInt" use="optional"/>        
     </xs:complexType>
-    
+
+    <xs:complexType name="DetectionNoiseLevel">
+      <xs:attribute name="value" type="xs:double" use="required" />
+      <xs:attribute name="units" type="shared:MeasurementTypeEnum" use="required" />
+      <xs:attribute name="description" type="xs:string" use="optional">
+        <xs:annotation>
+            <xs:documentation>
+                Must set description if units is "Other"
+            </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+
     <xs:complexType name="DetectTargetParameters">
         <xs:sequence>
             <xs:element name="availableCameraIDs" type="xs:int" minOccurs="0" maxOccurs="unbounded">
@@ -343,12 +355,19 @@
         <xs:attribute name="analogDigitalVoltargeAvailable" type="xs:boolean" use="optional" default="false" />
         <xs:attribute name="analogMagVoltageAvailable" type="xs:boolean" use="optional" default="false" />
         <xs:attribute name="internalArchiveStatusAvailable" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="algorithmStatusAvailable" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="DetectionCapabilities">
         <xs:sequence>
             <xs:element name="typesAvailable" type="detection:DetectionTypeEnum" minOccurs="1" maxOccurs="unbounded" />
             <xs:element name="classifications" type="detection:TargetClassificationType" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element name="noiseLevels" type="DetectionNoiseLevel" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <!-- Override the generated proto index. -->
+                    <xs:appinfo>index=12</xs:appinfo>
+                </xs:annotation>
+            </xs:element>
         </xs:sequence>
         <xs:attribute name="targetLocation" type="xs:boolean" use="optional" >
             <xs:annotation>
@@ -398,6 +417,90 @@
             <xs:annotation>
                 <xs:documentation>
                       Unique identifier of the detected target.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="algorithmId" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                      Boolean for whether the asset provides an algorithm ID for detections.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="targetCount" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                      Boolean for whether the asset provides a target count for detections.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="detectionProbability" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                      Boolean for whether the asset provides detection probability.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="targetLobGlobal" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                      Boolean indicating whether the asset provides lines of bearing with a global reference frame.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="targetLobLocal" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                      Boolean indicating whether the asset provides lines of bearing with a local reference frame.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="detectionLength" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                      Boolean indicating whether the asset indicates total detection lengths.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="targetAngularVelocity" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                      Boolean indicating whether the asset provides target angular velocity.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="targetRadialVelocityNormalized" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                      Boolean indicating whether the asset provides target radial velocity.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="acousticSignature" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                      Boolean indicating whether the asset provides acoustic signature information.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="seismicSignature" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                      Boolean indicating whether the asset provides seismic signature information.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="magneticSignature" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                      Boolean indicating whether the asset provides magnetic signature information.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="imagerSignature" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                      Boolean indicating whether the asset provides imager signature information.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -477,6 +580,7 @@
                         <xs:element name="minRange" type="spatial:DistanceMeters" minOccurs="0" maxOccurs="1" />
                         <xs:element name="maxRange" type="spatial:DistanceMeters" minOccurs="0" maxOccurs="1" />
                         <xs:element name="nominalRange" type="spatial:DistanceMeters" minOccurs="0" maxOccurs="1" />
+                        <!-- TODO TH-4058: Look at making FOV available per camera -->
                         <xs:element name="minFov" type="shared:fieldOfView" minOccurs="0" maxOccurs="1" />
                         <xs:element name="maxFov" type="shared:fieldOfView" minOccurs="0" maxOccurs="1" />
                         <xs:element name="nominalFov" type="shared:fieldOfView" minOccurs="0" maxOccurs="1" />

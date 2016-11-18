@@ -37,8 +37,10 @@ import mil.dod.th.core.remote.proto.SharedMessages;
  */
 public final class DataStreamStoreNamespaceUtils
 {
-    
-    private static final int TIMEOUT = 1200;
+    /**
+     * Timeout value used to wait for message responses.
+     */
+    private static final int TIMEOUT = 5000;
     
     /**
      * Private constructor to prevent instantiation.

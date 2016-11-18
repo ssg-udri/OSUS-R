@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import aQute.bnd.annotation.component.Component;
+
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetContext;
 import mil.dod.th.core.asset.AssetException;
@@ -37,9 +38,9 @@ public class ExampleExceptionAsset implements AssetProxy
     @Override
     public void initialize(AssetContext context, Map<String,Object> props)
     {
-        //Do nothing
+        // Do nothing
     }
-
+    
     @Override
     public void updated(final Map<String, Object> props)
     {

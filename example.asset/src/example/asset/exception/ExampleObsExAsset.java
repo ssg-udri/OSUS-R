@@ -71,7 +71,7 @@ public class ExampleObsExAsset implements AssetProxy
     {
         m_Context = context;
     }
-
+    
     @Override
     public void updated(final Map<String, Object> props)
     {
@@ -135,11 +135,11 @@ public class ExampleObsExAsset implements AssetProxy
 
     @Override
     public Response onExecuteCommand(final Command capabilityCommand)
-        throws CommandExecutionException
+            throws CommandExecutionException
     {
         throw new CommandExecutionException("Could not execute specified command.");
     }
-    
+
     @Override
     public Set<Extension<?>> getExtensions()
     {

@@ -33,6 +33,8 @@ import aQute.bnd.annotation.metatype.Configurable;
 
 import mil.dod.th.core.persistence.DataStore;
 import mil.dod.th.core.persistence.PersistenceFailedException;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.shared.JdoDataStore;
 
 import org.osgi.service.event.Event;
@@ -97,6 +99,16 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
     private PersistenceManager m_PersistenceManager;
 
     /**
+     * Service used to create power management wake locks.
+     */
+    private PowerManager m_PowerManager;
+
+    /**
+     * Wake lock used for database operations.
+     */
+    private WakeLock m_WakeLock;
+
+    /**
      * Default constructor, sets the extent class type.
      * 
      * @param extentClass
@@ -123,6 +135,8 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
      */
     protected void activateStore(final String url, final Map<String, Object> props)
     {
+        m_WakeLock = m_PowerManager.createWakeLock(getClass(), "coreDataStore");
+
         final PersistenceManagerFactory persistenceManagerFactory;
         persistenceManagerFactory = 
                 m_PersistenceManagerFactoryCreator.createPersistenceManagerFactory(m_ExtentClass, url);
@@ -150,6 +164,7 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
     protected void deactivateStore()
     {
         m_PersistenceManager.close();
+        m_WakeLock.delete();
     }
 
     /**
@@ -175,6 +190,17 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
         m_PersistenceManagerFactoryCreator = persistenceManagerFactoryCreator;
     }
     
+    /**
+     * Binds the PowerManager service to this component.
+     * 
+     * @param powerManager
+     *            service used to create wake locks for power management
+     */
+    protected void setPowerManager(final PowerManager powerManager)
+    {
+        m_PowerManager = powerManager;
+    }
+
     /**
      * Set the threshold for minimum usable space needed to persist data.
      * 
@@ -282,6 +308,8 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
             
             try (final java.sql.Connection sqlConn = (java.sql.Connection)conn)
             {
+                m_WakeLock.activate();
+
                 try (final Statement statement = sqlConn.createStatement())
                 {
                     // shutdown will close the connection so need to do so explicitly
@@ -291,6 +319,10 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
             catch (final SQLException e)
             {
                 throw new PersistenceFailedException(e);
+            }
+            finally
+            {
+                m_WakeLock.cancel();
             }
         }
         
@@ -341,6 +373,8 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
             final DataType persistedObject;
             try
             {
+                m_WakeLock.activate();
+
                 transaction.begin();
                 persistedObject = persistenceManager.makePersistent(object);
                 transaction.commit();
@@ -355,6 +389,8 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
                 {
                     transaction.rollback();
                 }
+                
+                m_WakeLock.cancel();
             }
 
             return persistedObject;
@@ -399,6 +435,8 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
             final Transaction transaction = manager.currentTransaction();
             try
             {
+                m_WakeLock.activate();
+
                 transaction.begin();
                 // copy into new list so it is accessible after query is closed
                 results = new ArrayList<DataType>((Collection<DataType>)query.execute());
@@ -414,6 +452,8 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
                     transaction.rollback();
                 }
                 query.closeAll();
+
+                m_WakeLock.cancel();
             }
         }
         
@@ -436,6 +476,8 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
             final Transaction transaction = persistenceManager.currentTransaction();
             try
             {
+                m_WakeLock.activate();
+
                 transaction.begin();
                 numberDeleted = query.deletePersistentAll();
                 transaction.commit();
@@ -450,8 +492,11 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
                 {
                     transaction.rollback();
                 }
+
+                m_WakeLock.cancel();
             }
         }
+
         return numberDeleted;
     }
     
@@ -471,6 +516,8 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
         {
             try
             {
+                m_WakeLock.activate();
+
                 query.setResult("count(this)");
 
                 resultCount = (long)query.execute();
@@ -478,6 +525,8 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
             finally
             {
                 query.closeAll();
+
+                m_WakeLock.cancel();
             }
         }
         
@@ -519,6 +568,8 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
             final Transaction transaction = persistenceManager.currentTransaction();
             try
             {
+                m_WakeLock.activate();
+
                 transaction.begin();
                 persistenceManager.deletePersistent(object);
                 transaction.commit();
@@ -533,6 +584,8 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
                 {
                     transaction.rollback();
                 }
+
+                m_WakeLock.cancel();
             }
         }
         
@@ -622,6 +675,8 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
             
             try
             {
+                m_WakeLock.activate();
+
                 @SuppressWarnings("resource") // compiler thinks sqlConn is not closed but it is by conn defined above
                 final java.sql.Connection sqlConn = (java.sql.Connection)conn;
                 
@@ -640,7 +695,9 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
             }
             finally
             {
-                conn.close();    
+                conn.close();
+
+                m_WakeLock.cancel();
             }
         }
     }

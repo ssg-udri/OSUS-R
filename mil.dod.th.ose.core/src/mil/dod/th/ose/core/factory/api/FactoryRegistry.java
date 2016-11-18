@@ -690,7 +690,7 @@ public class FactoryRegistry<T extends FactoryObjectInternal>  //NOPMD Avoid rea
         
         return names;
     }
-    
+
     /**
      * Removes the factory object's information from the persistent store and 
      * {@link org.osgi.service.cm.ConfigurationAdmin} service.

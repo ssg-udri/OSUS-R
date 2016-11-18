@@ -29,6 +29,7 @@ import mil.dod.th.core.datastream.StreamProfileAttributes;
 import mil.dod.th.core.datastream.StreamProfileException;
 import mil.dod.th.core.datastream.StreamProfileProxy;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.transcoder.TranscoderException;
 import mil.dod.th.core.transcoder.TranscoderService;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
@@ -84,6 +85,7 @@ public class TestStreamProfileImpl
     @Mock private PowerManagerInternal m_PowerInternal;
     @Mock private LoggingService m_LoggingService;
     @Mock private StreamProfileFactoryObjectDataManager m_StreamProfileFactoryObjectDataManager;
+    @Mock private WakeLock m_WakeLock;
   
     @SuppressWarnings("unchecked")
     @Before
@@ -93,9 +95,13 @@ public class TestStreamProfileImpl
         
         m_StreamPort = new URI(null, null, "225.1.2.3", 20000, null, null, null);
 
-        when(m_FactoryInternal.getProductType()).thenReturn(PRODUCT_TYPE);        
+        when(m_FactoryInternal.getProductType()).thenReturn(PRODUCT_TYPE);
 
         m_SUT = new StreamProfileImpl();
+
+        when(m_PowerInternal.createWakeLock(m_StreamProfileProxy.getClass(), m_SUT, "coreStreamProfile")).thenReturn(
+                m_WakeLock);
+
         m_SUT.setLoggingService(m_LoggingService);
         m_SUT.setTranscoderService(m_TranscoderService);
         m_SUT.setFactoryObjectDataManager(m_StreamProfileFactoryObjectDataManager);
@@ -139,16 +145,18 @@ public class TestStreamProfileImpl
         Whitebox.setInternalState(m_SUT, "m_Enabled", true);
         m_SUT.setEnabled(true);
         verify(m_LoggingService).warning(anyString(), anyVararg());
+        verify(m_WakeLock, never()).activate();
     }
 
     @Test
     public void testSetEnabledTrue() throws StreamProfileException, IllegalStateException, TranscoderException
-    {        
+    {
         m_SUT.setEnabled(true);
 
         verify(m_StreamProfileProxy).onEnabled();
         verify(m_TranscoderService).start(eq(OBJ_UUID.toString()), Mockito.<URI>anyObject(), 
                 Mockito.<URI>anyObject(), Matchers.<Map<String,Object>>any());
+        verify(m_WakeLock).activate();
     }
     
     @Test
@@ -156,6 +164,7 @@ public class TestStreamProfileImpl
     {
         m_SUT.setEnabled(false);
         verify(m_LoggingService).warning(anyString(), anyVararg());
+        verify(m_WakeLock, never()).cancel();
     }
     
     @Test
@@ -165,6 +174,15 @@ public class TestStreamProfileImpl
         m_SUT.setEnabled(false);
         
         verify(m_StreamProfileProxy).onDisabled();
-        verify(m_TranscoderService).stop(eq(OBJ_UUID.toString()));       
+        verify(m_TranscoderService).stop(eq(OBJ_UUID.toString()));
+        verify(m_WakeLock).cancel();
+    }
+
+    @Test
+    public void testDelete()
+    {
+        m_SUT.delete();
+
+        verify(m_WakeLock).delete();
     }
 }

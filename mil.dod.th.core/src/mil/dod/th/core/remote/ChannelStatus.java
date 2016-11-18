@@ -14,8 +14,8 @@ package mil.dod.th.core.remote;
 
 /**
  * Enumerative type for channel statuses.
+ * 
  * @author callen
- *
  */
 public enum ChannelStatus 
 {

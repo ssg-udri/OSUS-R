@@ -107,6 +107,10 @@ public class MessageSenderImpl implements MessageSender
      * Remote settings service.
      */
     private RemoteSettings m_RemoteSettings;
+
+    /**
+     * OSGi event admin service.
+     */
     private EventAdmin m_EventAdmin;
     
     /**

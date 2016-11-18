@@ -34,6 +34,7 @@
     <xs:include schemaLocation="CbrneTrigger.xsd"></xs:include>
     <xs:include schemaLocation="WaterQuality.xsd"></xs:include>
     <xs:include schemaLocation="Power.xsd"></xs:include>
+    <xs:include schemaLocation="Channel.xsd"></xs:include>
     <xs:import namespace="http://th.dod.mil/core/types/audio" schemaLocation="../../types/audio/AudioTypes.xsd" />
     <xs:import namespace="http://th.dod.mil/core/types/observation" schemaLocation="../../types/observation/ObservationTypes.xsd" />
     <xs:import namespace="http://th.dod.mil/core/types/spatial" schemaLocation="../../types/spatial/SpatialTypes.xsd" />
@@ -143,6 +144,12 @@
               <xs:element name="audioMetadata" type="AudioMetadata" minOccurs="1" maxOccurs="1" />
               <xs:element name="imageMetadata" type="ImageMetadata" minOccurs="1" maxOccurs="1" />
               <xs:element name="videoMetadata" type="VideoMetadata" minOccurs="1" maxOccurs="1" />
+              <xs:element name="channelMetadata" type="ChannelMetadata" minOccurs="1" maxOccurs="1">
+                  <xs:annotation>
+                      <!-- Override the generated proto index because this field is added within a choice. -->
+                      <xs:appinfo>index=30</xs:appinfo>
+                  </xs:annotation>
+              </xs:element>
             </xs:choice>
           </xs:sequence>
         </xs:choice>

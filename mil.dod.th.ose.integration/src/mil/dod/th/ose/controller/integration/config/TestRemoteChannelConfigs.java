@@ -15,6 +15,7 @@ package mil.dod.th.ose.controller.integration.config;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+
 import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.CustomCommsService;
 import mil.dod.th.core.ccomm.transport.TransportLayer;
@@ -30,6 +31,7 @@ import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestPayload;
 import mil.dod.th.ose.junit4xmltestrunner.IntegrationTestRunner;
 
 import org.junit.Test;
+import example.ccomms.QueueTransport;
 
 /**
  * Tests loading of configuration information from an .xml file for all remote channel types.
@@ -105,6 +107,34 @@ public class TestRemoteChannelConfigs
         //Try sending a message now that the transport layer exists. Message should send successfully.
         sent = transportChannel.trySendMessage(tMessage);
         assertThat(sent, is(true));
+    }
+
+    
+    @Test
+    public void testEventQueueing() throws CCommException, IllegalArgumentException 
+    {
+        CustomCommsService customCommsService = IntegrationTestRunner.getService(CustomCommsService.class);
+        RemoteChannelLookup remoteChannelLookup = IntegrationTestRunner.getService(RemoteChannelLookup.class);
+        int queueChannel = 150;
+        //Create a remote channel to send messages over, and reset its associated transport layer
+        TransportChannel tChannel = (TransportChannel)remoteChannelLookup.getChannel(queueChannel);
+        //Create a fake Transport Layer that will return false for the isAvailable call
+        TransportLayer tLayer = customCommsService.
+                createTransportLayer(QueueTransport.class.getName(), 
+                        tChannel.getTransportLayerName(), (String)null);
+        assertThat(tLayer, is(notNullValue()));
+        //clear queue and make sure that no messages are currently queued
+        tChannel.clearQueuedMessages();
+        assertThat(tChannel.getQueuedMessageCount(), is(0));
+        //Create and send a Message over the fake transport layer
+        TerraHarvestMessage thMessage =  createMessage();
+        boolean queue = tChannel.queueMessage(thMessage);
+        assertThat(queue, is(true));
+        //Make sure that the message gets properly queued
+        assertThat(tChannel.getQueuedMessageCount(), is(1));
+        //clear Queued Messages
+        tChannel.clearQueuedMessages();
+        assertThat(tChannel.getQueuedMessageCount(), is(0));
     }
     
     /**

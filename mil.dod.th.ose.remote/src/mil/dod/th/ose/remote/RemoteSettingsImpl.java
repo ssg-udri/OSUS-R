@@ -50,7 +50,12 @@ public class RemoteSettingsImpl implements RemoteSettings  // TODO: TH-700 - sho
      * Message size, in bytes.
      */
     private long m_MaxMsgSizeInBytes;
-    
+
+    /**
+     * True if the power management sleep mode should be prevented.
+     */
+    private boolean m_IsPreventSleepModeEnabled;
+
     /**
      * The bundle context from the bundle containing this component.
      */
@@ -121,14 +126,18 @@ public class RemoteSettingsImpl implements RemoteSettings  // TODO: TH-700 - sho
         m_IsLogRemoteMessagesEnabled = config.logRemoteMessages();
         m_EncryptionMode = config.encryptionMode();
         m_MaxMsgSizeInBytes = config.maxMsgSizeInBytes();
+        m_IsPreventSleepModeEnabled = config.preventSleepMode();
     }
 
-    /* (non-Javadoc)
-     * @see mil.dod.th.ose.remote.RemoteSettings#getMaxMessageSize()
-     */
     @Override
     public long getMaxMessageSize() 
     {
         return m_MaxMsgSizeInBytes;
+    }
+
+    @Override
+    public boolean isPreventSleepModeEnabled()
+    {
+        return m_IsPreventSleepModeEnabled;
     }
 }

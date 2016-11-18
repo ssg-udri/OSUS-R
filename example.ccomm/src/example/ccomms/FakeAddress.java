@@ -17,6 +17,7 @@ import java.util.Set;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import mil.dod.th.core.ccomm.Address;
 import mil.dod.th.core.ccomm.AddressContext;
 import mil.dod.th.core.ccomm.AddressProxy;
@@ -54,7 +55,7 @@ public class FakeAddress implements AddressProxy
         }
         return false;
     }
-    
+
     @Override
     public Set<Extension<?>> getExtensions()
     {

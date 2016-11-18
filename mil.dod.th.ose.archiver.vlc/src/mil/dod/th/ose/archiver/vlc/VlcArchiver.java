@@ -25,6 +25,9 @@ import aQute.bnd.annotation.component.Reference;
 import mil.dod.th.core.archiver.ArchiverException;
 import mil.dod.th.core.archiver.ArchiverService;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
+
 import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
 
 /**
@@ -43,7 +46,13 @@ public class VlcArchiver implements ArchiverService
     
     /** Logging service instance. */
     private LoggingService m_LoggingService;
-    
+
+    /** Power manager service instance. */
+    private PowerManager m_PowerManager;
+
+    /** Wake lock used for keeping system awake during an archive process. */
+    private WakeLock m_WakeLock;
+
     static
     {
         NativeLibraryLoader.load();
@@ -59,15 +68,26 @@ public class VlcArchiver implements ArchiverService
     {
         m_LoggingService = logging;
     }
-    
+
+    /**
+     * Bind the power manager.
+     * @param powerManager
+     *      service to bind.
+     */
+    @Reference
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        m_PowerManager = powerManager;
+    }
+
     /**
      * Method called when component is activated.
-     * 
      */
     @Activate
     public void activate()
     {
         m_ProcessMap = new HashMap<>();
+        m_WakeLock = m_PowerManager.createWakeLock(getClass(), "coreVlcArchiver");
     }
     
     /**
@@ -84,14 +104,13 @@ public class VlcArchiver implements ArchiverService
         }
 
         m_ProcessMap = null;
-
+        m_WakeLock.delete();
     }
     
     @Override
     public void start(final String processId, final URI sourceUri, final String filePath) throws ArchiverException,
-    IllegalStateException
+        IllegalStateException
     {
-
         if (m_ProcessMap.containsKey(processId))
         {
             throw new IllegalStateException("Archiving process for ID: " + processId + " is already running");
@@ -120,6 +139,8 @@ public class VlcArchiver implements ArchiverService
         {
             //If media item is created successfully, keep track in process map
             m_ProcessMap.put(processId, player);
+
+            m_WakeLock.activate();
         }
         else
         {
@@ -138,7 +159,7 @@ public class VlcArchiver implements ArchiverService
         
         player.stop();
         player.release();
-        m_ProcessMap.remove(processId);
+        removeProcess(processId);
     }
     
     @Override
@@ -171,10 +192,7 @@ public class VlcArchiver implements ArchiverService
     public void errorEvent(final String eventListenerId)
     {
         m_LoggingService.error("Received error event for event listener ID: %s", eventListenerId);
-        if (m_ProcessMap.containsKey(eventListenerId))
-        {
-            m_ProcessMap.remove(eventListenerId);
-        }
+        removeProcess(eventListenerId);
     }
 
     /**
@@ -190,4 +208,22 @@ public class VlcArchiver implements ArchiverService
         m_LoggingService.info("Received stopped event for event listener ID: %s", eventListenerId);
     }
 
+    /**
+     * Remove process from the map and release wake lock if no other processes are still running.
+     * 
+     * @param processId
+     *      String identifier which refers to an archiving process
+     */
+    private void removeProcess(final String processId)
+    {
+        if (m_ProcessMap.containsKey(processId))
+        {
+            m_ProcessMap.remove(processId);
+        }
+
+        if (m_ProcessMap.isEmpty())
+        {
+            m_WakeLock.cancel();
+        }
+    }
 }

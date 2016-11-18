@@ -38,6 +38,8 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 
 import mil.dod.th.core.persistence.PersistenceFailedException;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 
 import org.junit.After;
 import org.junit.Before;
@@ -57,6 +59,7 @@ public class TestAbstractDataStore
     private PersistenceManagerFactoryCreator m_PersistenceManagerFactoryCreator;
     private PersistenceManagerFactory m_PersistenceManagerFactory;
     private PersistenceManager m_PersistenceManager;
+    private PowerManager m_PowerManager;
     private Transaction m_Transaction;
     private Query m_Query;
     private Extent<?> m_Extent;
@@ -64,6 +67,7 @@ public class TestAbstractDataStore
     private Map<String, Object> m_Properties = new HashMap<String, Object>();
     private Statement m_Statement;
     private FetchPlan m_FetchPlan;
+    private WakeLock m_WakeLock;
     
     @Before
     public void setUp()
@@ -93,8 +97,10 @@ public class TestAbstractDataStore
         m_PersistenceManagerFactoryCreator = mock(PersistenceManagerFactoryCreator.class);
         m_PersistenceManagerFactory = mock(PersistenceManagerFactory.class);
         m_PersistenceManager = mock(PersistenceManager.class);
+        m_PowerManager = mock(PowerManager.class);
         m_Transaction = mock(Transaction.class);
         m_Query = mock(Query.class);
+        m_WakeLock = mock(WakeLock.class);
         m_Properties.put("javax.jdo.option.ConnectionURL", "jdbc:h2:TestStore.db");
         
         when(m_Query.execute()).thenReturn(Collections.emptyList());
@@ -107,8 +113,10 @@ public class TestAbstractDataStore
         when(m_PersistenceManager.newQuery(m_Extent)).thenReturn(m_Query);
         m_FetchPlan = mock(FetchPlan.class);
         when(m_PersistenceManager.getFetchPlan()).thenReturn(m_FetchPlan);
+        when(m_PowerManager.createWakeLock(anyObject(), anyString())).thenReturn(m_WakeLock);
         m_SUT.setEventAdmin(m_EventAdmin);
         m_SUT.setPersistenceManagerFactoryCreator(m_PersistenceManagerFactoryCreator);
+        m_SUT.setPowerManager(m_PowerManager);
         
         Map<String, Object> props = new HashMap<String, Object>();
         m_SUT.activateStore("test", props);
@@ -119,6 +127,7 @@ public class TestAbstractDataStore
         throws Exception
     {
         m_SUT.deactivateStore();
+        verify(m_WakeLock).delete();
     }
     
     /**
@@ -178,7 +187,8 @@ public class TestAbstractDataStore
         }
         catch (PersistenceFailedException e)
         {
-            
+            verify(m_WakeLock).activate();
+            verify(m_WakeLock).cancel();
         }
     }
     
@@ -203,6 +213,8 @@ public class TestAbstractDataStore
         assertThat(m_SUT.executeGetCount(query), is(222L));
         
         verify(query).closeAll();
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -214,15 +226,18 @@ public class TestAbstractDataStore
         assertThat(m_SUT.queryOnFilter("").size(), is(0));
         verify(m_FetchPlan).removeGroup("extendedDataGroup");
         verify(m_FetchPlan).addGroup("extendedDataGroup");
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
     public void testRemoveOnFilter()
     {
-        
         when(m_Query.deletePersistentAll()).thenReturn(Long.valueOf(10));
         
         assertThat(m_SUT.removeOnFilter(""), is(Long.valueOf(10)));
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
 
     @Test
@@ -230,6 +245,8 @@ public class TestAbstractDataStore
     {
         m_SUT.delete(null);
         m_SUT.delete(m_Long);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
 
     @Test
@@ -294,6 +311,8 @@ public class TestAbstractDataStore
         }).when(m_Query).setFilter("uuid == '" + uuid.toString() + "'");
         
         assertThat(m_SUT.contains(uuid), is(true));
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
 
     @Test
@@ -320,6 +339,8 @@ public class TestAbstractDataStore
         assertThat(m_SUT.find(uuid), is(notNullValue()));
         verify(m_FetchPlan, times(2)).removeGroup("extendedDataGroup");
         verify(m_FetchPlan, times(2)).addGroup("extendedDataGroup");
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
     
     /**
@@ -357,6 +378,8 @@ public class TestAbstractDataStore
         verify(m_PersistenceManager).deletePersistent(5L);
         verify(m_FetchPlan, times(2)).removeGroup("extendedDataGroup");
         verify(m_FetchPlan, times(2)).addGroup("extendedDataGroup");
+        verify(m_WakeLock, times(3)).activate();
+        verify(m_WakeLock, times(3)).cancel();
     }
 
     @Test
@@ -371,6 +394,8 @@ public class TestAbstractDataStore
         // verify
         verify(m_Query).setFilter("timestamp >= 10 && timestamp <= 100");
         verify(m_Query).deletePersistentAll();
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -409,7 +434,6 @@ public class TestAbstractDataStore
     {
         assertThat(m_SUT.isCompactingSupported(), is(true));
     }
-    
 
     @Test
     public void testExecuteSql() throws SQLException
@@ -443,5 +467,7 @@ public class TestAbstractDataStore
         verify(statement, times(2)).close();
         verify(sqlConn, times(2)).close();
         assertThat(m_Statement, is(statement));
+        verify(m_WakeLock, times(2)).activate();
+        verify(m_WakeLock, times(2)).cancel();
     }
 }

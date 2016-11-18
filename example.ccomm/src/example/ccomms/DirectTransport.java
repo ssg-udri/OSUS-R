@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import aQute.bnd.annotation.component.Component;
+
 import mil.dod.th.core.ccomm.Address;
 import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.transport.TransportLayer;
@@ -31,11 +32,9 @@ import mil.dod.th.core.factory.Extension;
 @Component(factory = TransportLayer.FACTORY)
 public class DirectTransport implements TransportLayerProxy
 {
-    
     @Override
     public void initialize(final TransportLayerContext context, final Map<String, Object> props)
     {
-        
     }
     
     @Override
@@ -70,7 +69,7 @@ public class DirectTransport implements TransportLayerProxy
     
     @Override
     public void connect(Address address) throws CCommException, IllegalStateException
-    {        
+    {
         throw new IllegalStateException("This is not a connection oriented stream.");
     }
 

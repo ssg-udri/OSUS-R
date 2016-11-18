@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
 import mil.dod.th.core.asset.Asset;
@@ -48,6 +49,7 @@ import mil.dod.th.core.log.Logging;
 import mil.dod.th.core.observation.types.ImageMetadata;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.DigitalMedia;
 import mil.dod.th.core.types.image.Camera;
 import mil.dod.th.core.types.image.CameraTypeEnum;
@@ -61,6 +63,9 @@ import mil.dod.th.core.types.spatial.OrientationOffset;
 import mil.dod.th.core.types.status.OperatingStatus;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
 import mil.dod.th.core.validator.ValidationFailedException;
+import mil.dod.th.ose.shared.pm.CountingWakeLock;
+import mil.dod.th.ose.shared.pm.CountingWakeLock.CountingWakeLockHandle;
+
 import org.osgi.service.log.LogService;
 
 /**
@@ -71,17 +76,23 @@ import org.osgi.service.log.LogService;
 @Component(factory = Asset.FACTORY) //NOCHECKSTYLE, Fan Out Complexity, large number of import due to commands.
 public class IpCameraAsset implements AssetProxy
 {
-    
     private static String INFOURL = "info.cgi";
     private static final double TILT_ADJUST = 100;
     private static final double PAN_ADJUST = 94.4;
     private static final int ZOOM_ADJUST = 5000;
     private static final String URL_HEAD = "http://";
     private static final String URL_TAIL = "/-wvhttp-01-/";
+
     private AssetContext m_Context;
     private IpCameraAssetAttributes m_Config;
     private URL m_Url;
     private UrlUtils m_UrlUtil;
+
+    /**
+     * Reference to the counting {@link WakeLock} used by this asset.
+     */
+    private CountingWakeLock m_CountingLock = new CountingWakeLock();
+    
     
     @Override
     public void initialize(final AssetContext context, final Map<String, 
@@ -89,6 +100,16 @@ public class IpCameraAsset implements AssetProxy
     {
         m_Context = context;
         m_Config = Configurable.createConfigurable(IpCameraAssetAttributes.class, props);
+        m_CountingLock.setWakeLock(m_Context.createPowerManagerWakeLock(getClass().getSimpleName() + "WakeLock"));
+    }
+    
+    /**
+     * OSGi deactivate method used to delete any wake locks used by the asset.
+     */
+    @Deactivate
+    public void tearDown()
+    {
+        m_CountingLock.deleteWakeLock();
     }
     
     @Reference
@@ -100,58 +121,61 @@ public class IpCameraAsset implements AssetProxy
     @Override
     public void updated(final Map<String, Object> props)
     {
-        m_Config = Configurable.createConfigurable(IpCameraAssetAttributes.class, props);
-        final String newUrlString = URL_HEAD + m_Config.ipAddress() + URL_TAIL;
-        final URL newUrl;
-        try 
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            newUrl = new URL(newUrlString);
-        }
-        catch (final MalformedURLException ex) 
-        {
-            m_Context.setStatus(SummaryStatusEnum.BAD, "Failure creating an updated URL");
-            Logging.log(LogService.LOG_ERROR, ex, "Failure creating new URL");
-            return;
-        }
-        if (!(m_Url.toString().equals(newUrl.toString())))
-        {
-            m_Url = newUrl;
-            final URLConnection urlConnection;
-            try
+            m_Config = Configurable.createConfigurable(IpCameraAssetAttributes.class, props);
+            final String newUrlString = URL_HEAD + m_Config.ipAddress() + URL_TAIL;
+            final URL newUrl;
+            try 
             {
-                urlConnection = getUrlConnection(m_Url);
+                newUrl = new URL(newUrlString);
             }
-            catch (final CommandExecutionException ex)
+            catch (final MalformedURLException ex) 
             {
-                Logging.log(LogService.LOG_ERROR, ex, "failed creating a connection to the IP camera");
-                m_Context.setStatus(SummaryStatusEnum.BAD, "Failed to create a connection to the camera");
+                m_Context.setStatus(SummaryStatusEnum.BAD, "Failure creating an updated URL");
+                Logging.log(LogService.LOG_ERROR, ex, "Failure creating new URL");
                 return;
             }
-            final InputStream infoInput;
-            try
+            if (!(m_Url.toString().equals(newUrl.toString())))
             {
-                infoInput = getInputStream(urlConnection); 
+                m_Url = newUrl;
+                final URLConnection urlConnection;
+                try
+                {
+                    urlConnection = getUrlConnection(m_Url);
+                }
+                catch (final CommandExecutionException ex)
+                {
+                    Logging.log(LogService.LOG_ERROR, ex, "failed creating a connection to the IP camera");
+                    m_Context.setStatus(SummaryStatusEnum.BAD, "Failed to create a connection to the camera");
+                    return;
+                }
+                final InputStream infoInput;
+                try
+                {
+                    infoInput = getInputStream(urlConnection); 
+                }
+                catch (final CommandExecutionException ex)
+                {
+                    Logging.log(LogService.LOG_ERROR, ex, "Error creating the input stream to camera");
+                    m_Context.setStatus(SummaryStatusEnum.BAD, "Failed to create an input stream from the camera");
+                    return;
+                }
+                final Properties infoProp = new Properties();
+                try
+                {
+                    infoProp.load(infoInput);
+                }
+                catch (final IOException ex)
+                {
+                    Logging.log(LogService.LOG_ERROR, ex, "creating properties file for camera");
+                    m_Context.setStatus(SummaryStatusEnum.BAD, "Failure retreiving data from the new input stream");
+                    return;
+                }
             }
-            catch (final CommandExecutionException ex)
-            {
-                Logging.log(LogService.LOG_ERROR, ex, "Error creating the input stream to camera");
-                m_Context.setStatus(SummaryStatusEnum.BAD, "Failed to create an input stream from the camera");
-                return;
-            }
-            final Properties infoProp = new Properties();
-            try
-            {
-                infoProp.load(infoInput);
-            }
-            catch (final IOException ex)
-            {
-                Logging.log(LogService.LOG_ERROR, ex, "creating properties file for camera");
-                m_Context.setStatus(SummaryStatusEnum.BAD, "Failure retreiving data from the new input stream");
-                return;
-            }
+            Logging.log(LogService.LOG_DEBUG, "New URL: " + URL_HEAD + m_Config.ipAddress() + URL_TAIL);
+            m_Context.setStatus(SummaryStatusEnum.GOOD, "Failure retreiving data from the input stream");
         }
-        Logging.log(LogService.LOG_DEBUG, "New URL: " + URL_HEAD + m_Config.ipAddress() + URL_TAIL);
-        m_Context.setStatus(SummaryStatusEnum.GOOD, "Failure retreiving data from the input stream");
     }
 
     @Override
@@ -203,95 +227,102 @@ public class IpCameraAsset implements AssetProxy
             Logging.log(LogService.LOG_ERROR, "Asset is not Activated");
             throw new CommandExecutionException("Asset not Activated");
         }
-        final ImageMetadata imageMeta = new ImageMetadata();
-        imageMeta.setColor(true);
-        imageMeta.setImager(new Camera(0, "Example Camera", CameraTypeEnum.VISIBLE));
-        imageMeta.setPictureType(PictureTypeEnum.FULL_FIELD_OF_VIEW);
-        final int pixWidth = 320;
-        final int pixHeight = 240;
-        imageMeta.setResolution(new PixelResolution(pixWidth, pixHeight));
-        imageMeta.setImageCaptureReason(
-                new ImageCaptureReason(ImageCaptureReasonEnum.MANUAL, "Manual order to capture image."));
 
-        if (m_Url == null)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            throw new CommandExecutionException("No IP Given");
-        }
-        final URL imageUrl;
-        try
-        {
-            imageUrl = new URL(m_Url + "image.cgi");
-        }
-        catch (final MalformedURLException ex)
-        {
-            Logging.log(LogService.LOG_ERROR, "Malformed URL. Image URL");
-            throw new CommandExecutionException(ex);
-        }
-        final URLConnection con = getUrlConnection(imageUrl);
-        final InputStream input = getInputStream(con);
-        final ByteArrayOutputStream imageCreation;
-        imageCreation = new ByteArrayOutputStream();
-        int check;
-        do
-        {
+            final ImageMetadata imageMeta = new ImageMetadata();
+            imageMeta.setColor(true);
+            imageMeta.setImager(new Camera(0, "Example Camera", CameraTypeEnum.VISIBLE));
+            imageMeta.setPictureType(PictureTypeEnum.FULL_FIELD_OF_VIEW);
+            final int pixWidth = 320;
+            final int pixHeight = 240;
+            imageMeta.setResolution(new PixelResolution(pixWidth, pixHeight));
+            imageMeta.setImageCaptureReason(
+                    new ImageCaptureReason(ImageCaptureReasonEnum.MANUAL, "Manual order to capture image."));
+    
+            if (m_Url == null)
+            {
+                throw new CommandExecutionException("No IP Given");
+            }
+            final URL imageUrl;
             try
             {
-                check = input.read();
+                imageUrl = new URL(m_Url + "image.cgi");
             }
-            catch (final IOException ex) 
+            catch (final MalformedURLException ex)
             {
-                Logging.log(LogService.LOG_ERROR, "Error receiving data from inputsream for image retrieval");
+                Logging.log(LogService.LOG_ERROR, "Malformed URL. Image URL");
                 throw new CommandExecutionException(ex);
             }
-            if (check != -1)
+            final URLConnection con = getUrlConnection(imageUrl);
+            final InputStream input = getInputStream(con);
+            final ByteArrayOutputStream imageCreation;
+            imageCreation = new ByteArrayOutputStream();
+            int check;
+            do
             {
-                imageCreation.write(check);
+                try
+                {
+                    check = input.read();
+                }
+                catch (final IOException ex) 
+                {
+                    Logging.log(LogService.LOG_ERROR, "Error receiving data from input stream for image retrieval");
+                    throw new CommandExecutionException(ex);
+                }
+                if (check != -1)
+                {
+                    imageCreation.write(check);
+                }
+            } while (check != -1);
+            if (imageCreation.size() == 0)
+            {
+                Logging.log(LogService.LOG_ERROR, "No data retrieved from the camera.");
+                throw new CommandExecutionException("Empty image byte array");
             }
-        } while (check != -1);
-        if (imageCreation.size() == 0)
-        {
-            Logging.log(LogService.LOG_ERROR, "No data retrieved from the camera.");
-            throw new CommandExecutionException("Empty image byte array");
+            final byte[] imageFinal = imageCreation.toByteArray();
+            final DigitalMedia digitalMedia = new DigitalMedia(imageFinal, "image/jpg");
+            Logging.log(LogService.LOG_INFO, "Plug-in for the Canon VB-C60 IP camera data captured");
+            final Observation obs = new Observation().withDigitalMedia(digitalMedia).withImageMetadata(imageMeta);
+            return obs;
         }
-        final byte[] imageFinal = imageCreation.toByteArray();
-        final DigitalMedia digitalMedia = new DigitalMedia(imageFinal, "image/jpg");
-        Logging.log(LogService.LOG_INFO, "Plug-in for the Canon VB-C60 IP camera data captured");
-        final Observation obs = new Observation().withDigitalMedia(digitalMedia).withImageMetadata(imageMeta);
-        return obs;
     }
     
     @Override
     public Status onPerformBit() throws CommandExecutionException
     {
-        if (m_Url == null)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            Logging.log(LogService.LOG_ERROR, "Missing IP address");
-            return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, "BIT_Failed"));
+            if (m_Url == null)
+            {
+                Logging.log(LogService.LOG_ERROR, "Missing IP address");
+                return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, "BIT_Failed"));
+            }
+            Logging.log(LogService.LOG_INFO, "Performing BIT on Plug-in for the Canon VB-C60 IP camera BIT");
+            final URL panTiltUrl;
+            try
+            {
+                panTiltUrl = new URL(m_Url + INFOURL);
+            }
+            catch (final MalformedURLException ex)
+            {
+                Logging.log(LogService.LOG_ERROR, ex, "Error creating the URL for perform BIT");
+                return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, "BIT_FAIL"));
+            }
+            final URLConnection urlCon = getUrlConnection(panTiltUrl);
+            final InputStream infoInput = getInputStream(urlCon);
+            final Properties infoProp = new Properties();
+            try
+            {
+                infoProp.load(infoInput);
+            }
+            catch (final IOException ex)
+            {
+                Logging.log(LogService.LOG_ERROR, ex, "Error creating the properties file from the input stream");
+                return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, "BIT FAIL"));
+            }
+            return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.GOOD, "BIT Passed"));
         }
-        Logging.log(LogService.LOG_INFO, "Performing BIT on Plug-in for the Canon VB-C60 IP camera BIT");
-        final URL panTiltUrl;
-        try
-        {
-            panTiltUrl = new URL(m_Url + INFOURL);
-        }
-        catch (final MalformedURLException ex)
-        {
-            Logging.log(LogService.LOG_ERROR, ex, "Error creating the URL for perform BIT");
-            return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, "BIT_FAIL"));
-        }
-        final URLConnection urlCon = getUrlConnection(panTiltUrl);
-        final InputStream infoInput = getInputStream(urlCon);
-        final Properties infoProp = new Properties();
-        try
-        {
-            infoProp.load(infoInput);
-        }
-        catch (final IOException ex)
-        {
-            Logging.log(LogService.LOG_ERROR, ex, "Error creating the properties file from the input stream");
-            return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.BAD, "BIT FAIL"));
-        }
-        return new Status().withSummaryStatus(new OperatingStatus(SummaryStatusEnum.GOOD, "BIT Passed"));
     }
 
     @Override
@@ -302,54 +333,58 @@ public class IpCameraAsset implements AssetProxy
             Logging.log(LogService.LOG_ERROR, "Asset isn't activated");
             throw new CommandExecutionException("Asset not activated");
         }
-        if (m_Url == null)
+
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            throw new CommandExecutionException("No Given IP");
-        }
-        else if (command instanceof SetPanTiltCommand)
-        {
-            final SetPanTiltCommand setPanTilt = (SetPanTiltCommand)command; 
-            if (setPanTilt.getPanTilt().getAzimuth() != null)
-            { 
-                handleSetPan(setPanTilt); 
+            if (m_Url == null)
+            {
+                throw new CommandExecutionException("No Given IP");
             }
-            if (setPanTilt.getPanTilt().getElevation() != null)
-            { 
-                handleSetTilt(setPanTilt); 
+            else if (command instanceof SetPanTiltCommand)
+            {
+                final SetPanTiltCommand setPanTilt = (SetPanTiltCommand)command; 
+                if (setPanTilt.getPanTilt().getAzimuth() != null)
+                { 
+                    handleSetPan(setPanTilt); 
+                }
+                if (setPanTilt.getPanTilt().getElevation() != null)
+                { 
+                    handleSetTilt(setPanTilt); 
+                }
+                return new SetPanTiltResponse();
             }
-            return new SetPanTiltResponse();
-        }
-        else if (command instanceof GetPanTiltCommand)
-        {
-            final double tiltFinal = handleGetTilt();
-            final double panFinal = handleGetPan();
-            final ElevationDegrees tiltElevationDegree = new ElevationDegrees();
-            tiltElevationDegree.setValue(tiltFinal);
-            final AzimuthDegrees panAzimuthDegrees = new AzimuthDegrees();
-            panAzimuthDegrees.setValue(panFinal);
-            final OrientationOffset orientationOffset = new OrientationOffset();
-            orientationOffset.setAzimuth(panAzimuthDegrees);
-            orientationOffset.setElevation(tiltElevationDegree);
-            final GetPanTiltResponse panTiltResponse = new GetPanTiltResponse();
-            panTiltResponse.setPanTilt(orientationOffset);
-            return panTiltResponse;
-        }
-        else if (command instanceof SetCameraSettingsCommand)
-        {
-            final SetCameraSettingsCommand setCameraSettings = (SetCameraSettingsCommand)command;
-            handleSetZoom(setCameraSettings);
-            return new SetCameraSettingsResponse();
-        }
-        else if (command instanceof GetCameraSettingsCommand)
-        {
-            final float zoomFinal = handleGetZoom();
-            final GetCameraSettingsResponse cameraSettingsResponse = new GetCameraSettingsResponse();
-            cameraSettingsResponse.setZoom(zoomFinal);
-            return cameraSettingsResponse;
-        }
-        else
-        {
-            throw new CommandExecutionException("Could not execute specified command.");
+            else if (command instanceof GetPanTiltCommand)
+            {
+                final double tiltFinal = handleGetTilt();
+                final double panFinal = handleGetPan();
+                final ElevationDegrees tiltElevationDegree = new ElevationDegrees();
+                tiltElevationDegree.setValue(tiltFinal);
+                final AzimuthDegrees panAzimuthDegrees = new AzimuthDegrees();
+                panAzimuthDegrees.setValue(panFinal);
+                final OrientationOffset orientationOffset = new OrientationOffset();
+                orientationOffset.setAzimuth(panAzimuthDegrees);
+                orientationOffset.setElevation(tiltElevationDegree);
+                final GetPanTiltResponse panTiltResponse = new GetPanTiltResponse();
+                panTiltResponse.setPanTilt(orientationOffset);
+                return panTiltResponse;
+            }
+            else if (command instanceof SetCameraSettingsCommand)
+            {
+                final SetCameraSettingsCommand setCameraSettings = (SetCameraSettingsCommand)command;
+                handleSetZoom(setCameraSettings);
+                return new SetCameraSettingsResponse();
+            }
+            else if (command instanceof GetCameraSettingsCommand)
+            {
+                final float zoomFinal = handleGetZoom();
+                final GetCameraSettingsResponse cameraSettingsResponse = new GetCameraSettingsResponse();
+                cameraSettingsResponse.setZoom(zoomFinal);
+                return cameraSettingsResponse;
+            }
+            else
+            {
+                throw new CommandExecutionException("Could not execute specified command.");
+            }
         }
     }
     

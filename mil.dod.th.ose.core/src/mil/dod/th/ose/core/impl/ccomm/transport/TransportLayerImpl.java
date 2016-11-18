@@ -30,6 +30,7 @@ import mil.dod.th.core.ccomm.transport.TransportLayerProxy;
 import mil.dod.th.core.ccomm.transport.TransportPacket;
 import mil.dod.th.core.factory.FactoryObjectProxy;
 import mil.dod.th.core.log.Logging;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.core.factory.api.AbstractFactoryObject;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
 import mil.dod.th.ose.core.factory.api.FactoryRegistry;
@@ -76,7 +77,22 @@ public class TransportLayerImpl extends AbstractFactoryObject implements Transpo
      * Address that connection oriented transport layer is connected to.
      */
     private Address m_ConnectedAddress;
-    
+
+    /**
+     * Reference to internal power management for factory objects.
+     */
+    private PowerManagerInternal m_PowInternal;
+
+    /**
+     * Wake lock used for transport layer operations.
+     */
+    private WakeLock m_WakeLock;
+
+    /**
+     * Wake lock used when the transport layer is receiving data.
+     */
+    private WakeLock m_RecvWakeLock;
+
     @Override
     public void initialize(final FactoryRegistry<?> registry, final FactoryObjectProxy proxy, 
             final FactoryInternal factory, final ConfigurationAdmin configAdmin, final EventAdmin eventAdmin,
@@ -86,11 +102,15 @@ public class TransportLayerImpl extends AbstractFactoryObject implements Transpo
         super.initialize(registry, proxy, factory, configAdmin, eventAdmin, powInternal, uuid, name, pid, baseType);
         m_TransProxy = (TransportLayerProxy)proxy;
         m_IsConnectionOriented = factory.getTransportLayerCapabilities().isConnectionOriented();
+        m_PowInternal = powInternal;
+        m_WakeLock = powInternal.createWakeLock(m_TransProxy.getClass(), this, "coreTransLayer");
+        m_RecvWakeLock = powInternal.createWakeLock(m_TransProxy.getClass(), this, "coreTransLayerRecv");
     }
     
     @Override
     public void beginReceiving()
     {
+        m_RecvWakeLock.activate();
         m_IsRecieving = true;
     }
 
@@ -99,7 +119,17 @@ public class TransportLayerImpl extends AbstractFactoryObject implements Transpo
             final Address destAddress)
     {
         postDataReceived(pkt, sourceAddress, destAddress);
-        m_IsRecieving = false; 
+        m_IsRecieving = false;
+
+        try
+        {
+            m_RecvWakeLock.cancel();
+        }
+        catch (final IllegalStateException ex)
+        {
+            Logging.log(LogService.LOG_WARNING,
+                    "Transport Layer [%s] endReceiving() called without calling beginReceiving() first", getName());
+        }
     }
 
     @Override
@@ -141,11 +171,15 @@ public class TransportLayerImpl extends AbstractFactoryObject implements Transpo
         m_IsTransmitting = true;  
         try
         {
+            m_WakeLock.activate();
+
             m_TransProxy.send(data, addr);
         }
         finally
         {
-            m_IsTransmitting = false;            
+            m_IsTransmitting = false;
+
+            m_WakeLock.cancel();
         }      
     }
 
@@ -163,11 +197,15 @@ public class TransportLayerImpl extends AbstractFactoryObject implements Transpo
         m_IsTransmitting = true;
         try
         {
+            m_WakeLock.activate();
+
             m_TransProxy.send(data);
         }
         finally
         {
-            m_IsTransmitting = false;            
+            m_IsTransmitting = false;
+
+            m_WakeLock.cancel();
         }       
     }
 
@@ -202,8 +240,17 @@ public class TransportLayerImpl extends AbstractFactoryObject implements Transpo
             linkLayer.deactivateLayer();
         }
         
-        //shut down proxy
-        m_TransProxy.onShutdown();
+        try
+        {
+            m_WakeLock.activate();
+
+            //shut down proxy
+            m_TransProxy.onShutdown();
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
 
     @Override
@@ -252,8 +299,17 @@ public class TransportLayerImpl extends AbstractFactoryObject implements Transpo
     {
         verifyConnectionOriented();
 
-        m_TransProxy.connect(address);
-        m_ConnectedAddress = address;
+        try
+        {
+            m_WakeLock.activate();
+
+            m_TransProxy.connect(address);
+            m_ConnectedAddress = address;
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
 
     @Override
@@ -261,8 +317,17 @@ public class TransportLayerImpl extends AbstractFactoryObject implements Transpo
     {
         verifyConnectionOriented();
 
-        m_TransProxy.disconnect();    
-        m_ConnectedAddress = null;
+        try
+        {
+            m_WakeLock.activate();
+
+            m_TransProxy.disconnect();    
+            m_ConnectedAddress = null;
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
 
     @Override
@@ -288,6 +353,9 @@ public class TransportLayerImpl extends AbstractFactoryObject implements Transpo
         }
 
         shutdown();
+
+        m_PowInternal.deleteWakeLock(m_WakeLock);
+        m_PowInternal.deleteWakeLock(m_RecvWakeLock);
 
         super.delete();
     }

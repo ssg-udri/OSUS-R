@@ -30,6 +30,8 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.datastore.JDOConnection;
 
 import mil.dod.th.core.persistence.PersistenceFailedException;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -42,9 +44,11 @@ public class TestAbstractH2DataStore
     private PersistenceManagerFactoryCreator m_PersistenceManagerFactoryCreator;
     private PersistenceManagerFactory m_PersistenceManagerFactory;
     private PersistenceManager m_PersistenceManager;
+    private PowerManager m_PowerManager;
     private ResultSet m_ResultSet;
     private Statement m_Statement;
     private FetchPlan m_FetchPlan;
+    private WakeLock m_WakeLock;
 
     @Before
     public void setUp() throws SQLException
@@ -73,12 +77,16 @@ public class TestAbstractH2DataStore
         m_PersistenceManagerFactoryCreator = mock(PersistenceManagerFactoryCreator.class);
         m_PersistenceManagerFactory = mock(PersistenceManagerFactory.class);
         m_PersistenceManager = mock(PersistenceManager.class);
+        m_PowerManager = mock(PowerManager.class);
+        m_WakeLock = mock(WakeLock.class);
         when(m_PersistenceManagerFactoryCreator.createPersistenceManagerFactory(Byte.class, "test")).
             thenReturn(m_PersistenceManagerFactory);
         when(m_PersistenceManagerFactory.getPersistenceManager()).thenReturn(m_PersistenceManager);
         m_SUT.setPersistenceManagerFactoryCreator(m_PersistenceManagerFactoryCreator);
         m_FetchPlan = mock(FetchPlan.class);
         when(m_PersistenceManager.getFetchPlan()).thenReturn(m_FetchPlan);
+        when(m_PowerManager.createWakeLock(anyObject(), anyString())).thenReturn(m_WakeLock);
+        m_SUT.setPowerManager(m_PowerManager);
         
         Map<String, Object> props = new HashMap<String, Object>();
         m_SUT.activateStore("test", props);

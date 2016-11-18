@@ -595,7 +595,7 @@ public class TestAssetDirectoryService extends TestCase
         assertThat("Audio capabilities not found", audioCaps, is(notNullValue()));
         
         assertThat(audioCaps.getRecorders().size(), is(1));
-        assertThat(audioCaps.getRecorders(), hasItem(new AudioRecorder(AudioRecorderEnum.MICROPHONE, "none")));
+        assertThat(audioCaps.getRecorders(), hasItem(new AudioRecorder(AudioRecorderEnum.MICROPHONE, "none", null)));
         assertThat(audioCaps.getSampleRatesKHz().get(0).doubleValue(), closeTo(14.4, 0.00001));
     }
     

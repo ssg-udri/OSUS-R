@@ -26,6 +26,7 @@ Export-Package: edu.udayton.udri.asset.novatel,\
 
 # Specify packages that should NOT be accessible by other bundles (separated by commas)
 Private-Package: edu.udayton.udri.asset.novatel.impl.* 
+Conditional-Package: mil.dod.th.ose.shared.pm
 
 # Specify files that should be included within the JAR file. The default value for
 # "Include-Resource" will automatically include JARs found in the project lib/
@@ -47,6 +48,6 @@ Service-Component: edu.udayton.udri.asset.novatel.*
     ${junit},\
     ${mockito},\
     org.apache.commons.lang
-    
+
 # Specify configuration interfaces to be generated into metatype xml.
 -metatype: *

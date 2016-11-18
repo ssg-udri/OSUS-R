@@ -568,8 +568,12 @@ public class XsdParser
             {
                 throw new JaxbProtoConvertException("Invalid properties specified within appinfo tag.", ex);
             }
+
             final String index = props.getProperty("index");
-            return Integer.parseInt(index);
+            if (index != null)
+            {
+                return Integer.parseInt(index);
+            }
         }
         return null;
     }

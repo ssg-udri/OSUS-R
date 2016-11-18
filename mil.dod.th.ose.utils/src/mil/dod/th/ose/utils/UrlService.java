@@ -17,8 +17,8 @@ import java.net.URLConnection;
 
 /**
  * This service should be used when components must create {@link java.net.URLConnection}s.
+ * 
  * @author allenchl
- *
  */
 public interface UrlService
 {

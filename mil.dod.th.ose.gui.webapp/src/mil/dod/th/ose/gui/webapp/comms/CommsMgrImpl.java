@@ -72,7 +72,6 @@ import mil.dod.th.ose.gui.webapp.utils.BundleContextUtil;
 import mil.dod.th.ose.gui.webapp.utils.GrowlMessageUtil;
 import mil.dod.th.ose.remote.api.EnumConverter;
 import mil.dod.th.ose.shared.SharedMessageUtils;
-
 import org.glassfish.osgicdi.OSGiService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -1022,7 +1021,7 @@ public class CommsMgrImpl implements CommsMgr, FactoryObjMgr //NOPMD - excessive
     }
     
     /**
-     * Create a new model fo the given physical link.
+     * Create a new model for the given physical link.
      * 
      * @param systemId
      *      id of the system that has the comm layer

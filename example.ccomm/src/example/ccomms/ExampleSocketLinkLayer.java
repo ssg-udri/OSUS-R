@@ -19,6 +19,7 @@ import org.osgi.service.log.LogService;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.ccomm.Address;
 import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.link.LinkFrame;
@@ -39,7 +40,6 @@ import mil.dod.th.core.log.LoggingService;
 @Component(factory = LinkLayer.FACTORY)
 public class ExampleSocketLinkLayer implements LinkLayerProxy
 {
-
     private LoggingService m_Logging;
     
     @Reference
@@ -73,7 +73,7 @@ public class ExampleSocketLinkLayer implements LinkLayerProxy
     
     @Override
     public boolean isAvailable(final Address address)
-    {        
+    {
         return true;
     }
 

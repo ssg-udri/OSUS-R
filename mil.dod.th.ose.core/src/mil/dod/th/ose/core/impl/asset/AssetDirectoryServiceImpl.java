@@ -31,6 +31,8 @@ import mil.dod.th.core.asset.AssetDirectoryService;
 import mil.dod.th.core.asset.AssetException;
 import mil.dod.th.core.asset.AssetFactory;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.core.factory.api.DirectoryService;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
 import mil.dod.th.ose.core.factory.api.FactoryServiceContext;
@@ -76,7 +78,12 @@ public class AssetDirectoryServiceImpl extends DirectoryService implements Asset
      * Reference to the asset scanner manager.
      */
     private ScannerManager m_ScannerManager;
-    
+
+    /**
+     * Wake lock used for asset directory service operations.
+     */
+    private WakeLock m_WakeLock;
+
     /**
      * Public Constructor to instantiate all of the maps for this class.
      */
@@ -103,6 +110,13 @@ public class AssetDirectoryServiceImpl extends DirectoryService implements Asset
         super.setEventAdmin(eventAdmin);
     }
     
+    @Override
+    @Reference
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        super.setPowerManager(powerManager);
+    }
+
     /**
      * Method used to set the {@link ComponentFactory} to be used for creating a {@link FactoryServiceContext}.
      * 
@@ -158,6 +172,7 @@ public class AssetDirectoryServiceImpl extends DirectoryService implements Asset
     {
         m_FactoryContext = m_FactServiceContextComp.newInstance(null);
         m_FactoryContext.initialize(coreContext, m_FactoryServiceProxy, this);
+        m_WakeLock = m_PowerManager.createWakeLock(getClass(), "coreAssetDirService");
     }
 
     /**
@@ -168,6 +183,7 @@ public class AssetDirectoryServiceImpl extends DirectoryService implements Asset
     {
         //dispose of factory service component
         m_FactServiceContextComp.tryDispose();
+        m_WakeLock.delete();
     }
     
     ///////////////////////////////////////////////////////////////////////////
@@ -246,13 +262,19 @@ public class AssetDirectoryServiceImpl extends DirectoryService implements Asset
 
         try
         {
+            m_WakeLock.activate();
+
             // Create the Asset instance
             return m_FactoryContext.getRegistry().createNewObject(assetFactory, name, properties);
         }
         catch (final Exception e)
         {
             throw new AssetException("Unable to create Asset.", e);
-        }   
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
 
     @Override

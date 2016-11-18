@@ -24,8 +24,8 @@ import org.osgi.service.log.LogService;
 
 /**
  * Implementation for the {@link MessageReader}.
+ * 
  * @author allenchl
- *
  */
 @Component
 public class MessageReaderImpl implements MessageReader
@@ -132,7 +132,6 @@ public class MessageReaderImpl implements MessageReader
                             m_Receiver.handleDataString(dataString);
                         }
                     }
-
                 }
                 // try to be able to recover no matter the exception case
                 catch (final Exception e)
@@ -142,7 +141,6 @@ public class MessageReaderImpl implements MessageReader
 
                     Logging.log(LogService.LOG_WARNING, e,
                             "The data message reading thread has experienced an exception.");
-
                 }
             }
         }

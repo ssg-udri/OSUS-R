@@ -20,6 +20,7 @@ Bundle-Vendor: UDRI
 # Specify packages that should be included in the JAR file, but not accessible
 # to other bundles.  Not needed unless new packages are added.
 Private-Package: edu.udayton.udri.asset.raspi.bmp180
+Conditional-Package: mil.dod.th.ose.shared.pm
 
 # Specify files that should be included within the JAR file. The default value for
 # "Include-Resource" will automatically include JARs found in the project lib/
@@ -37,4 +38,5 @@ Service-Component: edu.udayton.udri.asset.raspi.bmp180.*
     osgi.core,\
     biz.aQute.bnd.annotation,\
     lib/pi4j-core.jar;version=file,\
-    mil.dod.th.core.api;version=latest
+    mil.dod.th.core.api;version=latest,\
+    mil.dod.th.ose.shared;version=latest

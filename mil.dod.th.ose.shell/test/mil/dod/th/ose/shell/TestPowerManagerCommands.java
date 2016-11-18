@@ -559,6 +559,58 @@ public class TestPowerManagerCommands
     }
     
     /**
+     * Verify that the new shell wake lock is created.
+     */
+    @Test
+    public void testActivate()
+    {
+        m_SUT.activate();
+        verify(m_PowerManager).createWakeLock(PowerManagerCommands.class, "shellWakeLock");
+    }
+    
+    /**
+     * Verify that the shell wake lock is deleted.
+     */
+    @Test
+    public void testDeactivate()
+    {
+        WakeLock shellLock = mockWakeLock("shellWakeLock");
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), "shellWakeLock")).thenReturn(shellLock);
+        m_SUT.activate();
+      
+        m_SUT.deactivate();
+        verify(shellLock, times(1)).delete();
+    }
+    
+    /**
+     * Verify the shell wake lock is activated.
+     */
+    @Test
+    public void testStartWL()
+    {
+        WakeLock shellLock = mockWakeLock("shellWakeLock");
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), "shellWakeLock")).thenReturn(shellLock);
+        m_SUT.activate();
+      
+        m_SUT.startwl();
+        verify(shellLock, times(1)).activate();
+    }
+    
+    /**
+     * Verify the shell wake lock is deactivated.
+     */
+    @Test
+    public void testStopWL()
+    {
+        WakeLock shellLock = mockWakeLock("shellWakeLock");
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), "shellWakeLock")).thenReturn(shellLock);
+        m_SUT.activate();
+      
+        m_SUT.stopwl();
+        verify(shellLock, times(1)).cancel();
+    }
+    
+    /**
      * Returns a set of WakeLocks based on the given state.
      * @param state
      *  the state in which the desired WakeLocks are to be

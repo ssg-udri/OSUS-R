@@ -180,8 +180,8 @@ public class TestMissionProgramming extends TestCase
         PersistenceFailedException, InterruptedException
     {
         //create parameters
-        MissionProgramSchedule schedule = new MissionProgramSchedule(true, false, true, 
-            null, null, System.currentTimeMillis() + 500L);
+        MissionProgramSchedule schedule = new MissionProgramSchedule(true, false, null, 
+            System.currentTimeMillis() + 500L, null, System.currentTimeMillis() + 1000L);
         MissionProgramParameters params = new MissionProgramParameters().withTemplateName("simple-template").
             withSchedule(schedule).withParameters(new MapEntry("a", 99)).withProgramName("TestSimpleTestSchedule");
 
@@ -192,12 +192,12 @@ public class TestMissionProgramming extends TestCase
                         String.format("(&(%s=%s)(%s=%s))", 
                                 Program.EVENT_PROP_PROGRAM_NAME, "TestSimpleTestSchedule",
                                 Program.EVENT_PROP_PROGRAM_STATUS, ProgramStatus.SHUTDOWN.toString()));
-        
+
         Program program = m_MissionProgramManager.loadParameters(params);
 
         executionSyncer.waitForEvent(5);
-        shutdownSyncer.waitForEvent(10);
-        
+        shutdownSyncer.waitForEvent(20);
+
         program.remove();
     }
     

@@ -13,6 +13,7 @@
 package mil.dod.th.ose.core.impl.mp;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -25,12 +26,15 @@ import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.mp.MissionProgramException;
 import mil.dod.th.core.mp.MissionScript.TestResult;
 import mil.dod.th.core.mp.Program;
 import mil.dod.th.core.mp.Program.ProgramStatus;
 import mil.dod.th.core.mp.model.MissionProgramSchedule;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.mp.runtime.MissionProgramRuntime;
 import mil.dod.th.ose.shared.WrappedExceptionExtractor;
 
@@ -53,14 +57,14 @@ public class MissionProgramSchedulerImpl implements MissionProgramScheduler
     /**
      * Map of mission programs that execute on a schedule.
      */
-    private final Map<String, Future<?>> m_ScheduledFuturePrograms = 
-        Collections.synchronizedMap(new HashMap<String, Future<?>>());
+    private final Map<String, ScheduledRunnerInfo> m_ScheduledFuturePrograms = 
+        Collections.synchronizedMap(new HashMap<String, ScheduledRunnerInfo>());
     
     /**
      * Map of mission programs that execute on a schedule and need to be shutdown in the future.
      */
-    private final Map<String, Future<?>> m_ScheduledProgramShutdowns = 
-        Collections.synchronizedMap(new HashMap<String, Future<?>>());
+    private final Map<String, ScheduledRunnerInfo> m_ScheduledProgramShutdowns = 
+        Collections.synchronizedMap(new HashMap<String, ScheduledRunnerInfo>());
     
     /**
      * Service for logging messages.
@@ -77,7 +81,15 @@ public class MissionProgramSchedulerImpl implements MissionProgramScheduler
      */
     private ScheduledExecutorService m_Executor;
 
+    /**
+     * Program runtime service used to retrieve the class loader for a mission script.
+     */
     private MissionProgramRuntime m_MissionProgramRuntime;
+
+    /**
+     * Reference to the power manager service.
+     */
+    private PowerManager m_PowerManager;
 
     /**
      * Binds the logging service for logging messages.
@@ -109,6 +121,12 @@ public class MissionProgramSchedulerImpl implements MissionProgramScheduler
         m_MissionProgramRuntime = runtime;
     }
 
+    @Reference
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        m_PowerManager = powerManager;
+    }
+
     /**
      * Activate this service and create the thread pool for executing mission programs.
      */
@@ -131,15 +149,23 @@ public class MissionProgramSchedulerImpl implements MissionProgramScheduler
     public synchronized void executeProgram(final ProgramImpl program) throws IllegalStateException
     {
         //make sure the mission isn't already scheduled, if so just remove
-        final Future<?> previousSchedule = m_ScheduledFuturePrograms.remove(program.getProgramName());
+        final ScheduledRunnerInfo previousSchedule = m_ScheduledFuturePrograms.remove(program.getProgramName());
         if (previousSchedule != null)
         {
-            previousSchedule.cancel(false);
-            if (!previousSchedule.isCancelled())
+            previousSchedule.getFutureTask().cancel(false);
+            if (!previousSchedule.getFutureTask().isCancelled())
             {
-                new IllegalStateException(String.format("Mission [%s] cannot execute because it is already scheduled, "
-                        + "and cannot be cancelled.", program.getProgramName()));
+                throw new IllegalStateException(
+                    String.format("Mission [%s] cannot execute because already scheduled, and cannot be cancelled.",
+                                  program.getProgramName()));
             }
+
+            final WakeLock wakeLock = previousSchedule.getWakeLock();
+            if (wakeLock != null)
+            {
+                wakeLock.delete();
+            }
+
             immediatelyExecute(program);
             return;
         }
@@ -154,16 +180,20 @@ public class MissionProgramSchedulerImpl implements MissionProgramScheduler
             
             //change status to scheduled
             program.changeStatus(ProgramStatus.SCHEDULED);
-            
+
             //get the future object, and save for removal
-            final Future<?> futureTask = m_Executor.schedule(new MissionExecutionRunner(program), 
+            final Future<?> futureTaskExec = m_Executor.schedule(new MissionExecutionRunner(program), 
                 schedule.getStartInterval() - currTime, TimeUnit.MILLISECONDS);
             
+            // Wake lock to ensure future execution
+            final WakeLock wakeLock = m_PowerManager.createWakeLock(this.getClass(), program.getProgramName());
+            wakeLock.scheduleWakeTime(new Date(schedule.getStartInterval()));
+
             m_Logging.debug("The time to wait to start scheduled mission [%s] is: %s millis, the current time is: %s", 
                     program.getProgramName(), schedule.getStartInterval() - currTime, currTime);
             
             //save for later
-            m_ScheduledFuturePrograms.put(program.getProgramName(), futureTask);
+            m_ScheduledFuturePrograms.put(program.getProgramName(), new ScheduledRunnerInfo(futureTaskExec, wakeLock));
         }
         else
         {
@@ -187,21 +217,34 @@ public class MissionProgramSchedulerImpl implements MissionProgramScheduler
     @Override
     public boolean cancelScheduledProgram(final String programName) throws IllegalArgumentException
     {
-        final Future<?> scheduledProgram = m_ScheduledFuturePrograms.remove(programName);
+        final ScheduledRunnerInfo scheduledProgram = m_ScheduledFuturePrograms.remove(programName);
         if (scheduledProgram == null)
         {
             throw new IllegalArgumentException(String.format("Program %s is not known to be a scheduled program", 
                 programName));
         }
-        final Future<?> shutdown = m_ScheduledProgramShutdowns.remove(programName);
-        //could be null if scheduled to run indefinitely
-        if (shutdown != null)
+
+        final ScheduledRunnerInfo shutdown = m_ScheduledProgramShutdowns.remove(programName);
+        if (shutdown != null) // could be null if scheduled to run indefinitely
         {
-            shutdown.cancel(false);
+            shutdown.getFutureTask().cancel(false);
+
+            final WakeLock wakeLock = shutdown.getWakeLock();
+            if (wakeLock != null)
+            {
+                wakeLock.delete();
+            }
         }
+
+        final WakeLock wakeLock = scheduledProgram.getWakeLock();
+        if (wakeLock != null)
+        {
+            wakeLock.delete();
+        }
+
         //this will only work if the task has not started. The cancel argument of false means that this call
         //will be denied if execution is happening at the time of this call.
-        return scheduledProgram.cancel(false);
+        return scheduledProgram.getFutureTask().cancel(false);
     }
     
     /**
@@ -212,14 +255,16 @@ public class MissionProgramSchedulerImpl implements MissionProgramScheduler
     private void immediatelyExecute(final ProgramImpl program)
     {
         //execute NOW
-        final Future<?> futureTask = m_Executor.submit(new MissionExecutionRunner(program));
+        final Future<?> futureTaskExec = m_Executor.submit(new MissionExecutionRunner(program));
+
         //store the program name with its task
-        m_ScheduledFuturePrograms.put(program.getProgramName(), futureTask);
+        m_ScheduledFuturePrograms.put(program.getProgramName(), new ScheduledRunnerInfo(futureTaskExec, null));
     }
+
     /**
      * Runnable that the parent class uses to execute {@link Program}s.
+     * 
      * @author callen
-     *
      */
     public class MissionExecutionRunner implements Runnable
     {
@@ -227,7 +272,7 @@ public class MissionProgramSchedulerImpl implements MissionProgramScheduler
          * The program to execute.
          */
         private final ProgramImpl m_Program;
-        
+
         /**
          * Constructor that stores away the program to execute.
          * @param program
@@ -276,31 +321,58 @@ public class MissionProgramSchedulerImpl implements MissionProgramScheduler
             }
             
             //remove me from the queue
-            m_ScheduledFuturePrograms.remove(m_Program.getProgramName());
+            final ScheduledRunnerInfo scheduledProgram = m_ScheduledFuturePrograms.remove(m_Program.getProgramName());
+            final WakeLock wakeLockStart = scheduledProgram.getWakeLock();
+            if (wakeLockStart != null)
+            {
+                wakeLockStart.delete();
+            }
             
             //if not indefinite need to schedule the shutdown
             final MissionProgramSchedule schedule = m_Program.getMissionSchedule();
             if (schedule.isSetStopInterval())
             {
-                final long currTime = System.currentTimeMillis();
+                try
+                {
+                    final long currTime = System.currentTimeMillis();
 
-                //get the future for calling shutdown, delta of shutdown already calculated
-                final Future<?> futureTaskShutdown = m_Executor.schedule(
-                    new MissionShutdownRunner(m_Program), schedule.getStopInterval() - currTime, TimeUnit.MILLISECONDS);
-                
-                m_Logging.debug("The time to wait to stop [%s] which is a scheduled mission is : %s millis, "
-                    + "current time is: %s", m_Program.getProgramName(), schedule.getStopInterval() - currTime, 
-                        currTime);
-                //save in case manual shutdown is requested
-                m_ScheduledProgramShutdowns.put(m_Program.getProgramName(), futureTaskShutdown);
+                    //get the future for calling shutdown, delta of shutdown already calculated
+                    final Future<?> futureTaskShutdown = m_Executor.schedule(new MissionShutdownRunner(m_Program),
+                            schedule.getStopInterval() - currTime, TimeUnit.MILLISECONDS);
+
+                    // Wake lock to ensure future execution
+                    final WakeLock wakeLockStop = m_PowerManager.createWakeLock(
+                            MissionProgramSchedulerImpl.this.getClass(), m_Program.getProgramName() + "_Stop");
+                    wakeLockStop.scheduleWakeTime(new Date(schedule.getStopInterval()));
+    
+                    m_Logging.debug("The time to wait to stop [%s] which is a scheduled mission is : %s millis, "
+                        + "current time is: %s", m_Program.getProgramName(), schedule.getStopInterval() - currTime, 
+                            currTime);
+
+                    //save in case manual shutdown is requested
+                    m_ScheduledProgramShutdowns.put(m_Program.getProgramName(),
+                            new ScheduledRunnerInfo(futureTaskShutdown, wakeLockStop));
+                }
+                catch (final Exception e)
+                {
+                    //log the error
+                    m_Logging.error(e, "Scheduling [%s] shutdown failed!", m_Program.getProgramName());
+
+                    //post the event
+                    final Map<String, Object> properties = new HashMap<String, Object>();
+                    properties.put(Program.EVENT_PROP_PROGRAM_EXCEPTION,
+                            WrappedExceptionExtractor.getRootCauseMessage(e));
+                    properties.putAll(m_Program.getEventProperties());
+                    m_EventAdmin.postEvent(new Event(Program.TOPIC_PROGRAM_SHUTDOWN_FAILURE, properties));
+                }
             }
         }
     }
     
     /**
      * Runnable that the parent class uses to shutdown {@link Program}s.
+     * 
      * @author callen
-     *
      */
     public class MissionShutdownRunner implements Runnable
     {
@@ -327,7 +399,7 @@ public class MissionProgramSchedulerImpl implements MissionProgramScheduler
             Thread.currentThread().setContextClassLoader(m_MissionProgramRuntime.getClassLoader());
             
             //remove the shutdown registration if this is called for a scheduled program            
-            final Future<?> schedFuture = m_ScheduledProgramShutdowns.remove(m_Program.getProgramName());
+            final ScheduledRunnerInfo schedFuture = m_ScheduledProgramShutdowns.remove(m_Program.getProgramName());
             
             m_Logging.debug("The time that mission [%s] started shutdown is: %s", m_Program.getProgramName(), 
                     System.currentTimeMillis());
@@ -348,6 +420,7 @@ public class MissionProgramSchedulerImpl implements MissionProgramScheduler
                 m_EventAdmin.postEvent(new Event(Program.TOPIC_PROGRAM_SHUTDOWN_FAILURE, properties));
                 return;
             }
+
             try
             {
                 m_Program.getMissionScript().shutdown();
@@ -373,14 +446,21 @@ public class MissionProgramSchedulerImpl implements MissionProgramScheduler
                 properties.put(Program.EVENT_PROP_PROGRAM_EXCEPTION, WrappedExceptionExtractor.getRootCauseMessage(e));
                 m_EventAdmin.postEvent(new Event(Program.TOPIC_PROGRAM_SHUTDOWN_FAILURE, properties));
             }
-            schedFuture.cancel(true);
+
+            schedFuture.getFutureTask().cancel(true);
+
+            final WakeLock wakeLock = schedFuture.getWakeLock();
+            if (wakeLock != null)
+            {
+                wakeLock.delete();
+            }
         }
     }
     
     /**
      * Runnable that the parent class uses to test {@link Program}s.
+     * 
      * @author callen
-     *
      */
     class MissionTestRunner implements Callable<TestResult>
     {
@@ -449,6 +529,42 @@ public class MissionProgramSchedulerImpl implements MissionProgramScheduler
             m_EventAdmin.postEvent(new Event(Program.TOPIC_PROGRAM_TESTED, properties));
             m_Logging.info("Test for [%s] completed with result %s", m_Program.getProgramName(), test);
             return test;
+        }
+    }
+
+    /**
+     * Keeps track of information needed for scheduled runners.
+     * 
+     * @author dlandoll
+     */
+    class ScheduledRunnerInfo
+    {
+        private final Future<?> m_FutureTask;
+        private final WakeLock m_WakeLock;
+
+        /**
+         * Constructor that stores information related to a scheduled runner.
+         * 
+         * @param futureTask
+         *     the future associated with the runner
+         * @param wakeLock
+         *     wake lock used to schedule a wakeup if needed, should be null if no wake lock is needed
+         *     
+         */
+        ScheduledRunnerInfo(final Future<?> futureTask, final WakeLock wakeLock)
+        {
+            m_FutureTask = futureTask;
+            m_WakeLock = wakeLock;
+        }
+
+        public Future<?> getFutureTask()
+        {
+            return m_FutureTask;
+        }
+
+        public WakeLock getWakeLock()
+        {
+            return m_WakeLock;
         }
     }
 }

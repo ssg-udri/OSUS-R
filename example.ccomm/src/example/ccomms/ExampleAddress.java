@@ -17,6 +17,7 @@ import java.util.Set;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import mil.dod.th.core.ccomm.Address;
 import mil.dod.th.core.ccomm.AddressContext;
 import mil.dod.th.core.ccomm.AddressProxy;
@@ -38,7 +39,7 @@ public class ExampleAddress implements AddressProxy
     {
         m_Property = Configurable.createConfigurable(ExampleAddressAttributes.class, props).a();
     }
-    
+
     @Override
     public String getAddressDescriptionSuffix() 
     {

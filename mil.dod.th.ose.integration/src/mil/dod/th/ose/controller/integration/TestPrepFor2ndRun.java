@@ -402,7 +402,7 @@ public class TestPrepFor2ndRun
     {
         ObservationStore observationStore = IntegrationTestRunner.getService(ObservationStore.class);
         
-        for (int i = 1; i <= 2; i++)
+        for (int i = 1; i <= 4; i++)
         {
             Observation obs = ObservationHelper.createDetectionObservation(i);
             observationStore.persist(obs);

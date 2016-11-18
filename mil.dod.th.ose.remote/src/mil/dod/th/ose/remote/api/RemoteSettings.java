@@ -39,7 +39,12 @@ public interface RemoteSettings
      * Key for the {@link #getMaxMessageSize()} configuration property.
      */
     String KEY_MAX_MSG_SIZE_BYTES = "maxMsgSizeInBytes";
-    
+
+    /**
+     * Key for the {@link #isPreventSleepModeEnabled()} configuration property.
+     */
+    String KEY_PREVENT_SLEEP_MODE = "preventSleepMode";
+
     /**
      * Whether logging of remote messages is enabled for the system.
      * 
@@ -62,7 +67,16 @@ public interface RemoteSettings
      *        the maximum size, in bytes, of a remote message.
      */
     long getMaxMessageSize();
-    
+
+    /**
+     * Whether prevention of the power management sleep mode is enabled for the system when a remote socket channel is
+     * active or connected.
+     * 
+     * @return
+     *      true if is enabled, false if not
+     */
+    boolean isPreventSleepModeEnabled();
+
     /**
      * Enumeration representing the encryption mode of the remote interface.
      */

@@ -40,6 +40,7 @@ import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
 import mil.dod.th.core.persistence.ObservationStore;
 import mil.dod.th.core.persistence.PersistenceFailedException;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.spatial.Coordinates;
 import mil.dod.th.core.types.spatial.Orientation;
 import mil.dod.th.core.types.status.OperatingStatus;
@@ -120,11 +121,24 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
     private AssetActiveStatus m_AssetActiveStatus = AssetActiveStatus.DEACTIVATED;
 
     /**
+     * Reference to internal power management for factory objects.
+     */
+    private PowerManagerInternal m_PowInternal;
+
+    /**
+     * Wake lock used for asset operations.
+     */
+    private WakeLock m_WakeLock;
+
+    /**
      * Boolean value representing if the represented asset possesses the ability to handle it's own position. True means
      * it has implementation for doing so, false means the implementation for handling the position is handled herein.
      */
     private boolean m_PluginOverridesPosition;
 
+    /**
+     * Reference to the logging service.
+     */
     private LoggingService m_Log;
 
     @Reference
@@ -191,6 +205,8 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
         super.initialize(registry, proxy, factory, configAdmin, eventAdmin, powerMgr, uuid, name, pid, baseType);
         m_AssetProxy = (AssetProxy)proxy;
         m_PluginOverridesPosition = getConfig().pluginOverridesPosition();
+        m_PowInternal = powerMgr;
+        m_WakeLock = powerMgr.createWakeLock(m_AssetProxy.getClass(), this, "coreAsset");
 
         // MUST RESTORE THE LOCATION BEFORE POSTING OBSERVATIONS
         // depending on if the position override is true or not the location could be accessed before
@@ -230,13 +246,29 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
     @Override
     public void onActivate() throws AssetException
     {
-        m_AssetProxy.onActivate();
+        try
+        {
+            m_WakeLock.activate();
+            m_AssetProxy.onActivate();
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
 
     @Override
     public void onDeactivate() throws AssetException
     {
-        m_AssetProxy.onDeactivate();
+        try
+        {
+            m_WakeLock.activate();
+            m_AssetProxy.onDeactivate();
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
 
     @Override
@@ -248,6 +280,8 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
 
         try
         {
+            m_WakeLock.activate();
+
             final Observation observation = m_AssetProxy.onCaptureData();
 
             persistObservation(observation);
@@ -278,6 +312,7 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
         finally
         {
             m_CapturingData = false;
+            m_WakeLock.cancel();
         }
     }
 
@@ -306,6 +341,8 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
 
         try
         {
+            m_WakeLock.activate();
+
             final Status status = m_AssetProxy.onPerformBit();
             m_Log.debug("Performed BIT for Asset %s. Status: %s", getName(), status);
 
@@ -321,6 +358,10 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
         {
             m_Log.error(e, "Status received from BIT is invalid for asset: [%s]", getName());
             setStatus(SummaryStatusEnum.BAD, "Invalid data received from perform BIT");
+        }
+        finally
+        {
+            m_WakeLock.cancel();
         }
 
         m_PerformingBit = false;
@@ -343,56 +384,64 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
                     getName(), command.getClass().getName()), exception);
         }
 
-        // command response
-        final Response commandResponse;
-
-        if (command instanceof SetPositionCommand)
+        try
         {
-            if (m_PluginOverridesPosition)
+            m_WakeLock.activate();
+
+            // command response
+            final Response commandResponse;
+            if (command instanceof SetPositionCommand)
+            {
+                if (m_PluginOverridesPosition)
+                {
+                    commandResponse = m_AssetProxy.onExecuteCommand(command);
+                }
+                // position is not handled by proxy, just store away the new position
+                else
+                {
+                    final SetPositionCommand positionCommand = (SetPositionCommand)command;
+                    commandResponse = updatePosition(positionCommand.getLocation(), positionCommand.getOrientation());
+                }
+            }
+            else if (command instanceof GetPositionCommand)
+            {
+                if (m_PluginOverridesPosition)
+                {
+                    commandResponse = m_AssetProxy.onExecuteCommand(command);
+                }
+                // position is not handled in a special way by the asset proxy, so retrieve what we got cached
+                else
+                {
+                    final GetPositionResponse response = new GetPositionResponse();
+                    if (m_AssetLocation != null)
+                    {
+                        response.withLocation(cloneCoordinates(m_AssetLocation));
+                    }
+                    if (m_AssetOrientation != null)
+                    {
+                        response.withOrientation(cloneOrientation(m_AssetOrientation));
+                    }
+                    commandResponse = response;
+                }
+            }
+            else
             {
                 commandResponse = m_AssetProxy.onExecuteCommand(command);
             }
-            // position is not handled by proxy, just store away the new position
-            else
-            {
-                final SetPositionCommand positionCommand = (SetPositionCommand)command;
-                commandResponse = updatePosition(positionCommand.getLocation(), positionCommand.getOrientation());
-            }
+    
+            m_Log.debug("Completed executing command [%s] for asset [%s]", command.getClass().getName(), getName());
+    
+            final Map<String, Object> props = new HashMap<>();
+            props.put(EVENT_PROP_ASSET_COMMAND_RESPONSE_TYPE, commandResponse.getClass().getName());
+            props.put(EVENT_PROP_ASSET_COMMAND_RESPONSE, commandResponse);
+            postEvent(TOPIC_COMMAND_RESPONSE, props);
+    
+            return commandResponse;
         }
-        else if (command instanceof GetPositionCommand)
+        finally
         {
-            if (m_PluginOverridesPosition)
-            {
-                commandResponse = m_AssetProxy.onExecuteCommand(command);
-            }
-            // position is not handled in a special way by the asset proxy, so retrieve what we got cached
-            else
-            {
-                final GetPositionResponse response = new GetPositionResponse();
-                if (m_AssetLocation != null)
-                {
-                    response.withLocation(cloneCoordinates(m_AssetLocation));
-                }
-                if (m_AssetOrientation != null)
-                {
-                    response.withOrientation(cloneOrientation(m_AssetOrientation));
-                }
-                commandResponse = response;
-            }
+            m_WakeLock.cancel();
         }
-        else
-        {
-            commandResponse = m_AssetProxy.onExecuteCommand(command);
-        }
-
-        m_Log.debug("Completed executing command [%s] for asset [%s]", command.getClass().getName(), getName());
-
-        final Map<String, Object> props = new HashMap<>();
-        props.put(EVENT_PROP_ASSET_COMMAND_RESPONSE_TYPE, commandResponse.getClass().getName());
-        props.put(EVENT_PROP_ASSET_COMMAND_RESPONSE, commandResponse);
-        postEvent(TOPIC_COMMAND_RESPONSE, props);
-
-        return commandResponse;
     }
 
     @Override
@@ -524,6 +573,8 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
             throw new IllegalStateException(String.format(
                     "Asset Active Status is %s, not DEACTIVATED, cannot remove %s.", getActiveStatus(), getName()));
         }
+
+        m_PowInternal.deleteWakeLock(m_WakeLock);
 
         super.delete();
     }

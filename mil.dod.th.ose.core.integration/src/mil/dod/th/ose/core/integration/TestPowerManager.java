@@ -16,7 +16,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -35,8 +34,6 @@ import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetDirectoryService;
 import mil.dod.th.core.asset.AssetException;
 import mil.dod.th.core.log.Logging;
-import mil.dod.th.core.persistence.PersistentData;
-import mil.dod.th.core.persistence.PersistentDataStore;
 import mil.dod.th.core.pm.PlatformPowerManager;
 import mil.dod.th.core.pm.PowerManager;
 import mil.dod.th.core.pm.WakeLock;
@@ -55,20 +52,18 @@ public class TestPowerManager extends TestCase
 {
     private final BundleContext m_Context = FrameworkUtil.getBundle(this.getClass()).getBundleContext();
 
-    private PersistentDataStore m_PersistentDataStore;
+    private ExamplePlatformPowerManager m_PlatformPowerManager;
     
     private Calendar m_Calendar;
     
     @Override
     public void setUp()
     {
-        m_PersistentDataStore = ServiceUtils.getService(m_Context, PersistentDataStore.class);
-        assertThat(m_PersistentDataStore, is(notNullValue()));
+        m_PlatformPowerManager = (ExamplePlatformPowerManager)ServiceUtils.getService(m_Context,
+                PlatformPowerManager.class);
         
         m_Calendar = Calendar.getInstance();
         assertThat(m_Calendar, is(notNullValue()));
-        
-        m_PersistentDataStore.removeMatching(ExamplePowerManagerMethodLog.class);
     }
     
     @Override
@@ -87,8 +82,8 @@ public class TestPowerManager extends TestCase
         }
         Logging.log(LogService.LOG_DEBUG, "***** %d Locks removed *****", count);
         
-        // Remove data store entries of method logs
-        m_PersistentDataStore.removeMatching(ExamplePowerManagerMethodLog.class);
+        // Remove entries of method logs
+        m_PlatformPowerManager.clearMethodLog();
     }
     
     /** Removes locks created in a different context */    
@@ -152,10 +147,9 @@ public class TestPowerManager extends TestCase
         testLock.scheduleWakeTime(wakeTime);
         
         // Check logged method call
-        Collection<? extends PersistentData> pDataColl = 
-                m_PersistentDataStore.query(ExamplePowerManagerMethodLog.class);
-        assertThat(pDataColl.size(), is(1));
-        ExamplePowerManagerMethodLog log = (ExamplePowerManagerMethodLog)pDataColl.iterator().next().getEntity();
+        ExamplePowerManagerMethodLog[] pDataColl = m_PlatformPowerManager.getMethodLog();
+        assertThat(pDataColl.length, is(1));
+        ExamplePowerManagerMethodLog log = pDataColl[0];
         outputLogVaules(log);          
         assertThat(log.getWakeLockId(), is("TestScheduledLockId"));
         assertThat(log.getCalledMethod(), is(ExamplePowerManagerMethodLog.MethodCalled.Activate));
@@ -212,10 +206,9 @@ public class TestPowerManager extends TestCase
         testLock.activate();  
         
         // Check logged method call
-        Collection<? extends PersistentData> pDataColl = 
-                m_PersistentDataStore.query(ExamplePowerManagerMethodLog.class);
-        assertThat(pDataColl.size(), is(1));
-        ExamplePowerManagerMethodLog log = (ExamplePowerManagerMethodLog)pDataColl.iterator().next().getEntity();
+        ExamplePowerManagerMethodLog[] pDataColl = m_PlatformPowerManager.getMethodLog();
+        assertThat(pDataColl.length, is(1));
+        ExamplePowerManagerMethodLog log = pDataColl[0];
         outputLogVaules(log);          
         assertThat(log.getWakeLockId(), is("TestCreatedIndefLock"));
         assertThat(log.getCalledMethod(), is(ExamplePowerManagerMethodLog.MethodCalled.Activate));
@@ -243,10 +236,9 @@ public class TestPowerManager extends TestCase
         testLock.activate(lockAwakeDuration, TimeUnit.SECONDS);
         
         // Check logged method call
-        Collection<? extends PersistentData> pDataColl = 
-                m_PersistentDataStore.query(ExamplePowerManagerMethodLog.class);
-        assertThat(pDataColl.size(), is(1));
-        ExamplePowerManagerMethodLog log = (ExamplePowerManagerMethodLog)pDataColl.iterator().next().getEntity();
+        ExamplePowerManagerMethodLog[] pDataColl = m_PlatformPowerManager.getMethodLog();
+        assertThat(pDataColl.length, is(1));
+        ExamplePowerManagerMethodLog log = pDataColl[0];
         outputLogVaules(log);      
         assertThat(log.getWakeLockId(), is("TestCreatedDurationLock"));  
         assertThat(log.getCalledMethod(), is(ExamplePowerManagerMethodLog.MethodCalled.Activate));
@@ -274,10 +266,9 @@ public class TestPowerManager extends TestCase
         testLock.activate(lockAwakeTime); 
         
         // Check logged method call
-        Collection<? extends PersistentData> pDataColl = 
-                m_PersistentDataStore.query(ExamplePowerManagerMethodLog.class);
-        assertThat(pDataColl.size(), is(1));
-        ExamplePowerManagerMethodLog log = (ExamplePowerManagerMethodLog)pDataColl.iterator().next().getEntity();
+        ExamplePowerManagerMethodLog[] pDataColl = m_PlatformPowerManager.getMethodLog();
+        assertThat(pDataColl.length, is(1));
+        ExamplePowerManagerMethodLog log = pDataColl[0];
         outputLogVaules(log);      
         assertThat(log.getWakeLockId(), is("TestCreatedUntilTimeLock")); 
         assertThat(log.getCalledMethod(), is(ExamplePowerManagerMethodLog.MethodCalled.Activate));

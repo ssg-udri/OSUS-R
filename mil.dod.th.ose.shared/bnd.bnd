@@ -15,7 +15,7 @@ Bundle-Version: 3.0.0.${tstamp}
 Bundle-Name: THOSE Shared
 Bundle-Description: Contains shared classes that are used by THOSE bundles
 Bundle-Vendor: UDRI
-Export-Package: mil.dod.th.ose.shared
+Export-Package: mil.dod.th.ose.shared, mil.dod.th.ose.shared.pm
 Private-Package: mil.dod.th.ose.shared.protoconverter.*
 Service-Component: *
 

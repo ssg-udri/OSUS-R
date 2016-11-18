@@ -33,6 +33,8 @@ import mil.dod.th.core.asset.AssetScanner;
 import mil.dod.th.core.factory.FactoryDescriptor;
 import mil.dod.th.core.factory.ProductType;
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.test.EventAdminSyncer;
 import mil.dod.th.ose.test.EventAdminVerifier;
 import mil.dod.th.ose.test.LoggingServiceMocker;
@@ -57,6 +59,8 @@ public class TestScannerManager
     private AssetScanner m_Scanner1;
     private AssetScanner m_Scanner2;
     private Map<String, Object> m_Props = new HashMap<>();
+    private PowerManager m_PowerManager;
+    private WakeLock m_WakeLock;
 
     @Before
     public void setUp() throws Exception
@@ -65,13 +69,19 @@ public class TestScannerManager
         m_ADS = mock(AssetDirectoryService.class);
         m_EventAdmin = mock(EventAdmin.class);
         m_Logging = LoggingServiceMocker.createMock();
+        m_PowerManager = mock(PowerManager.class);
+        m_WakeLock = mock(WakeLock.class);
+        when(m_PowerManager.createWakeLock(m_SUT.getClass(), "coreAssetScanner")).thenReturn(m_WakeLock);
 
         m_SUT.setLoggingService(m_Logging);
         m_SUT.setEventAdmin(m_EventAdmin);
+        m_SUT.setPowerManager(m_PowerManager);
         m_Scanner1 = new ScannerStub1();
         m_Scanner2 = new ScannerStub2();
         m_SUT.setAssetScanner(m_Scanner1);
         m_SUT.setAssetScanner(m_Scanner2);
+
+        m_SUT.activate();
     }
 
     @After
@@ -79,6 +89,9 @@ public class TestScannerManager
     {
         m_SUT.unsetAssetScanner(m_Scanner1);
         m_SUT.unsetAssetScanner(m_Scanner2);
+
+        m_SUT.deactivate();
+        verify(m_WakeLock, times(1)).delete();
     }
 
     /**
@@ -112,6 +125,7 @@ public class TestScannerManager
         
         m_SUT.scanForAllAssets(m_ADS);
         
+        verify(m_WakeLock).activate();
         assertThat(waitSemaphore.tryAcquire(1, TimeUnit.SECONDS), is(true));
         
         ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
@@ -132,6 +146,9 @@ public class TestScannerManager
         // should get null to signify all have completed
         EventAdminVerifier.assertEventByTopicNoAssetType(eventCaptor, 
                 AssetDirectoryService.TOPIC_SCANNING_FOR_ASSETS_COMPLETE);
+
+        Thread.sleep(1000);
+        verify(m_WakeLock).cancel();
     }
 
     /**
@@ -139,12 +156,14 @@ public class TestScannerManager
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void testScanForAssetsByType() throws IllegalArgumentException, AssetException
+    public void testScanForAssetsByType() throws IllegalArgumentException, AssetException, InterruptedException
     {
         EventAdminSyncer syncer = new EventAdminSyncer(m_EventAdmin, 
                 AssetDirectoryService.TOPIC_SCANNING_FOR_ASSETS_COMPLETE, 2);
         
         m_SUT.scanForAssetsByType(m_ADS, AssetType1.class.getName());
+
+        verify(m_WakeLock).activate();
         
         syncer.waitFor(3, TimeUnit.SECONDS);
         
@@ -156,12 +175,15 @@ public class TestScannerManager
         EventAdminVerifier.assertEventByTopicAssetType(eventCaptor, AssetDirectoryService.TOPIC_SCANNING_FOR_ASSETS, 
                 AssetType1.class.getName());
 
+        Thread.sleep(1000);
+
         EventAdminVerifier.assertEventByTopicAssetType(eventCaptor, 
                 AssetDirectoryService.TOPIC_SCANNING_FOR_ASSETS_COMPLETE, AssetType1.class.getName());
     
         // should get null to signify all have completed
         EventAdminVerifier.assertEventByTopicNoAssetType(eventCaptor, 
                 AssetDirectoryService.TOPIC_SCANNING_FOR_ASSETS_COMPLETE);
+        verify(m_WakeLock).cancel();
         
         // remove scanner and verify that exception is thrown
         m_SUT.unsetAssetScanner(m_Scanner1);
@@ -176,16 +198,18 @@ public class TestScannerManager
     }
 
     /**
-     * Verify the handling of a scanner that exceeds the 10 second limit.
+     * Verify the handling of a scanner that exceeds the 15 second limit.
      */
     @Test
-    public void testScanTimeout()
+    public void testScanTimeout() throws InterruptedException
     {
         m_SUT.setAssetScanner(new ScannerStubTimeout());
 
         EventAdminSyncer syncer = new EventAdminSyncer(m_EventAdmin, 
                 AssetDirectoryService.TOPIC_SCANNING_FOR_ASSETS_COMPLETE);
         m_SUT.scanForAssetsByType(m_ADS, AssetTypeTimeout.class.getName());
+
+        verify(m_WakeLock).activate();
         
         syncer.waitFor(16, TimeUnit.SECONDS);
         
@@ -198,13 +222,16 @@ public class TestScannerManager
         // should get null to signify all have completed
         EventAdminVerifier.assertEventByTopicNoAssetType(eventCaptor, 
                 AssetDirectoryService.TOPIC_SCANNING_FOR_ASSETS_COMPLETE);
+
+        Thread.sleep(1000);
+        verify(m_WakeLock).cancel();
     }
 
     /**
      * Verify the handling of a scanner that exceeds the 10 second limit.
      */
     @Test
-    public void testScanException()
+    public void testScanException() throws InterruptedException
     {
         m_SUT.setAssetScanner(new ScannerStubException());
 
@@ -212,6 +239,8 @@ public class TestScannerManager
                 AssetDirectoryService.TOPIC_SCANNING_FOR_ASSETS_COMPLETE, 2);
         m_SUT.scanForAssetsByType(m_ADS, AssetTypeException.class.getName());
         
+        verify(m_WakeLock).activate();
+
         syncer.waitFor(16, TimeUnit.SECONDS);
         
         ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
@@ -223,6 +252,9 @@ public class TestScannerManager
         // should get null to signify all have completed
         EventAdminVerifier.assertEventByTopicNoAssetType(eventCaptor, 
                 AssetDirectoryService.TOPIC_SCANNING_FOR_ASSETS_COMPLETE);
+
+        Thread.sleep(1000);
+        verify(m_WakeLock).cancel();
     }
 
     /**

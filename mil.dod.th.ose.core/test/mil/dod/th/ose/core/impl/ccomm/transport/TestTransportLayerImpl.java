@@ -39,6 +39,7 @@ import mil.dod.th.core.ccomm.transport.capability.TransportLayerCapabilities;
 import mil.dod.th.core.factory.FactoryDescriptor;
 import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.factory.FactoryObjectProxy;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.core.ConfigurationAdminMocker;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
 import mil.dod.th.ose.core.factory.api.FactoryObjectInternal;
@@ -91,6 +92,9 @@ public class TestTransportLayerImpl
     @Mock
     private PowerManagerInternal m_PowManInternal;
 
+    @Mock
+    private WakeLock m_WakeLock;
+
     @Before
     public void setUp() throws IOException, InvalidSyntaxException, ConfigurationException, 
         IllegalArgumentException, IllegalStateException, FactoryException, AssetException, ClassNotFoundException
@@ -104,6 +108,12 @@ public class TestTransportLayerImpl
         when(m_TransportLayerFactoryInternal.getCapabilities()).thenReturn(m_Caps);
         when(m_TransportLayerFactoryInternal.getTransportLayerCapabilities()).thenReturn(m_Caps);
         doReturn(TransportLayer.class.getName()).when(m_TransportLayerFactoryInternal).getProductType();
+        when(m_PowManInternal.createWakeLock(m_TransportLayerProxy.getClass(), m_SUT, "coreFactoryObject")).thenReturn(
+                m_WakeLock);
+        when(m_PowManInternal.createWakeLock(m_TransportLayerProxy.getClass(), m_SUT, "coreTransLayer")).thenReturn(
+                m_WakeLock);
+        when(m_PowManInternal.createWakeLock(m_TransportLayerProxy.getClass(), m_SUT, "coreTransLayerRecv")).thenReturn(
+                m_WakeLock);
     }
 
     private void initTransportLayer(boolean isConnectionOriented)
@@ -112,6 +122,9 @@ public class TestTransportLayerImpl
 
         m_SUT.initialize(m_FactReg, m_TransportLayerProxy, m_TransportLayerFactoryInternal, m_ConfigurationAdmin, 
                 m_EventAdmin, m_PowManInternal, m_Uuid, m_Name, m_Pid, m_BaseType);
+
+        verify(m_PowManInternal).createWakeLock(m_TransportLayerProxy.getClass(), m_SUT, "coreTransLayer");
+        verify(m_PowManInternal).createWakeLock(m_TransportLayerProxy.getClass(), m_SUT, "coreTransLayerRecv");
     }
 
     /**
@@ -142,9 +155,12 @@ public class TestTransportLayerImpl
         when(destAddress.getEventProperties("dest.")).thenReturn(addressEventProps);
         when(destAddress.getName()).thenReturn("test-dest");
 
-        m_SUT.internalSetName("transport");   
+        m_SUT.internalSetName("transport");
+        m_SUT.beginReceiving();
+        verify(m_WakeLock).activate();
         TransportPacket pkt = mock(TransportPacket.class);
         m_SUT.endReceiving(pkt, sourceAddress, destAddress);
+        verify(m_WakeLock).cancel();
         
         ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(m_EventAdmin, times(1)).postEvent(eventCaptor.capture());
@@ -177,7 +193,10 @@ public class TestTransportLayerImpl
         TransportPacket pkt = mock(TransportPacket.class);
         
         m_SUT.internalSetName("transport");
+        m_SUT.beginReceiving();
+        verify(m_WakeLock).activate();
         m_SUT.endReceiving(pkt, null, null);
+        verify(m_WakeLock).cancel();
         
         ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(m_EventAdmin, times(1)).postEvent(eventCaptor.capture());
@@ -207,12 +226,14 @@ public class TestTransportLayerImpl
         Address destAddress = mock(Address.class);
         try
         {
+            m_SUT.beginReceiving();
+            verify(m_WakeLock).activate();
             m_SUT.endReceiving(null, sourceAddress, destAddress);
             fail("expecting exception");
         }
         catch (NullPointerException e)
         {
-
+            verify(m_WakeLock, never()).cancel();
         }
     }
     
@@ -233,7 +254,9 @@ public class TestTransportLayerImpl
         m_SUT.send(pkt, addr);
         
         //verify
+        verify(m_WakeLock).activate();
         verify(m_TransportLayerProxy).send(value, addr);
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -256,6 +279,8 @@ public class TestTransportLayerImpl
         
         //verify
         assertThat(m_SUT.isTransmitting(), is(false));
+        verify(m_WakeLock, never()).activate();
+        verify(m_WakeLock, never()).cancel();
     }
 
     /**
@@ -274,7 +299,9 @@ public class TestTransportLayerImpl
         m_SUT.send(pkt);
         
         //verify
+        verify(m_WakeLock).activate();
         verify(m_TransportLayerProxy).send(value);
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -296,6 +323,8 @@ public class TestTransportLayerImpl
         
         //verify
         assertThat(m_SUT.isTransmitting(), is(false));
+        verify(m_WakeLock, never()).activate();
+        verify(m_WakeLock, never()).cancel();
     }
 
     @Test
@@ -322,6 +351,8 @@ public class TestTransportLayerImpl
         
         //verify
         assertThat(m_SUT.isTransmitting(), is(false));
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -346,7 +377,9 @@ public class TestTransportLayerImpl
         }
         
         // verify
-        assertThat(m_SUT.isTransmitting(), is(false));           
+        assertThat(m_SUT.isTransmitting(), is(false));
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -363,7 +396,9 @@ public class TestTransportLayerImpl
         m_SUT.connect(address);
         
         //verify
+        verify(m_WakeLock).activate();
         verify(m_TransportLayerProxy).connect(address);
+        verify(m_WakeLock).cancel();
 
         try
         {
@@ -394,6 +429,8 @@ public class TestTransportLayerImpl
         catch (IllegalStateException e)
         {
             //verify
+            verify(m_WakeLock, never()).activate();
+            verify(m_WakeLock, never()).cancel();
         }
     }
     
@@ -414,6 +451,8 @@ public class TestTransportLayerImpl
         catch (CCommException e)
         {
             //verify
+            verify(m_WakeLock).activate();
+            verify(m_WakeLock).cancel();
         }
     }
     
@@ -429,7 +468,9 @@ public class TestTransportLayerImpl
         m_SUT.disconnect();
         
         //verify
+        verify(m_WakeLock).activate();
         verify(m_TransportLayerProxy).disconnect();
+        verify(m_WakeLock).cancel();
 
         try
         {
@@ -441,6 +482,8 @@ public class TestTransportLayerImpl
         catch (IllegalStateException e)
         {
             //verify
+            verify(m_WakeLock, times(2)).activate();
+            verify(m_WakeLock, times(2)).cancel();
         }
     }
     
@@ -458,6 +501,8 @@ public class TestTransportLayerImpl
         catch (IllegalStateException e)
         {
             //verify
+            verify(m_WakeLock, never()).activate();
+            verify(m_WakeLock, never()).cancel();
         }
     }
     
@@ -477,6 +522,8 @@ public class TestTransportLayerImpl
         catch (CCommException e)
         {
             //verify
+            verify(m_WakeLock).activate();
+            verify(m_WakeLock).cancel();
         }
     }
     
@@ -498,6 +545,8 @@ public class TestTransportLayerImpl
         //verify
         verify(m_TransportLayerProxy).onShutdown();
         verify(link).deactivateLayer();
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -515,7 +564,9 @@ public class TestTransportLayerImpl
         m_SUT.shutdown();
         
         //verify, on shutdown is called last
+        verify(m_WakeLock).activate();
         verify(m_TransportLayerProxy).onShutdown();
+        verify(m_WakeLock).cancel();
     }
     
     @Test
@@ -530,8 +581,10 @@ public class TestTransportLayerImpl
         m_SUT.shutdown();
         
         //verify
+        verify(m_WakeLock, times(2)).activate();
         verify(m_TransportLayerProxy).disconnect();
         verify(m_TransportLayerProxy).onShutdown();
+        verify(m_WakeLock, times(2)).activate();
     }
     
     @Test
@@ -547,7 +600,9 @@ public class TestTransportLayerImpl
         
         //verify
         verify(m_TransportLayerProxy, never()).disconnect();
+        verify(m_WakeLock).activate();
         verify(m_TransportLayerProxy).onShutdown();
+        verify(m_WakeLock).cancel();
     }
     
     /**
@@ -560,6 +615,8 @@ public class TestTransportLayerImpl
 
         m_SUT.beginReceiving();
         assertThat(m_SUT.isReceiving(), is(true));
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock, never()).cancel();
     }
     
     /**
@@ -653,20 +710,6 @@ public class TestTransportLayerImpl
     }
     
     /**
-     * Verify the registry is called to delete the object.
-     */
-    @Test
-    public void testDelete() throws Exception
-    {
-        initTransportLayer(false);
-        
-        m_SUT.delete();
-        
-        verify(m_FactReg).delete(m_SUT);
-        verify(m_TransportLayerProxy).onShutdown();
-    }
-    
-    /**
      * Verify the registry is called to delete the object if the link layer is not active.
      */
     @Test
@@ -682,6 +725,7 @@ public class TestTransportLayerImpl
         
         verify(m_FactReg).delete(m_SUT);
         verify(m_TransportLayerProxy).onShutdown();
+        verify(m_PowManInternal, times(3)).deleteWakeLock(m_WakeLock);
     }
     
     /**
@@ -706,5 +750,6 @@ public class TestTransportLayerImpl
             
         }
         verify(m_FactReg, never()).delete(Mockito.any(FactoryObjectInternal.class));
+        verify(m_PowManInternal, never()).deleteWakeLock(m_WakeLock);
     }
 }

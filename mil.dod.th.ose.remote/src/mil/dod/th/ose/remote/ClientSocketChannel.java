@@ -21,7 +21,9 @@ import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
 import mil.dod.th.ose.remote.api.RemoteSettings;
 import mil.dod.th.ose.utils.ClientSocketFactory;
 
@@ -32,7 +34,6 @@ import org.osgi.service.component.ComponentFactory;
  * using a {@link org.osgi.service.component.ComponentFactory}.
  * 
  * @author Dave Humeniuk
- *
  */
 @Component(factory = ClientSocketChannel.FACTORY_NAME)
 public class ClientSocketChannel extends AbstractSocketChannel
@@ -108,7 +109,14 @@ public class ClientSocketChannel extends AbstractSocketChannel
     {
         super.setRemoteSettings(remoteSettings);
     }
-    
+
+    @Override
+    @Reference
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        super.setPowerManager(powerManager);
+    }
+
     /**
      * Activate the component by creating the socket based on the input.
      * 

@@ -14,6 +14,7 @@ package mil.dod.th.ose.remote;
 
 import aQute.bnd.annotation.metatype.Meta.AD;
 import aQute.bnd.annotation.metatype.Meta.OCD;
+
 import mil.dod.th.ose.remote.api.RemoteSettings;
 import mil.dod.th.ose.remote.api.RemoteSettings.EncryptionMode;
 
@@ -21,7 +22,6 @@ import mil.dod.th.ose.remote.api.RemoteSettings.EncryptionMode;
  * Configuration interface for the remote interface.
  * 
  * @author Dave Humeniuk
- *
  */
 @OCD
 public interface RemoteSettingsConfig
@@ -59,4 +59,16 @@ public interface RemoteSettingsConfig
     @AD(required = false, deflt = DFLT_MAX_MSG_SIZE, 
             description = "The maximum allowed size of a remote channel message (in bytes). Default is 16MB.")
     long maxMsgSizeInBytes();
+
+    /**
+     * Get whether the power management sleep mode should be prevented when remote socket channels are active or
+     * connected.
+     * 
+     * @return
+     *      true if sleep mode should be prevented
+     */
+    @AD(required = false, deflt = "false", description = "If true power management sleep mode will be prevented when"
+        + " remote socket channels are active or connected. Note: Does not affect current channels, must reconnect"
+        + " for changes to take effect")
+    boolean preventSleepMode();
 }

@@ -18,8 +18,10 @@ import java.util.Map;
 import java.util.Set;
 
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import edu.udayton.udri.asset.novatel.connection.NovatelConnectionMgr;
 import edu.udayton.udri.asset.novatel.message.MessageReader;
 import edu.udayton.udri.asset.novatel.message.MessageReceiver;
@@ -28,6 +30,7 @@ import edu.udayton.udri.asset.novatel.message.NovatelMessageException;
 import edu.udayton.udri.asset.novatel.message.NovatelMessageException.FormatProblem;
 import edu.udayton.udri.asset.novatel.message.NovatelMessageParser;
 import edu.udayton.udri.asset.novatel.timechanger.TimeChange;
+
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetContext;
 import mil.dod.th.core.asset.AssetException;
@@ -41,6 +44,7 @@ import mil.dod.th.core.factory.Extension;
 import mil.dod.th.core.log.Logging;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.ComponentType;
 import mil.dod.th.core.types.ComponentTypeEnum;
 import mil.dod.th.core.types.spatial.Coordinates;
@@ -49,6 +53,8 @@ import mil.dod.th.core.types.status.ComponentStatus;
 import mil.dod.th.core.types.status.OperatingStatus;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
 import mil.dod.th.core.validator.ValidationFailedException;
+import mil.dod.th.ose.shared.pm.CountingWakeLock;
+import mil.dod.th.ose.shared.pm.CountingWakeLock.CountingWakeLockHandle;
 
 import org.osgi.service.log.LogService;
 
@@ -148,7 +154,12 @@ public class NovatelAsset implements AssetProxy, MessageReceiver, StatusHandler
      * Flag denoting whether or not to activate the time service.
      */
     private boolean m_SyncSystemTimeWithGps;
-    
+
+    /**
+     * Reference to the counting {@link WakeLock} used by this asset.
+     */
+    private CountingWakeLock m_CountingLock = new CountingWakeLock();
+
     /**
      * Bind the message reader service.
      * @param reader
@@ -213,126 +224,145 @@ public class NovatelAsset implements AssetProxy, MessageReceiver, StatusHandler
         setProperties(attributes);
         handleStatusUpdate(m_TimeChangeService.getComponentStatus());
         handleStatusUpdate(getComponentStatus(SummaryStatusEnum.OFF, "NovAtel asset is off."));
+        m_CountingLock.setWakeLock(m_Context.createPowerManagerWakeLock(getClass().getSimpleName() + "WakeLock"));
+    }
+
+    /**
+     * Method that gets called when the asset is deleted.
+     */
+    @Deactivate
+    public void deactivateInstance()
+    {
+        m_CountingLock.deleteWakeLock();
     }
 
     @Override
     public void updated(final Map<String, Object> props)
     {
-        final NovatelAssetAttributes attributes = 
-                Configurable.createConfigurable(NovatelAssetAttributes.class, props);
-        setProperties(attributes);
-        if (!m_IsActivated)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            //nothing to update, all values are pulled at activation
-            return;
-        }
-        
-        //try to stop retrieval of data messages
-        try
-        {
-            //might not have ever started
-            m_MessageReader.stopRetrieving();
-        }
-        catch (final IllegalStateException e)
-        {
-            Logging.log(LogService.LOG_DEBUG, e, "The retrieval of data messages wasn't previously started.");
-        }
-        
-        //try to close the serial port being used
-        try
-        {
-            //might not have ever started
-            m_ConnectionManager.stopProcessing();
-        }
-        catch (final IllegalStateException e)
-        {
-            Logging.log(LogService.LOG_DEBUG, e, "Reading from the Serial Port wasn't previously started.");
-        }
+            final NovatelAssetAttributes attributes = 
+                    Configurable.createConfigurable(NovatelAssetAttributes.class, props);
+            setProperties(attributes);
+            if (!m_IsActivated)
+            {
+                //nothing to update, all values are pulled at activation
+                return;
+            }
 
-        /*
-         * try to restart processing and data retrieval with updated property values
-         */
-        m_InsIterations = 1;
-        try
-        {
-            m_ConnectionManager.startProcessing(m_PhysPort, m_BaudRate);
+            //try to stop retrieval of data messages
+            try
+            {
+                //might not have ever started
+                m_MessageReader.stopRetrieving();
+            }
+            catch (final IllegalStateException e)
+            {
+                Logging.log(LogService.LOG_DEBUG, e, "The retrieval of data messages wasn't previously started.");
+            }
+
+            //try to close the serial port being used
+            try
+            {
+                //might not have ever started
+                m_ConnectionManager.stopProcessing();
+            }
+            catch (final IllegalStateException e)
+            {
+                Logging.log(LogService.LOG_DEBUG, e, "Reading from the Serial Port wasn't previously started.");
+            }
+
+            /*
+             * try to restart processing and data retrieval with updated property values
+             */
+            m_InsIterations = 1;
+            try
+            {
+                m_ConnectionManager.startProcessing(m_PhysPort, m_BaudRate);
+            }
+            catch (final AssetException e)
+            {
+                Logging.log(LogService.LOG_ERROR, e, "Unable to update the data source manager for the NovAtel asset.");
+                handleStatusUpdate(getComponentStatus(SummaryStatusEnum.BAD, e.getMessage()));
+                return; // don't try to start retrieving data, it will just error out.
+            }
+            m_MessageReader.startRetreiving(this);
+            handleStatusUpdate(getComponentStatus(
+                    SummaryStatusEnum.GOOD, "Novatel asset updated successfully"));
         }
-        catch (final AssetException e)
-        {
-            Logging.log(LogService.LOG_ERROR, e, "Unable to update the data source manager for the NovAtel asset.");
-            handleStatusUpdate(getComponentStatus(SummaryStatusEnum.BAD, e.getMessage()));
-            return; // don't try to start retrieving data, it will just error out.
-        }
-        m_MessageReader.startRetreiving(this);
-        handleStatusUpdate(getComponentStatus(
-                SummaryStatusEnum.GOOD, "Novatel asset updated successfully"));
     }
 
     @Override
     public void onActivate() throws AssetException
     {
-        m_ConnectionManager.startProcessing(m_PhysPort, m_BaudRate);
-        m_MessageReader.startRetreiving(this);
-        
-        //if connecting to the time service is enabled.
-        if (m_SyncSystemTimeWithGps)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            m_TimeChangeService.connectTimeService(this, m_TimeServicePort);
-        }
+            m_ConnectionManager.startProcessing(m_PhysPort, m_BaudRate);
+            m_MessageReader.startRetreiving(this);
 
-        if (!m_Parser.isOffsetKnown())
-        {
-            handleStatusUpdate(getComponentStatus(
-                    SummaryStatusEnum.BAD, "The UTC offset is not known yet, position data will not be handled."));
+            //if connecting to the time service is enabled.
+            if (m_SyncSystemTimeWithGps)
+            {
+                m_TimeChangeService.connectTimeService(this, m_TimeServicePort);
+            }
+
+            if (!m_Parser.isOffsetKnown())
+            {
+                handleStatusUpdate(getComponentStatus(
+                        SummaryStatusEnum.BAD, "The UTC offset is not known yet, position data will not be handled."));
+            }
+            else
+            {
+                handleStatusUpdate(getComponentStatus(
+                        SummaryStatusEnum.GOOD, "Asset has activated."));
+            }
+            Logging.log(LogService.LOG_INFO, "Novatel Asset activated");
+            m_IsActivated = true;
         }
-        else
-        {
-            handleStatusUpdate(getComponentStatus(
-                    SummaryStatusEnum.GOOD, "Asset has activated."));
-        }
-        Logging.log(LogService.LOG_INFO, "Novatel Asset activated");
-        m_IsActivated = true;
     }
 
     @Override
     public void onDeactivate() throws AssetException
     {
-        try
-        {
-            //might not of ever started
-            m_MessageReader.stopRetrieving();
-        }
-        catch (final IllegalStateException e)
-        {
-            Logging.log(LogService.LOG_DEBUG, e, "Unable to stop retreiving while deactivating.");
-        }
-        try
-        {
-            //might not of ever started
-            m_ConnectionManager.stopProcessing();
-        }
-        catch (final IllegalStateException e)
-        {
-            Logging.log(LogService.LOG_DEBUG, e, "Unable to stop processing while deactivating.");
-        }
-       
-        if (m_SyncSystemTimeWithGps)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
             try
             {
-                m_TimeChangeService.disconnectTimeService();
+                //might not of ever started
+                m_MessageReader.stopRetrieving();
             }
-            catch (final IllegalStateException | IOException | InterruptedException exception)
+            catch (final IllegalStateException e)
             {
-                Logging.log(LogService.LOG_ERROR, 
-                        "An error occured disconnecting from the time service.", exception);
+                Logging.log(LogService.LOG_DEBUG, e, "Unable to stop retrieving while deactivating.");
             }
+            try
+            {
+                //might not of ever started
+                m_ConnectionManager.stopProcessing();
+            }
+            catch (final IllegalStateException e)
+            {
+                Logging.log(LogService.LOG_DEBUG, e, "Unable to stop processing while deactivating.");
+            }
+
+            if (m_SyncSystemTimeWithGps)
+            {
+                try
+                {
+                    m_TimeChangeService.disconnectTimeService();
+                }
+                catch (final IllegalStateException | IOException | InterruptedException exception)
+                {
+                    Logging.log(LogService.LOG_ERROR, 
+                            "An error occured disconnecting from the time service.", exception);
+                }
+            }
+
+            Logging.log(LogService.LOG_INFO, "Novatel Asset deactivated");
+            handleStatusUpdate(getComponentStatus(
+                    SummaryStatusEnum.OFF, "Asset has been deactivated"));
+            m_IsActivated = false;
         }
-        
-        Logging.log(LogService.LOG_INFO, "Novatel Asset deactivated");
-        handleStatusUpdate(getComponentStatus(
-                SummaryStatusEnum.OFF, "Asset has been deactivated"));
-        m_IsActivated = false;
     }
 
     @Override
@@ -352,105 +382,114 @@ public class NovatelAsset implements AssetProxy, MessageReceiver, StatusHandler
     @Override
     public Response onExecuteCommand(final Command capabilityCommand) throws CommandExecutionException
     {
-        if (capabilityCommand instanceof GetPositionCommand)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            if (m_Coordinates == null || m_Orientation == null)
+            if (capabilityCommand instanceof GetPositionCommand)
             {
-                throw new CommandExecutionException("Position data is not known for the NovAtel Asset");
+                if (m_Coordinates == null || m_Orientation == null)
+                {
+                    throw new CommandExecutionException("Position data is not known for the NovAtel Asset");
+                }
+                return new GetPositionResponse().withLocation(m_Coordinates).withOrientation(m_Orientation);
             }
-            return new GetPositionResponse().withLocation(m_Coordinates).withOrientation(m_Orientation);
+            else
+            {
+                throw new CommandExecutionException(String.format("Asset [%s] does not support command [%s] data.", 
+                        m_Context.getName(), capabilityCommand.toString()));
+            }
         }
-        else
-        {
-            throw new CommandExecutionException(String.format("Asset [%s] does not support command [%s] data.", 
-                m_Context.getName(), capabilityCommand.toString()));
-        }
-        
     }
     
     @Override
     public void handleDataString(final String message) throws ValidationFailedException
     {
-        if (message.contains(NovatelConstants.NOVATEL_INSPVA_MESSAGE))
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            if (m_InsIterations >= m_HandleInsFreq)
+            if (message.contains(NovatelConstants.NOVATEL_INSPVA_MESSAGE))
             {
-                final NovatelInsMessage insMessage;
+                if (m_InsIterations >= m_HandleInsFreq)
+                {
+                    final NovatelInsMessage insMessage;
+                    try
+                    {
+                        insMessage = m_Parser.parseInsMessage(message);
+                    }
+                    catch (final NovatelMessageException e)
+                    {
+                        handleNovatelMessageException(e);
+                        Logging.log(LogService.LOG_ERROR, e, 
+                                "The NovAtel asset was unable to handle an INSPVA message.");
+                        return; //there is nothing to continue processing
+                    }
+                    handleStatusUpdate(getComponentStatus(
+                            SummaryStatusEnum.GOOD, "INS data is being properly received and processed."));
+                    if (m_SyncSystemTimeWithGps)
+                    {
+                        try
+                        {
+                            m_TimeChangeService.changeTime(insMessage.getUtcTime());
+                        }
+                        catch (final AssetException exception)
+                        {
+                            Logging.log(LogService.LOG_ERROR, exception, "Unable to change the system time.");
+                        }
+                    }
+                    //observation
+                    final Observation obs = new Observation();
+
+                    //fill in data
+                    obs.setAssetLocation(insMessage.getCoordinates());
+                    obs.setAssetOrientation(insMessage.getOrientation());
+                    obs.setObservedTimestamp(insMessage.getUtcTime());
+
+                    m_Context.persistObservation(obs);
+                    m_InsIterations = 1;
+
+                    //since the values are validated now set the position data for the asset
+                    m_Coordinates = insMessage.getCoordinates();
+                    m_Orientation = insMessage.getOrientation();
+                }
+                else
+                {
+                    m_InsIterations++;
+                }
+            }
+            else if (message.contains(NovatelConstants.NOVATEL_TIME_MESSAGE))
+            {
+                //Process the time message to update the GPS to UTC time offset
                 try
                 {
-                    insMessage = m_Parser.parseInsMessage(message);
+                    m_Parser.evaluateTimeMessage(message);
                 }
                 catch (final NovatelMessageException e)
                 {
+                    Logging.log(LogService.LOG_ERROR, e, "NovAtel asset is unable to handle a TIMEA message.");
                     handleNovatelMessageException(e);
-                    Logging.log(LogService.LOG_ERROR, e, "The NovAtel asset was unable to handle an INSPVA message.");
-                    return; //there is nothing to continue processing
                 }
-                handleStatusUpdate(getComponentStatus(
-                        SummaryStatusEnum.GOOD, "INS data is being properly received and processed."));
-                if (m_SyncSystemTimeWithGps)
-                {
-                    try
-                    {
-                        m_TimeChangeService.changeTime(insMessage.getUtcTime());
-                    }
-                    catch (final AssetException exception)
-                    {
-                        Logging.log(LogService.LOG_ERROR, exception, "Unable to change the system time.");
-                    }
-                }
-                //observation
-                final Observation obs = new Observation();
-                
-                //fill in data
-                obs.setAssetLocation(insMessage.getCoordinates());
-                obs.setAssetOrientation(insMessage.getOrientation());
-                obs.setObservedTimestamp(insMessage.getUtcTime());
-                
-                m_Context.persistObservation(obs);
-                m_InsIterations = 1;
-                
-                //since the values are validated now set the position data for the asset
-                m_Coordinates = insMessage.getCoordinates();
-                m_Orientation = insMessage.getOrientation();
+                //The status of the asset will be updated once a successful position data message has been handled.
+                //Don't update now because there may be other pending actions needed for the plug-in to behave as 
+                //intended.
             }
-            else
-            {
-                m_InsIterations++;
-            }
-        }
-        else if (message.contains(NovatelConstants.NOVATEL_TIME_MESSAGE))
-        {
-            //Process the time message to update the GPS to UTC time offset
-            try
-            {
-                m_Parser.evaluateTimeMessage(message);
-            }
-            catch (final NovatelMessageException e)
-            {
-                Logging.log(LogService.LOG_ERROR, e, "NovAtel asset is unable to handle a TIMEA message.");
-                handleNovatelMessageException(e);
-            }
-            //The status of the asset will be updated once a successful position data message has been handled.
-            //Don't update now because there may be other pending actions needed for the plug-in to behave as 
-            //intended.
         }
     }
 
     @Override
     public synchronized void handleStatusUpdate(final ComponentStatus status)
     {
-        final Status statusToPost = m_StatusService.getStatus(m_Context.getLastStatus(), status);
-        if (statusToPost != null)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            try 
+            final Status statusToPost = m_StatusService.getStatus(m_Context.getLastStatus(), status);
+            if (statusToPost != null)
             {
-                m_Context.setStatus(statusToPost);
-            }
-            catch (final ValidationFailedException e) 
-            {
-                m_Context.setStatus(statusToPost.getSummaryStatus().getSummary(), 
-                        statusToPost.getSummaryStatus().getDescription());
+                try 
+                {
+                    m_Context.setStatus(statusToPost);
+                }
+                catch (final ValidationFailedException e) 
+                {
+                    m_Context.setStatus(statusToPost.getSummaryStatus().getSummary(), 
+                            statusToPost.getSummaryStatus().getDescription());
+                }
             }
         }
     }
@@ -458,9 +497,12 @@ public class NovatelAsset implements AssetProxy, MessageReceiver, StatusHandler
     @Override
     public void handleReadError(final SummaryStatusEnum summaryStatusEnum, final String statusDescription)
     {
-        handleStatusUpdate(getComponentStatus(summaryStatusEnum, statusDescription));
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
+        {
+            handleStatusUpdate(getComponentStatus(summaryStatusEnum, statusDescription));
+        }
     }
-    
+
     @Override
     public Set<Extension<?>> getExtensions()
     {

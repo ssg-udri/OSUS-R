@@ -49,6 +49,7 @@
       <xs:enumeration value="biological" />
       <xs:enumeration value="chemical" />
       <xs:enumeration value="power" />
+      <xs:enumeration value="channelMetadata" />
     </xs:restriction>
   </xs:simpleType>   
 

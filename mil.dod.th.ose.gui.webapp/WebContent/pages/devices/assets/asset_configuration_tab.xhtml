@@ -230,8 +230,9 @@
                     <tr>
                         <td colspan="4" style="text-align:center;padding:.5em">
                             <h:form>
-                                <p:commandButton id="configurationButton" update='@([id$="assetEditConfiguration"])' oncomplete="assetEditConfigurationDlg.show();" action="#{factoryObjConfigModifierView.setSelectedFactoryModel(asset)}" value="Configuration"/>
-                                <p:tooltip for="configurationButton" value="Configure the asset."/>
+                                <p:commandButton id="configurationButton" update='@([id$="assetEditConfiguration"])' 
+                                oncomplete="assetEditConfigurationDlg.show();" action="#{factoryObjConfigModifierView.setSelectedFactoryModel(asset)}" 
+                                value="Configuration"/><p:tooltip for="configurationButton" value="Configure the asset."/>
                                 <p:commandButton id="performBit" value="Perform BIT" actionListener="#{selectedAsset.requestBIT(asset)}" process="@this" disabled="#{!asset.isBitSupportAsync()}" />
                                 <p:tooltip for="performBit" value="Have the asset perform it's built-in-test." />
                                 <p:commandButton id="captureData" value="Capture Data" actionListener="#{selectedAsset.requestCaptureData(asset)}" disabled="#{!asset.isDataCaptureSupportAsync()}" process="@this" />

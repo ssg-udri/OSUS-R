@@ -3,6 +3,7 @@ package ${package};
 import java.util.Set;
 
 import aQute.bnd.annotation.component.Component;
+
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetDirectoryService.ScanResults;
 import mil.dod.th.core.asset.AssetException;

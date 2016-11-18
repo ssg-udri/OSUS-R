@@ -23,8 +23,10 @@ import java.util.Map;
 import java.util.Set;
 
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetContext;
 import mil.dod.th.core.asset.AssetException;
@@ -42,6 +44,7 @@ import mil.dod.th.core.log.Logging;
 import mil.dod.th.core.observation.types.ImageMetadata;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.types.DigitalMedia;
 import mil.dod.th.core.types.factory.SpatialTypesFactory;
 import mil.dod.th.core.types.image.Camera;
@@ -51,6 +54,8 @@ import mil.dod.th.core.types.image.ImageCaptureReasonEnum;
 import mil.dod.th.core.types.image.PictureTypeEnum;
 import mil.dod.th.core.types.image.PixelResolution;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
+import mil.dod.th.ose.shared.pm.CountingWakeLock;
+import mil.dod.th.ose.shared.pm.CountingWakeLock.CountingWakeLockHandle;
 import mil.dod.th.ose.utils.UrlService;
 
 import org.osgi.service.cm.ConfigurationException;
@@ -87,6 +92,11 @@ public class AxisAsset implements AssetProxy
     private String m_IpAddress;
     
     /**
+     * Reference to the counting {@link WakeLock} used by this asset.
+     */
+    private CountingWakeLock m_CountingLock = new CountingWakeLock();
+    
+    /**
      * Bind the command processor.
      * @param commandProcessor
      *      the service which simplifies the commands for this asset
@@ -99,6 +109,7 @@ public class AxisAsset implements AssetProxy
     
     /**
      * Bind the URL service.
+     * 
      * @param urlService
      *      the service which 
      */
@@ -114,6 +125,16 @@ public class AxisAsset implements AssetProxy
         final AxisAssetAttributes attributes = Configurable.createConfigurable(AxisAssetAttributes.class, props);
         m_Context = context;
         m_IpAddress = attributes.ipAddress();
+        m_CountingLock.setWakeLock(m_Context.createPowerManagerWakeLock(getClass().getSimpleName() + "WakeLock"));
+    }
+    
+    /**
+     * Method that gets called when the asset is deleted.
+     */
+    @Deactivate
+    public void deactivateInstance()
+    {
+        m_CountingLock.deleteWakeLock();
     }
     
     @Override
@@ -140,31 +161,33 @@ public class AxisAsset implements AssetProxy
     @Override
     public Observation onCaptureData() throws AssetException
     {
-        final byte[] imageData = writeImage();
-        
-        if (imageData == null)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            throw new AssetException(String.format(
-                    "Image capture from Axis Camera [%s] is empty.", m_Context.getName()));
+            final byte[] imageData = writeImage();
+            if (imageData == null)
+            {
+                throw new AssetException(String.format(
+                        "Image capture from Axis Camera [%s] is empty.", m_Context.getName()));
+            }
+
+            final ImageMetadata imageMeta = new ImageMetadata();
+            imageMeta.setColor(true);
+            imageMeta.setImager(new Camera().withType(CameraTypeEnum.VISIBLE));
+            imageMeta.setPictureType(PictureTypeEnum.FULL_FIELD_OF_VIEW);
+            final int pixWidth = 752;
+            final int pixHeight = 480;
+            imageMeta.setResolution(new PixelResolution(pixWidth, pixHeight));
+            imageMeta.setImageCaptureReason(new ImageCaptureReason(ImageCaptureReasonEnum.MANUAL, 
+                    "Manual order to capture image."));
+
+            final DigitalMedia digitalMedia = new DigitalMedia(imageData, "image/jpg");
+            final Observation obs = new Observation().withDigitalMedia(digitalMedia).withImageMetadata(imageMeta);
+
+            Logging.log(LogService.LOG_DEBUG, "AXIS Camera Asset data captured");
+            return obs;
         }
-        
-        final ImageMetadata imageMeta = new ImageMetadata();
-        imageMeta.setColor(true);
-        imageMeta.setImager(new Camera().withType(CameraTypeEnum.VISIBLE));
-        imageMeta.setPictureType(PictureTypeEnum.FULL_FIELD_OF_VIEW);
-        final int pixWidth = 752;
-        final int pixHeight = 480;
-        imageMeta.setResolution(new PixelResolution(pixWidth, pixHeight));
-        imageMeta.setImageCaptureReason(new ImageCaptureReason(ImageCaptureReasonEnum.MANUAL, 
-                "Manual order to capture image."));
-        
-        final DigitalMedia digitalMedia = new DigitalMedia(imageData, "image/jpg");
-        final Observation obs = new Observation().withDigitalMedia(digitalMedia).withImageMetadata(imageMeta);
-        
-        Logging.log(LogService.LOG_DEBUG, "AXIS Camera Asset data captured");
-        return obs;
     }
-    
+
     @Override
     public Status onPerformBit() throws AssetException
     {
@@ -174,64 +197,67 @@ public class AxisAsset implements AssetProxy
     @Override
     public Response onExecuteCommand(final Command capabilityCommand) throws CommandExecutionException
     {
-        Logging.log(LogService.LOG_DEBUG, capabilityCommand.getClass().getSimpleName());
-        if (capabilityCommand instanceof SetPanTiltCommand)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            final SetPanTiltCommand setPT = (SetPanTiltCommand)capabilityCommand;
-            final String url = m_CommandProcessor.processSetPanTilt(setPT, m_IpAddress);
-            try
+            Logging.log(LogService.LOG_DEBUG, capabilityCommand.getClass().getSimpleName());
+            if (capabilityCommand instanceof SetPanTiltCommand)
             {
-                final URLConnection connection = m_UrlService.constructUrlConnection(url);
-                connection.getDate();
-            }
-            catch (final IOException e)
-            {
-                throw new CommandExecutionException(e);
-            }
-            
-            return new SetPanTiltResponse();
-        }
-        else if (capabilityCommand instanceof GetPanTiltCommand)
-        {
-            final String url = m_CommandProcessor.processGetPanTilt(m_IpAddress);
-            final StringBuilder stringBuilder = new StringBuilder();
-            try
-            {
-                final URLConnection connection = m_UrlService.constructUrlConnection(url);
-                try (final InputStream inStream = connection.getInputStream();
-                        final Reader reader = new InputStreamReader(inStream))
+                final SetPanTiltCommand setPT = (SetPanTiltCommand)capabilityCommand;
+                final String url = m_CommandProcessor.processSetPanTilt(setPT, m_IpAddress);
+                try
                 {
-                    int data = reader.read();
-                    while (data != -1)
+                    final URLConnection connection = m_UrlService.constructUrlConnection(url);
+                    connection.getDate();
+                }
+                catch (final IOException e)
+                {
+                    throw new CommandExecutionException(e);
+                }
+
+                return new SetPanTiltResponse();
+            }
+            else if (capabilityCommand instanceof GetPanTiltCommand)
+            {
+                final String url = m_CommandProcessor.processGetPanTilt(m_IpAddress);
+                final StringBuilder stringBuilder = new StringBuilder();
+                try
+                {
+                    final URLConnection connection = m_UrlService.constructUrlConnection(url);
+                    try (final InputStream inStream = connection.getInputStream();
+                            final Reader reader = new InputStreamReader(inStream))
                     {
-                        stringBuilder.append((char)data);
-                        data = reader.read();
+                        int data = reader.read();
+                        while (data != -1)
+                        {
+                            stringBuilder.append((char)data);
+                            data = reader.read();
+                        }
                     }
                 }
+                catch (final IOException e)
+                {
+                    throw new CommandExecutionException(e);
+                }
+
+                final String positionQuery = stringBuilder.toString();
+                final String[] props = positionQuery.split("\n");
+                final String pan = props[0];
+                final String tilt = props[1];
+                final String splitter = "=";
+                final Float panValue = Float.valueOf(pan.split(splitter)[1]);
+                final Float tiltValue = Float.valueOf(tilt.split(splitter)[1]);
+
+                return new GetPanTiltResponse().withPanTilt(SpatialTypesFactory
+                        .newOrientationOffset(panValue, tiltValue));
             }
-            catch (final IOException e)
+            else
             {
-                throw new CommandExecutionException(e);
+                throw new CommandExecutionException(
+                        String.format("Could not execute command [%s].", capabilityCommand));
             }
-            
-            final String positionQuery = stringBuilder.toString();
-            final String[] props = positionQuery.split("\n");
-            final String pan = props[0];
-            final String tilt = props[1];
-            final String splitter = "=";
-            final Float panValue = Float.valueOf(pan.split(splitter)[1]);
-            final Float tiltValue = Float.valueOf(tilt.split(splitter)[1]);
-            
-            return new GetPanTiltResponse().withPanTilt(SpatialTypesFactory.newOrientationOffset(panValue, tiltValue));
         }
-        else
-        {
-            throw new CommandExecutionException(
-                    String.format("Could not execute command [%s].", capabilityCommand));
-        }
-        
     }
-    
+
     @Override
     public Set<Extension<?>> getExtensions()
     {
@@ -248,8 +274,8 @@ public class AxisAsset implements AssetProxy
     private byte[] writeImage() throws AssetException
     {
         final String urlString = m_CommandProcessor.processStillImageRequest(m_IpAddress);
+
         URLConnection connection = null;
-        
         try 
         {
             connection = m_UrlService.constructUrlConnection(urlString);

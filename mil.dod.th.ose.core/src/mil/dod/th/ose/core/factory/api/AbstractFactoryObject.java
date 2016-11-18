@@ -113,6 +113,11 @@ public abstract class AbstractFactoryObject implements FactoryObjectInternal
      */
     private Map<Class<?>, Object> m_ExtensionMap;
 
+    /**
+     * Wake lock used for base factory object operations.
+     */
+    private WakeLock m_WakeLock;
+
     @Override
     public void initialize(final FactoryRegistry<?> registry, final FactoryObjectProxy proxy, //NOPMD: 
             final FactoryInternal factory, final ConfigurationAdmin configAdmin, final EventAdmin eventAdmin, 
@@ -133,7 +138,9 @@ public abstract class AbstractFactoryObject implements FactoryObjectInternal
         m_EventAdmin = eventAdmin;
         m_ConfigAdmin = configAdmin;
         m_PowerManagerInternal = powerMgr;
-        
+
+        m_WakeLock = powerMgr.createWakeLock(m_FactoryObjectProxy.getClass(), this, "coreFactoryObject");
+
         m_ExtensionMap = new HashMap<>();
         final Set<Extension<?>> extensions = 
                 Objects.firstNonNull(m_FactoryObjectProxy.getExtensions(), new HashSet<Extension<?>>());
@@ -217,52 +224,60 @@ public abstract class AbstractFactoryObject implements FactoryObjectInternal
     public synchronized void setProperties(final Map<String, Object> properties) throws IllegalArgumentException,
             IllegalStateException, FactoryException
     {
-        Configuration configuration = FactoryServiceUtils.getFactoryConfiguration(m_ConfigAdmin, getPid());
-        if (configuration == null) 
+        try
         {
-            // PID has not been set or could not find configuration for current PID
+            m_WakeLock.activate();
+
+            Configuration configuration = FactoryServiceUtils.getFactoryConfiguration(m_ConfigAdmin, getPid());
+            if (configuration == null) 
+            {
+                // PID has not been set or could not find configuration for current PID
+                try
+                {
+                    configuration = m_Registry.createConfiguration(m_Uuid, getFactory().getPid(), this);
+                }
+                catch (final FactoryObjectInformationException e)
+                {
+                    throw new FactoryException("Failed to create factory configuration for object.", e);
+                }
+            }
+            
+            //If there are no properties config will return null, wrap the new prop in Dictionary and update config.
+            final Dictionary<String, Object> propsDict = new Hashtable<String, Object>(properties);
             try
             {
-                configuration = m_Registry.createConfiguration(m_Uuid, getFactory().getPid(), this);
+                synchronized (m_LatchLock)
+                {
+                    m_Latch = new CountDownLatch(1);
+                    // Update properties in ConfigAdmin
+                    configuration.update(propsDict);
+                }
             }
-            catch (final FactoryObjectInformationException e)
+            catch (final IOException e)
             {
-                throw new FactoryException("Failed create factory configuration for object.", e);
+                throw new FactoryException("Failed to update configuration", e);
             }
-        }
-        
-        //If there are no properties config will return null, wrap the new prop in Dictionary and update config.
-        final Dictionary<String, Object> propsDict = new Hashtable<String, Object>(properties);
-        
-        try
-        {
-            synchronized (m_LatchLock)
+            
+            final int timeout = 15;
+            final boolean success;
+            //latch wait
+            try
             {
-                m_Latch = new CountDownLatch(1);
-                // Update properties in ConfigAdmin
-                configuration.update(propsDict);
+                success = m_Latch.await(timeout, TimeUnit.SECONDS);
             }
-          
+            catch (final InterruptedException e)
+            {
+                throw new FactoryException("Interrupted while waiting for property setting to complete", e);
+            }
+
+            if (!success)
+            {
+                throw new FactoryException("Set properties wait time expired!");
+            }
         }
-        catch (final IOException e)
+        finally
         {
-            throw new FactoryException("Failed to update configuration", e);
-        }
-        
-        final int timeout = 15;
-        final boolean success;
-        //latch wait
-        try
-        {
-            success = m_Latch.await(timeout, TimeUnit.SECONDS);
-        }
-        catch (final InterruptedException e)
-        {
-            throw new FactoryException("Interrupted while waiting for property setting to complete", e);
-        }
-        if (!success)
-        {
-            throw new FactoryException("Set properties wait time expired!");
+            m_WakeLock.cancel();
         }
     }
 
@@ -283,8 +298,7 @@ public abstract class AbstractFactoryObject implements FactoryObjectInternal
     {
         return m_FactoryObjectProxy;
     }
-    
-    
+
     @Override
     public WakeLock createPowerManagerWakeLock(final String lockId) throws IllegalArgumentException
     {
@@ -352,11 +366,16 @@ public abstract class AbstractFactoryObject implements FactoryObjectInternal
     {
         try
         {
+            m_WakeLock.activate();
             m_Registry.setName(this, name);
         }
         catch (final FactoryObjectInformationException e)
         {
             throw new FactoryException(e);
+        }
+        finally
+        {
+            m_WakeLock.cancel();
         }
     }
     
@@ -364,6 +383,7 @@ public abstract class AbstractFactoryObject implements FactoryObjectInternal
     public void delete() throws IllegalStateException
     {
         m_Registry.delete(this);
+        m_PowerManagerInternal.deleteWakeLock(m_WakeLock);
     }
     
     @Override

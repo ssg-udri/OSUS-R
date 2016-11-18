@@ -32,6 +32,7 @@ import mil.dod.th.core.ccomm.link.capability.LinkLayerCapabilities;
 import mil.dod.th.core.ccomm.physical.PhysicalLink;
 import mil.dod.th.core.factory.FactoryObjectProxy;
 import mil.dod.th.core.log.Logging;
+import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.core.factory.api.AbstractFactoryObject;
 import mil.dod.th.ose.core.factory.api.FactoryInternal;
 import mil.dod.th.ose.core.factory.api.FactoryRegistry;
@@ -72,8 +73,18 @@ public class LinkLayerImpl extends AbstractFactoryObject implements LinkLayerInt
     /**
      * Internal layer representation of the link layer.
      */
-    private LinkLayerProxy m_Link;
+    private LinkLayerProxy m_LinkProxy;
     
+    /**
+     * Reference to internal power management for factory objects.
+     */
+    private PowerManagerInternal m_PowInternal;
+
+    /**
+     * Wake lock used for link layer operations.
+     */
+    private WakeLock m_WakeLock;
+
     @Override
     public void initialize(final FactoryRegistry<?> registry, final FactoryObjectProxy proxy, //NOPMD:
             final FactoryInternal factory, final ConfigurationAdmin configAdmin, final EventAdmin eventAdmin,
@@ -82,23 +93,43 @@ public class LinkLayerImpl extends AbstractFactoryObject implements LinkLayerInt
             // ExcessiveParameterList, needed to provide this class with access to necessary services.
     {
         super.initialize(registry, proxy, factory, configAdmin, eventAdmin, powInternal, uuid, name, pid, baseType);
-        m_Link = (LinkLayerProxy)proxy;
+        m_LinkProxy = (LinkLayerProxy)proxy;
+        m_PowInternal = powInternal;
+        m_WakeLock = powInternal.createWakeLock(m_LinkProxy.getClass(), this, "coreLinkLayer");
     }
     
     @Override
     public void activateLayer()
     {
-        m_Link.onActivate();
-        m_IsActivated = true;
-        postEvent(TOPIC_ACTIVATED, new HashMap<String, Object>());
+        try
+        {
+            m_WakeLock.activate();
+
+            m_LinkProxy.onActivate();
+            m_IsActivated = true;
+            postEvent(TOPIC_ACTIVATED, new HashMap<String, Object>());
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
 
     @Override
     public void deactivateLayer()
     {
-        m_Link.onDeactivate();
-        m_IsActivated = false;
-        postEvent(TOPIC_DEACTIVATED, new HashMap<String, Object>());
+        try
+        {
+            m_WakeLock.activate();
+
+            m_LinkProxy.onDeactivate();
+            m_IsActivated = false;
+            postEvent(TOPIC_DEACTIVATED, new HashMap<String, Object>());
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
 
     @Override
@@ -116,7 +147,7 @@ public class LinkLayerImpl extends AbstractFactoryObject implements LinkLayerInt
     @Override
     public boolean isAvailable(final Address address)
     {
-        return m_Link.isAvailable(address);
+        return m_LinkProxy.isAvailable(address);
     }
 
     @Override
@@ -142,18 +173,27 @@ public class LinkLayerImpl extends AbstractFactoryObject implements LinkLayerInt
                 "LinkLayer [%s] is not activated. Unable to send frame.", getName()), 
                     FormatProblem.INACTIVE);
         }
-        
-        final int toReturn = m_Link.send(frame, addr);
-        
-        final Map<String, Object> props = new HashMap<String, Object>();
-        if (addr != null)
+
+        try
         {
-            props.putAll(addr.getEventProperties(Address.EVENT_PROP_DEST_ADDRESS_PREFIX));
-        }
-        props.put(LinkLayer.EVENT_PROP_LINK_FRAME, frame);
-        postEvent(LinkLayer.TOPIC_DATA_SENT, props);
+            m_WakeLock.activate();
+
+            final int toReturn = m_LinkProxy.send(frame, addr);
         
-        return toReturn;
+            final Map<String, Object> props = new HashMap<String, Object>();
+            if (addr != null)
+            {
+                props.putAll(addr.getEventProperties(Address.EVENT_PROP_DEST_ADDRESS_PREFIX));
+            }
+            props.put(LinkLayer.EVENT_PROP_LINK_FRAME, frame);
+            postEvent(LinkLayer.TOPIC_DATA_SENT, props);
+            
+            return toReturn;
+        }
+        finally
+        {
+            m_WakeLock.cancel();
+        }
     }
 
     @Override
@@ -169,7 +209,9 @@ public class LinkLayerImpl extends AbstractFactoryObject implements LinkLayerInt
 
         try
         {
-            final LinkStatus status = m_Link.onPerformBit();
+            m_WakeLock.activate();
+
+            final LinkStatus status = m_LinkProxy.onPerformBit();
             Logging.log(LogService.LOG_DEBUG, "Performed BIT for link layer %s. Status: %s", getName(), status);
 
             setStatus(status);
@@ -179,6 +221,10 @@ public class LinkLayerImpl extends AbstractFactoryObject implements LinkLayerInt
             Logging.log(LogService.LOG_WARNING, e, "Failed to perform BIT for: %s", getName());
 
             setStatus(LinkStatus.LOST);
+        }
+        finally
+        {
+            m_WakeLock.cancel();
         }
 
         m_IsPerformingBIT = false;
@@ -195,7 +241,7 @@ public class LinkLayerImpl extends AbstractFactoryObject implements LinkLayerInt
         }
         else
         {
-            return m_Link.getDynamicMtu();
+            return m_LinkProxy.getDynamicMtu();
         }
     }
 
@@ -259,6 +305,8 @@ public class LinkLayerImpl extends AbstractFactoryObject implements LinkLayerInt
                     getName()));
         }
  
+        m_PowInternal.deleteWakeLock(m_WakeLock);
+
         super.delete();
     }
 }

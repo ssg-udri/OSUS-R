@@ -18,7 +18,9 @@ import java.util.Set;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
+
 import example.asset.lexicon.ExampleAssetUtils;
+
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetContext;
 import mil.dod.th.core.asset.AssetException;
@@ -36,8 +38,8 @@ import mil.dod.th.core.observation.types.Status;
 /**
  * This asset factory will create asset instances which post a 
  * {@link mil.dod.th.core.asset.Asset#TOPIC_COMMAND_RESPONSE_UPDATED} event at activation.
+ * 
  * @author Cheryl
- *
  */
 @Component(factory = Asset.FACTORY)
 public class ExampleUpdateAsset  implements AssetProxy
@@ -68,13 +70,13 @@ public class ExampleUpdateAsset  implements AssetProxy
     public void onActivate()
     {
         m_Context.postResponseUpdate(new GetVersionResponse(ExampleAssetUtils.buildReservedList(), 
-                 "V activate-version"));
+                "V activate-version"));
     }
-    
+
     @Override
     public void onDeactivate() throws AssetException
     {
-        //nothing
+        // nothing
     }
 
     @Override

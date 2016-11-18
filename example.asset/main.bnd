@@ -16,5 +16,6 @@ Bundle-Description: Bundle example for assets
 Bundle-Name: Example Asset Bundle
 Bundle-Vendor: UDRI
 Export-Package: example.asset, example.asset.data;hasPersistentTypes=true
+Conditional-Package: mil.dod.th.ose.shared.pm
 Include-Resource: capabilities-xml=capabilities-xml/main
 Service-Component: *

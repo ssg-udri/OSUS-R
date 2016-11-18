@@ -15,6 +15,7 @@ package mil.dod.th.ose.core.factory.api;
 import java.util.Map;
 
 import mil.dod.th.core.log.LoggingService;
+import mil.dod.th.core.pm.PowerManager;
 
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
@@ -37,7 +38,12 @@ public abstract class DirectoryService
      * Reference to the EventAdmin service that all events will be posted to.
      */
     protected EventAdmin m_EventAdmin;
-    
+
+    /**
+     * Reference to the PowerManager service used to create wake locks for power management.
+     */
+    protected PowerManager m_PowerManager;
+
     /**
      * Binds the logging service for logging messages.  This method must be called by all classes which extends this 
      * class.
@@ -62,7 +68,18 @@ public abstract class DirectoryService
     {
         m_EventAdmin = eventAdmin;
     } 
-    
+
+    /**
+     * Binds the power manager service. This method must be called by all classes which extend this class.
+     * 
+     * @param powerManager
+     *      Power manager service object
+     */
+    public void setPowerManager(final PowerManager powerManager)
+    {
+        m_PowerManager = powerManager;
+    }
+
     /**
      * Post an event to the EventAdmin.
      * 

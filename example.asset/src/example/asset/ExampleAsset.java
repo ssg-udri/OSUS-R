@@ -64,6 +64,8 @@ import mil.dod.th.core.types.status.ComponentStatus;
 import mil.dod.th.core.types.status.OperatingStatus;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
 import mil.dod.th.core.validator.ValidationFailedException;
+import mil.dod.th.ose.shared.pm.CountingWakeLock;
+import mil.dod.th.ose.shared.pm.CountingWakeLock.CountingWakeLockHandle;
 
 import org.osgi.service.log.LogService;
 
@@ -80,10 +82,14 @@ public class ExampleAsset implements AssetProxy
     private DevicePowerManager m_DevicePowerManager;
     private double m_Pan;
     private LoggingService m_Log;
-    private WakeLock m_WakeLock;
     private AssetContext m_Context;
     private ExampleAssetAttributes m_Attributes;
     
+    /**
+     * Reference to the counting {@link WakeLock} used by this asset.
+     */
+    private CountingWakeLock m_CountingLock = new CountingWakeLock();
+
     @Reference
     public void setLogService(final LoggingService loggingService)
     {
@@ -107,12 +113,14 @@ public class ExampleAsset implements AssetProxy
         m_Log.info("Activating example asset instance");
         m_Context = context;
         m_Attributes = Configurable.createConfigurable(ExampleAssetAttributes.class, props);
+        m_CountingLock.setWakeLock(m_Context.createPowerManagerWakeLock(getClass().getSimpleName() + "WakeLock"));
     }
     
     @Deactivate
     public void deactivateInstance()
     {
         m_Log.info("Deactivating example asset instance");
+        m_CountingLock.deleteWakeLock();
     }
 
     @Override
@@ -125,95 +133,103 @@ public class ExampleAsset implements AssetProxy
     @Override
     public void onActivate() throws AssetException
     {
-        try
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            //only test with example platform interface
-            if (m_DevicePowerManager != null && 
-                    m_DevicePowerManager.getDevices().contains(m_Attributes.devicePowerName())) 
+            try
             {
-                m_DevicePowerManager.on(m_Attributes.devicePowerName());
+                //only test with example platform interface
+                if (m_DevicePowerManager != null && 
+                        m_DevicePowerManager.getDevices().contains(m_Attributes.devicePowerName())) 
+                {
+                    m_DevicePowerManager.on(m_Attributes.devicePowerName());
+                }
+            }
+            catch (Exception e)
+            {
+                throw new AssetException(e);
             }
 
-            m_WakeLock = m_Context.createPowerManagerWakeLock("ExampleAssetWakeLock");
-        }
-        catch (Exception e)
-        {
-            throw new AssetException(e);
-        }
+            Logging.log(LogService.LOG_INFO, "Example asset activated");
 
-        Logging.log(LogService.LOG_INFO, "Example asset activated");
-
-        try
-        {
-            m_Context.setStatus(new Status().withNextStatusDurationMs(100).withSummaryStatus(
-                    new OperatingStatus(SummaryStatusEnum.GOOD, "Asset Activated")));
-        }
-        catch (ValidationFailedException ex)
-        {
-            m_Log.error(ex, "Unable to set status for example asset: [%s]", m_Context.getName());
+            try
+            {
+                m_Context.setStatus(new Status().withNextStatusDurationMs(100).withSummaryStatus(
+                        new OperatingStatus(SummaryStatusEnum.GOOD, "Asset Activated")));
+            }
+            catch (ValidationFailedException ex)
+            {
+                m_Log.error(ex, "Unable to set status for example asset: [%s]", m_Context.getName());
+            }
         }
     }
     
     @Override
     public Observation onCaptureData() throws AssetException
     {
-        Logging.log(LogService.LOG_INFO, "Example Asset Data captured");
-        
-        final Observation obs = new Observation();
-        obs.withModalities(new SensingModality().withValue(SensingModalityEnum.ACOUSTIC));
-        
-        final Detection detection = new Detection();
-        detection.withType(DetectionTypeEnum.TEST);
-        detection.withTargetLocation(SpatialTypesFactory.newCoordinates(70, 50));
-        detection.withTargetOrientation(SpatialTypesFactory.newOrientation(50, 90, 0));
-        detection.withTrackHistories(new TrackElement(SpatialTypesFactory.newCoordinates(50.0, 70.0), 
-                new SpeedMetersPerSecond(205.5, null, null, null, null), 
-                SpatialTypesFactory.newOrientation(1.5, 30.55, 55.55), null, 2003L));
-        detection.setTargetFrequency(new FrequencyKhz().withValue(30));
-        detection.setTargetId("example-target-id");
-        
-        obs.setDetection(detection);
-        
-        obs.setAssetLocation(SpatialTypesFactory.newCoordinates(54, 74));
-        obs.setAssetOrientation(SpatialTypesFactory.newOrientation(180.0, -80.0, 45.0));
-        obs.setPlatformOrientation(SpatialTypesFactory.newOrientation(90.0, 10.0, 45.0));
-        obs.setPointingLocation(SpatialTypesFactory.newCoordinates(20.0, 50.0, 50.0));
-
-        return obs;
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
+        {
+            Logging.log(LogService.LOG_INFO, "Example Asset Data captured");
+            
+            final Observation obs = new Observation();
+            obs.withModalities(new SensingModality().withValue(SensingModalityEnum.ACOUSTIC));
+            
+            final Detection detection = new Detection();
+            detection.withType(DetectionTypeEnum.TEST);
+            detection.withTargetLocation(SpatialTypesFactory.newCoordinates(70, 50));
+            detection.withTargetOrientation(SpatialTypesFactory.newOrientation(50, 90, 0));
+            detection.withTrackHistories(new TrackElement(SpatialTypesFactory.newCoordinates(50.0, 70.0), 
+                    new SpeedMetersPerSecond(205.5, null, null, null, null), 
+                    SpatialTypesFactory.newOrientation(1.5, 30.55, 55.55), null, 2003L));
+            detection.setTargetFrequency(new FrequencyKhz().withValue(30));
+            detection.setTargetId("example-target-id");
+            
+            obs.setDetection(detection);
+            
+            obs.setAssetLocation(SpatialTypesFactory.newCoordinates(54, 74));
+            obs.setAssetOrientation(SpatialTypesFactory.newOrientation(180.0, -80.0, 45.0));
+            obs.setPlatformOrientation(SpatialTypesFactory.newOrientation(90.0, 10.0, 45.0));
+            obs.setPointingLocation(SpatialTypesFactory.newCoordinates(20.0, 50.0, 50.0));
+            
+            return obs;
+        }
     }
     
     @Override
     public void onDeactivate() throws AssetException
     {
-        try
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            // only test with example platform interface
-            if (m_DevicePowerManager != null && 
-                    m_DevicePowerManager.getDevices().contains(m_Attributes.devicePowerName())) 
+            try
             {
-                m_DevicePowerManager.off(m_Attributes.devicePowerName());
+                // only test with example platform interface
+                if (m_DevicePowerManager != null && 
+                        m_DevicePowerManager.getDevices().contains(m_Attributes.devicePowerName())) 
+                {
+                    m_DevicePowerManager.off(m_Attributes.devicePowerName());
+                }
+            }
+            catch (Exception e)
+            {
+                throw new AssetException(e);
             }
             
-            m_WakeLock.delete();
+            m_Log.info("Example asset deactivated");
+            m_Context.setStatus(SummaryStatusEnum.OFF, "Asset Deactivated");
         }
-        catch (Exception e)
-        {
-            throw new AssetException(e);
-        }
-        m_Log.info("Example asset deactivated");
-
-        m_Context.setStatus(SummaryStatusEnum.OFF, "Asset Deactivated");
     }
 
     @Override
     public Status onPerformBit() throws AssetException
     {
-        Logging.log(LogService.LOG_INFO, "Performing BIT");
-        return new Status().withComponentStatuses(new ComponentStatus(
-                new ComponentType(ComponentTypeEnum.CPU, "Single Board CPU 1"), 
-                new OperatingStatus(SummaryStatusEnum.BAD, "POST failed."))).
-            withSummaryStatus(new OperatingStatus(SummaryStatusEnum.GOOD, "BIT Passed")).
-            withPowerConsumption(new PowerWatts().withValue(12));
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
+        {
+            Logging.log(LogService.LOG_INFO, "Performing BIT");
+            return new Status().withComponentStatuses(new ComponentStatus(
+                    new ComponentType(ComponentTypeEnum.CPU, "Single Board CPU 1"), 
+                    new OperatingStatus(SummaryStatusEnum.BAD, "POST failed."))).
+                    withSummaryStatus(new OperatingStatus(SummaryStatusEnum.GOOD, "BIT Passed")).
+                    withPowerConsumption(new PowerWatts().withValue(12));
+        }
     }
     
     private Response setPanTilt(final SetPanTiltCommand setPT) throws UnmarshalException, CommandExecutionException
@@ -227,6 +243,7 @@ public class ExampleAsset implements AssetProxy
         {
             m_Pan = currentPan;
             Logging.log(LogService.LOG_INFO, "Updated pan to: " + m_Pan);
+
             return new SetPanTiltResponse();
         }
         else
@@ -244,48 +261,47 @@ public class ExampleAsset implements AssetProxy
     public Response onExecuteCommand(final Command capabilityCommand)
         throws CommandExecutionException
     {
-        if (capabilityCommand instanceof SetPanTiltCommand)
+        try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())
         {
-            try
+            if (capabilityCommand instanceof SetPanTiltCommand)
             {
-                return setPanTilt((SetPanTiltCommand)capabilityCommand);
+                try
+                {
+                    return setPanTilt((SetPanTiltCommand)capabilityCommand);
+                }
+                catch (UnmarshalException e)
+                {
+                    throw new CommandExecutionException(e);
+                } 
             }
-            catch (UnmarshalException e)
+            else if (capabilityCommand instanceof GetPanTiltCommand)
             {
-                throw new CommandExecutionException(e);
-            } 
-        }
-        else if (capabilityCommand instanceof GetPanTiltCommand)
-        {
-            return getPanTilt();
-        }
-        else if (capabilityCommand instanceof SetPositionCommand)
-        {
-            return new SetPositionResponse();
-        }
-        else if (capabilityCommand instanceof GetPositionCommand)
-        {
-            return new GetPositionResponse().withLocation(new Coordinates().
-                withLongitude(
-                    new LongitudeWgsDegrees().withValue(0)).
-                withLatitude(
-                    new LatitudeWgsDegrees().withValue(0)));
-        }
-        else
-        {
-            throw new CommandExecutionException("Could not execute specified command.");
+                return getPanTilt();
+            }
+            else if (capabilityCommand instanceof SetPositionCommand)
+            {
+                return new SetPositionResponse();
+            }
+            else if (capabilityCommand instanceof GetPositionCommand)
+            {
+                return new GetPositionResponse().withLocation(new Coordinates().
+                        withLongitude(
+                                new LongitudeWgsDegrees().withValue(0)).
+                                withLatitude(
+                                        new LatitudeWgsDegrees().withValue(0)));
+            }
+            else
+            {
+                throw new CommandExecutionException("Could not execute specified command.");
+            }
         }
     }
 
-    /* (non-Javadoc)
-     * @see mil.dod.th.core.factory.FactoryObjectProxy#getExtensions()
-     */
     @Override
     public Set<Extension<?>> getExtensions()
     {
         Extension<ExampleAssetExtension1> extension1 = new Extension<ExampleAssetExtension1>()
         {
-
             @Override
             public Class<ExampleAssetExtension1> getType()
             {

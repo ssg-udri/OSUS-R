@@ -21,10 +21,8 @@ Bundle-Vendor: UDRI
 
 # Specify packages that should be included in the JAR file, but not accessible
 # to other bundles.  Not needed unless new packages are added.
-#Private-Package: ip.camera.somepackage
-
-# Specify packages that should be accessible by other bundles (separated by commas)
-Export-Package: edu.udayton.udri.asset.canon.ipcamera
+Private-Package: edu.udayton.udri.asset.canon.ipcamera
+Conditional-Package: mil.dod.th.ose.shared.pm
 
 # Specify files that should be included within the JAR file. The default value for
 # "Include-Resource" will automatically include JARs found in the project lib/
@@ -36,11 +34,13 @@ Service-Component: edu.udayton.udri.asset.canon.ipcamera.*
 
 # Specify configuration interfaces annotated with OCD to be generated into metatype xml.
 -metatype: *
+
 -buildpath: \
    osgi.cmpn,\
    osgi.core,\
    biz.aQute.bnd.annotation,\
    mil.dod.th.core.api;version=latest,\
+   mil.dod.th.ose.shared;version=latest,\
    org.apache.commons.lang,\
    ${mockito},\
    ${junit}

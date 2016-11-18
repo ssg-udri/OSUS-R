@@ -200,20 +200,15 @@ public class TestQueuedMessageSender
         
         assertThat("queue is empty initially", m_SUT.getQueuedMessageCount(), is(0));
         
-        boolean result = m_SUT.queue(constructMessage(0));
-        assertThat("able to queue up to capacity limit", result, is(true));
-        
-        // allow the thread to get the first item off the queue
-        Thread.sleep(500);
-        assertThat("queue size is zero as the first queued message is in process, off the queue", 
-                m_SUT.getQueuedMessageCount(), is(0));
-        
-        for (int i=1; i <= QueuedMessageSender.QUEUE_CAPACITY; i++)
+        boolean result;
+        //Add one to the capacity to account for the message that is currently trying to be sent.
+        for (int i=1; i <= QueuedMessageSender.QUEUE_CAPACITY+1; i++)
         {
             TerraHarvestMessage message = constructMessage(i);
             result = m_SUT.queue(message);
             assertThat("able to queue up to capacity limit", result, is(true));
-            
+            Thread.yield();
+            m_Logging.debug("queue:" + m_SUT.getQueuedMessageCount());
             assertThat("queue size equals number of messages still queued", m_SUT.getQueuedMessageCount(), is(i));
         }
         
@@ -247,14 +242,7 @@ public class TestQueuedMessageSender
         
         assertThat("queue is empty initially", m_SUT.getQueuedMessageCount(), is(0));
         
-        boolean result = m_SUT.queue(constructMessage(0));
-        assertThat("able to queue up to capacity limit", result, is(true));
-        
-        // allow the thread to get the first item off the queue
-        Thread.sleep(500);
-        assertThat("queue size is zero as the first queued message is in process, off the queue", 
-                m_SUT.getQueuedMessageCount(), is(0));
-        
+        boolean result;
         for (int i=1; i < 10; i++)
         {
             TerraHarvestMessage message = constructMessage(i);

@@ -35,7 +35,7 @@ import org.apache.felix.service.command.Descriptor;
  */
 @Component(provide = CustomCommCommands.class, properties = {"osgi.command.scope=thcomm", 
         "osgi.command.function=createPhysicalLink|deletePhysicalLink|createLinkLayer|createTransportLayer|"
-        + "getPhysicalLinkNames|getLinkLayer|getLinkLayers|getTransportLayer|getTransportLayers|printDeep" })
+        + "getPhysicalLinkNames|getLinkLayer|getLinkLayers|getTransportLayer|getTransportLayers|printDeep"})
 public class CustomCommCommands
 {
     /**
@@ -160,7 +160,7 @@ public class CustomCommCommands
     {
         return m_CustomCommsService.getPhysicalLinkNames();
     }
-    
+
     /**
      * Returns the specified link layer if it exists.
      * 

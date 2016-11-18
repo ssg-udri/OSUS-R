@@ -88,12 +88,10 @@ public class BeagleBoneBlackLockManager extends TimerTask
             {
                 m_ActiveLocks.add(lockInfo);
                 callActiveWakeLockAddedListners();
-                m_LogService.debug("Added active wake lock: [%s]", lock.getId());
             }
             else
             {
                 m_ScheduledLocks.add(lockInfo);
-                m_LogService.debug("Added scheduled wake lock: [%s]", lock.getId());
             }
         }
     }
@@ -115,7 +113,6 @@ public class BeagleBoneBlackLockManager extends TimerTask
                 if (scheduledLock.getLock().equals(lock))
                 {
                     scheduledIterator.remove();
-                    m_LogService.debug("Removed scheduled lock: [%s]", scheduledLock.getLock().getId());
                 }
             }
             final Iterator<BeagleBoneBlackLockInfo> activeIterator = m_ActiveLocks.iterator();
@@ -125,7 +122,6 @@ public class BeagleBoneBlackLockManager extends TimerTask
                 if (activeLock.getLock().equals(lock))
                 {
                     activeIterator.remove();
-                    m_LogService.debug("Removed active lock: [%s]", activeLock.getLock().getId());
                 }
             }
         }
