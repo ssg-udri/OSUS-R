@@ -28,10 +28,10 @@ The following convention is used for structuring directories (where a `*` denote
     * `mil.dod.th.asset.*` - Contains all basic Terra Harvest assets, specialized assets should go in a separate
       workspace
     * `mil.dod.th.core.*` - Contains all Terra Harvest core API, the standard API that all implemenations must use
-    * `mil.dod.th.ose.*` - Contains all THOSE code (anything that runs within a THOSE controller and also tests for the
+    * `mil.dod.th.ose.*` - Contains all OSUS-R code (anything that runs within a OSUS-R controller and also tests for the
       source)
         * `mil.dod.th.ose.emac.*` - Contains code specific to the EMAC SoM prototype
-        * `mil.dod.th.ose.gui.*` - Contains code specific to the THOSE web GUI
+        * `mil.dod.th.ose.gui.*` - Contains code specific to the OSUS-SG web GUI
         * `mil.dod.th.ose.linux.*` - Contains code specific to a Linux controller
     * `mil.dod.th.checkstyle.ext` - Contains a Checkstyle extension rules project *(not currently used)*
     * `mil.dod.th.confluence.doclet` - Contains a Java doclet project for generating documentation in Confluence based
