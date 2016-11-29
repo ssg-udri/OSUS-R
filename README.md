@@ -13,64 +13,43 @@
 ==============================================================================
 -->
 
-# PC SETUP
-Building the THOSE software requires a Java 1.8 SDK, Ant 1.8.4 and Protocol Buffers 2.6.1. Ant and Protocol Buffers 
-files are included in the `deps` directory. If building the Linux or EMAC platform interfaces (happens when running 
-default build target), SWIG 3.x is required to support the use of JNI. If the data (video) streaming extensions will
-be used, VLC 2.2.1 must be installed to support the transcoder service.
+# Open Standard for Unattended Sensors (OSUS)
+Download release artifacts for the reference implementation from Github [releases](https://github.com/ssg-udri/OSUS-R/releases).
+To build OSUS-R, follow these [instructions](BUILD-README.md).
 
-## Ant Build Properties
-Default build properties defined in the `cnf/ant/default.properties` file be overridden using a build.properties file
-in the top level directory of the project. Rename `example.build.properties` to `build.properties` and define any
-needed properties.
+## Introduction
+OSUS, as described in the OSUS Standard, provides a standardized set of services that allows multiple vendors to produce
+OSGi compliant bundles written in Java that execute on any OSUS platform, as long as the specific platform has the
+required (if any) hardware interfaces and platform interface implementation. The platform interface gives plug-ins the
+ability to access hardware through standardized software interfaces. The OSUS Core abstracts all platform specific
+dependencies away from bundles. OSUS plug-ins are types of OSGi bundles, and the term plug-in is used to refer to a
+specific type of OSUS bundle, which can be an asset, a communication layer, or an extension that interacts with the
+OSUS Application Programming Interface (API).
 
-## Environment Variable Setup (All Systems)
-NOTE: The `setenv.sh.example` and `setenv.bat.example` files can be used as templates for setting environment variables.
+## OSGi Framework
+The OSUS environment uses the OSGi Framework (see OSGi Core Specification) to support each plug-in. The OSGi framework
+is an open standard, extensible framework. The framework allows functionality to be added to a controller in the form of
+bundles without redeploying a system in its entirety. In addition, existing bundles can be updated or removed. This is
+important for upgrades in the field and for inexpensive product modifications/additions.
 
-1. Set `ANT_HOME` to the full path of the `deps/apache-ant-1.8.4` folder, e.g., 
-   `ANT_HOME=C:\Projects\those\deps\apache-ant-1.8.4`.
-2. Set `JAVA_HOME` to the full path of the installed JDK 8, e.g., `JAVA_HOME=C:\Program Files\Java\jdk1.8.0_60`.
-3. If SWIG is being used, add the SWIG installation directory to the system PATH variable.
+OSGi has a service layer, using a publish, find and bind model which promotes modular, maintainable code. A service is a
+normal Java object that is registered with the service registry under one or more Java interfaces. Bundles can register
+services, search for services, or receive notifications when their registration state changes. OSUS provides standard
+OSGi services and the OSGi community provides several services as well.
 
-## Additional Environment Setup (Linux/OS X only)
-The Protocol Buffer compiler binary `protoc` must be built for Linux/OS X. Follow the *C++ Installation - Unix* section 
-of the README file located in `deps\protobuf-2.6.1` (this works for OS X too). A default configuartion should install 
-the `protoc` binary to a system path. If a different location is selected, the location must either be on the system 
-path or the environment variable `PROTOC_2_6_1` must be set that contains the path to the installation (see setenv.sh
-script).
+In addition, the OSGi Declarative Services specification is included in the OSUS Standard to make it very easy to publish
+services and bind to services. This minimizes the code a plug-in developer has to write and allows components to only be
+loaded when required. From a system perspective, this means reduced start-up time and a potentially smaller memory
+footprint. See Section 112 of the OSGi Service Compendium for the complete specification.
 
-# BUILD CONFIGURATION
-Building of THOSE can be customized by editing `build.properties` found in the same directory as this README (imported 
-by all projects) or individual `build.properties` files for each project. An example property file is stored in the same
- directory as this README named `example.build.properties` to show which properties are typically customized.
+For more detailed information about bundles and services, see the Bundles and Services section of the OSUS Standard.
 
-# BUILDING FROM COMMAND LINE
-Ant is used to build THOSE from the command line. The default target will build all projects, including projects that 
-require SWIG. Deployments will be created for the controller, web GUI and SDK for a generic target and any other targets
-that are supported by the host machine. Run the default target by executing `ant` from the command line at the top level
-project directory.
-     - Controller can be executed from target/generic/controller-app/deploy/bin (on local PC)
-     - Controller install file (zipped) is located at target/generic/controller-app/bin
-     - Web GUI can be executed from target/generic/gui/deploy/bin
-     - Web GUI install file (zipped) is located at target/generic/gui/bin
-     - SDK can be executed from target/generic/sdk-app/deploy/bin
-     - SDK install file (zipped) is located at target/generic/sdk-app/bin
+# Getting Started
 
-Individual deployments can be built by running the `build-deploy` Ant target for a specific target application folder. 
-This only builds projects needed for the target. For example, to build the generic controller/GUI/SDK applications only:
+## Installation
+Download a controller-app and the OSUS-R Operator Instructions document from [releases](https://github.com/ssg-udri/OSUS-R/releases).
+Follow the instructions to install and run an OSUS-R controller.
 
-    cd target/generic
-    ant build-with-deps deploy
-
-To build the Linux controller application only:
-
-    cd target/linux
-    ant build-with-deps deploy
-
-If using Eclipse to build, follow these [instructions](ECLIPSE-README.md).
-
-# BUILDING FOR DIFFERENT PLATFORMS
-If building for a specific Linux platform, follow these [instructions](TARGET-README.md). By default, a full build
-executed from the top level project directory (on a Linux PC) will generate a Linux controller application for for
-the host PC (e.g. x86 or x86_64).
-
+## Create a Plug-in
+Download sdk-app-generic.zip and the OSUS Plug-in Guide document from [releases](https://github.com/ssg-udri/OSUS-R/releases).
+Follow the guide to create an OSUS plug-in and deploy on an OSUS-R controller.

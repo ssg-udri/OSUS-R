@@ -14,12 +14,12 @@
 -->
 
 # ECLIPSE
-Eclipse is the suggested development environment for THOSE.  The following sections describe how to set up Eclipse.
+Eclipse is the suggested development environment for OSUS-R.  The following sections describe how to set up Eclipse.
 The latest version of Eclipse available should be used. The setup instructions below are specific to Windows and
 therefore setup may vary on Linux and OSX. These steps are not required for building the software, only for development.
 
 # ECLIPSE PLUG-IN SETUP
-There are several plug-ins available to be used with THOSE. The required and optional plug-ins and how to install them are
+There are several plug-ins available to be used with OSUS-R. The required and optional plug-ins and how to install them are
 listed below.
 
 ## Required Plug-ins:
@@ -58,7 +58,7 @@ manually from the file stored in the tools directory.
 8. Accept the license agreement and click Finish
 
 # ECLIPSE INSTALLED JREs
-Since THOSE is targeted for an execution environment of JavaSE-1.8, you must set up the location of Installed JREs.
+Since OSUS-R is targeted for an execution environment of JavaSE-1.8, you must set up the location of Installed JREs.
 
 1. Select Window -> Preferences...
 2. Navigate to Java -> Installed JREs
@@ -145,7 +145,7 @@ steps below:
 3. Select the Existing Projects into Workspace option from the General folder.
 4. Select the *Search for nested projects* option so all projects are found and make sure *Copy projects into workspace*
    is deselected.
-5. Click Browse and select the root directory of THOSE in your workspace.
+5. Click Browse and select the root directory of OSUS-R in your workspace.
 6. Select all found projects or a subset desired and select Finish.
 
 # ECLIPSE ANT SETUP
