@@ -147,6 +147,7 @@ public class TestAssetCommands
         parameterValues.add("1.0");
         parameterValues.add("1.0");
         parameterValues.add("CLOUDY");
+        parameterValues.add("");
         
         grabParameterTableAndVerify(AssetCommandHelper.getAssetCommandPanel(m_Driver, ASSET_NAME), 
                 parameterValues);
@@ -185,6 +186,7 @@ public class TestAssetCommands
         parameterValues.add("1.0");
         parameterValues.add("1.0");
         parameterValues.add("CLOUDY");
+        parameterValues.add("");
         
         grabParameterTableAndVerify(AssetCommandHelper.getAssetCommandPanel(m_Driver, ASSET_NAME), 
                 parameterValues);

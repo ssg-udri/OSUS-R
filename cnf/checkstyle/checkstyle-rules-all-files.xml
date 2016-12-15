@@ -21,8 +21,8 @@
 <module name="Checker">
   <property name="severity" value="warning"/>
   <module name="RegexpHeader">
-    <property name="header" value="^\W\w{4}\s\w{3}\n^\W{2}xml.*$\n^\W{2}--$\n.*={71}$\n.*This software is part of the Open Standard for Unattended Sensors \(OSUS\)$\n.*reference implementation \(OSUS-R\).$\n.*\n.*To the extent possible under law, the author\(s\) have dedicated all copyright$\n.*and related and neighboring rights to this software to the public domain$\n.*worldwide. This software is distributed without any warranty.$\n.*\n.*You should have received a copy of the CC0 Public Domain Dedication along$\n.*with this software. If not, see$\n.*&lt;http://creativecommons.org/publicdomain/zero/1.0/&gt;.$\n.*={71}$"/>
-    <property name="multiLines" value="1,2,3"/>
+    <property name="header" value="^#!.*$\n^\W\w{4}\s\w{3}\n^\W{2}xml.*$\n^\W{2}--$\n.*={71}$\n.*This software is part of the Open Standard for Unattended Sensors \(OSUS\)$\n.*reference implementation \(OSUS-R\).$\n.*\n.*To the extent possible under law, the author\(s\) have dedicated all copyright$\n.*and related and neighboring rights to this software to the public domain$\n.*worldwide. This software is distributed without any warranty.$\n.*\n.*You should have received a copy of the CC0 Public Domain Dedication along$\n.*with this software. If not, see$\n.*&lt;http://creativecommons.org/publicdomain/zero/1.0/&gt;.$\n.*={71}$"/>
+    <property name="multiLines" value="1,2,3,4"/>
   </module>
   <module name="FileTabCharacter"/>
 </module>
