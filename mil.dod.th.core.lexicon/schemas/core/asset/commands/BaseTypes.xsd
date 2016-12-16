@@ -32,6 +32,7 @@
             </xs:annotation>
         </xs:element>
     </xs:sequence>
+    <xs:attribute name="sensorId" type="xs:string" use="optional" />
   </xs:complexType>
   <xs:complexType name="Response" abstract="true">
       <xs:sequence>
@@ -43,6 +44,7 @@
             </xs:annotation>
         </xs:element>
     </xs:sequence>
+    <xs:attribute name="sensorId" type="xs:string" use="optional" />
   </xs:complexType>
   
   </xs:schema>

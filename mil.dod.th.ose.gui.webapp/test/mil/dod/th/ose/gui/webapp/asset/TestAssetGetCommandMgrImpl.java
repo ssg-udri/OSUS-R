@@ -436,7 +436,7 @@ public class TestAssetGetCommandMgrImpl
         when(m_CommandConverter.getCommandTypeFromResponseType(CommandResponseEnum.GET_VERSION_RESPONSE)).
             thenReturn(CommandTypeEnum.GET_VERSION_COMMAND);
         
-        GetVersionResponse versionResponse = new GetVersionResponse(null, "version");
+        GetVersionResponse versionResponse = new GetVersionResponse(null, null, "version");
         Map<String, Object> map = new HashMap<>();
         map.put(RemoteConstants.REMOTE_EVENT_PROP_CONTROLLER_ID, CONTROLLER_ID);
         map.put(FactoryDescriptor.EVENT_PROP_OBJ_UUID, uuid.toString());
@@ -462,7 +462,7 @@ public class TestAssetGetCommandMgrImpl
     {
         AsyncCommandResponseEventHandler eventHandler = m_SUT.new AsyncCommandResponseEventHandler();
         
-        GetVersionResponse versionResponse = new GetVersionResponse(null, "version");
+        GetVersionResponse versionResponse = new GetVersionResponse(null, null, "version");
         Map<String, Object> map = new HashMap<>();
         map.put(RemoteConstants.REMOTE_EVENT_PROP_CONTROLLER_ID, CONTROLLER_ID);
         map.put(FactoryDescriptor.EVENT_PROP_OBJ_UUID, UUID.randomUUID().toString());
@@ -507,7 +507,7 @@ public class TestAssetGetCommandMgrImpl
         //initializing system lookup map
         m_SUT.getAssetCommands(asset);
         
-        GetVersionResponse versionResponse = new GetVersionResponse(null, "version");
+        GetVersionResponse versionResponse = new GetVersionResponse(null, null, "version");
         Map<String, Object> map = new HashMap<>();
         map.put(RemoteConstants.REMOTE_EVENT_PROP_CONTROLLER_ID, CONTROLLER_ID);
         map.put(FactoryDescriptor.EVENT_PROP_OBJ_UUID, UUID.randomUUID().toString());

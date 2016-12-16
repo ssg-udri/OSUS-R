@@ -253,7 +253,7 @@ public class TestRemotePropertyConverter
     {
         // mock
         Map<String, Object> props = new HashMap<String, Object>();
-        GetVersionResponse versionResponse = new GetVersionResponse(null, "version");
+        GetVersionResponse versionResponse = new GetVersionResponse(null, null, "version");
         props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE_TYPE, GetVersionResponse.class.getName());
         props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE, versionResponse);
         
@@ -473,7 +473,7 @@ public class TestRemotePropertyConverter
     {
         // mock
         Map<String, Object> props = new HashMap<String, Object>();
-        GetVersionResponse versionResponse = new GetVersionResponse(null, "version");
+        GetVersionResponse versionResponse = new GetVersionResponse(null, null, "version");
         props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE, versionResponse);
         
         //command converter mocking

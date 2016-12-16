@@ -196,7 +196,9 @@ public class ExampleCommandAsset implements AssetProxy
             Ellipse ellipseRegion = new Ellipse(majorAxis, minorAxis, rotation);
             Coordinates coordinates = new Coordinates(longitude, latitude, hae, ellipseRegion);
 
-            return new GetPointingLocationResponse(ExampleAssetUtils.buildReservedList(), coordinates);
+            return new GetPointingLocationResponse()
+                    .withReserved(ExampleAssetUtils.buildReservedList())
+                    .withLocation(coordinates);
         }
         else if (capabilityCommand instanceof SetTuneSettingsCommand)
         {
@@ -219,7 +221,9 @@ public class ExampleCommandAsset implements AssetProxy
                     "description 2", null, null, null, "id2", "profile 2"));
             profile.add(new Profile(new Mode(ModeEnum.OFF, "off"), 
                     "description 3", null, null, null, "id3", "profile 3"));
-            return new GetProfilesResponse(ExampleAssetUtils.buildReservedList(), profile);
+            return new GetProfilesResponse()
+                    .withReserved(ExampleAssetUtils.buildReservedList())
+                    .withProfiles(profile);
         }
         else if (capabilityCommand instanceof ConfigureProfileCommand)
         {
@@ -227,12 +231,16 @@ public class ExampleCommandAsset implements AssetProxy
         }
         else if (capabilityCommand instanceof GetVersionCommand)
         {
-            return new GetVersionResponse(ExampleAssetUtils.buildReservedList(), "V R.2.d.2");
+            return new GetVersionResponse()
+                    .withReserved(ExampleAssetUtils.buildReservedList())
+                    .withCurrentVersion("V R.2.d.2");
         }
         else if (capabilityCommand instanceof GetModeCommand)
         {
             Mode mode = new Mode(ModeEnum.AUTO, "Example Mode");
-            return new GetModeResponse(ExampleAssetUtils.buildReservedList(), mode);
+            return new GetModeResponse()
+                    .withReserved(ExampleAssetUtils.buildReservedList())
+                    .withMode(mode);
         }
         else if (capabilityCommand instanceof SetModeCommand)
         {

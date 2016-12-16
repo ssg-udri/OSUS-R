@@ -69,8 +69,11 @@ public class ExampleUpdateAsset  implements AssetProxy
     @Override
     public void onActivate()
     {
-        m_Context.postResponseUpdate(new GetVersionResponse(ExampleAssetUtils.buildReservedList(), 
-                "V activate-version"));
+        m_Context.postResponseUpdate(
+                new GetVersionResponse()
+                    .withReserved(ExampleAssetUtils.buildReservedList())
+                    .withCurrentVersion("V activate-version")
+        );
     }
 
     @Override
@@ -103,7 +106,9 @@ public class ExampleUpdateAsset  implements AssetProxy
     {
         if (capabilityCommand instanceof GetVersionCommand)
         {
-            return new GetVersionResponse(ExampleAssetUtils.buildReservedList(), "V R.2.d.200");
+            return new GetVersionResponse()
+                    .withReserved(ExampleAssetUtils.buildReservedList())
+                    .withCurrentVersion("V R.2.d.200");
         }
         else
         {

@@ -183,16 +183,16 @@ public class TestCommandHandlerMgrImpl
         
         Message testMessage = mock(Message.class);
         ByteString testByteString = ByteString.copyFrom(new byte[1024]);
-        SetCameraSettingsCommand cameraSettingsCmnd = new SetCameraSettingsCommand(null, null, 0.5f, 0.5f, 
+        SetCameraSettingsCommand cameraSettingsCmnd = new SetCameraSettingsCommand(null, null, null, 0.5f, 0.5f,
                 null, null, null, null, null);
         
         AzimuthDegrees pan = new AzimuthDegrees().withValue(0.2);
         ElevationDegrees tilt = new ElevationDegrees().withValue(0.2);
         OrientationOffset panTilt = new OrientationOffset(pan, tilt, null);
-        SetPanTiltCommand panTiltCmd = new SetPanTiltCommand(null, panTilt);
-        DetectTargetCommand detectTargetCmnd = new DetectTargetCommand(null, null, null, null, null, null, 5, 5, 6,
-                null);
-        CaptureImageCommand captureImageCmd = new CaptureImageCommand(null, null, null, null, null, null);
+        SetPanTiltCommand panTiltCmd = new SetPanTiltCommand(null, null, panTilt);
+        DetectTargetCommand detectTargetCmnd = new DetectTargetCommand(null, null, null, null, null, null, null,
+                5, 5, 6, null);
+        CaptureImageCommand captureImageCmd = new CaptureImageCommand(null, null, null, null, null, null, null);
         
         //Mock converter behavior.
         when(m_Converter.convertToProto(Mockito.any(Command.class))).thenReturn(testMessage);
@@ -245,7 +245,7 @@ public class TestCommandHandlerMgrImpl
         AzimuthDegrees pan = new AzimuthDegrees().withValue(0.2);
         ElevationDegrees tilt = new ElevationDegrees().withValue(0.2);
         OrientationOffset panTilt = new OrientationOffset(pan, tilt, null);
-        SetPanTiltCommand panTiltCmd = new SetPanTiltCommand(null, panTilt);
+        SetPanTiltCommand panTiltCmd = new SetPanTiltCommand(null, null, panTilt);
         
         //Mock converter behavior.
         when(m_Converter.convertToProto(Mockito.any(Command.class))).thenReturn(testMessage);
