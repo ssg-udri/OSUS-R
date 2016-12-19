@@ -599,7 +599,7 @@
                 Measurement of magnetic field strength (flux density). Units are Teslas.
                 If a sensor/transducer reports H field units (oersteds or amps per meter)
                 the measurement SHOULD be converted to Teslas assuming that 
-                1 G = 1 Oe = 0.0001 T (i.e. assuming the permeability of a vacuum.)
+                1 G = 1 Oe = 0.0001 T (i.e., assuming the permeability of a vacuum.)
             </xs:documentation>
         </xs:annotation>
         <xs:simpleContent>
@@ -1023,12 +1023,10 @@
     <xs:complexType name="Version">
       <xs:annotation>
         <xs:documentation>
-            Version number 
-             - Major number will increase if there have been any required fields added, removed, or otherwise
-               changes are made such that there may be incompatability issues for consumers expecting the previous 
-               major version.
-             - Minor number will increase if optional field changes are made but do not require the consumer
-               to update.
+            Version number. Major number will increase if there have been any required fields added, removed, or 
+            otherwise changes are made such that there may be incompatability issues for consumers expecting the previous 
+            major version. Minor number will increase if optional field changes are made but do not require the consumer
+            to update.
         </xs:documentation>
       </xs:annotation>
       <xs:sequence>

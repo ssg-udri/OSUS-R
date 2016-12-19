@@ -137,7 +137,7 @@
       </xs:documentation>
     </xs:annotation>
     <xs:sequence>
-        <xs:element name="lowFrequencyCutoff" type="shared:FrequencyKhz">
+        <xs:element name="lowFrequencyCutoff" type="shared:FrequencyKhz" minOccurs="0" maxOccurs="1" >
           <xs:annotation>
             <xs:documentation>
                 3dB low cutoff frequency of the channel or internal filter associated with the algorithm. This
@@ -147,7 +147,7 @@
             </xs:documentation>
           </xs:annotation>
         </xs:element>
-        <xs:element name="highFrequencyCutoff" type="shared:FrequencyKhz">
+        <xs:element name="highFrequencyCutoff" type="shared:FrequencyKhz" minOccurs="0" maxOccurs="1" >
           <xs:annotation>
             <xs:documentation>
                 3dB high cutoff frequency of the channel or internal filter associated with the algorithm.
@@ -229,14 +229,14 @@
         </xs:documentation>
       </xs:annotation>
       <xs:sequence>
-          <xs:element name="classificationType" type="detection:TargetClassificationType">
+          <xs:element name="classificationType" type="detection:TargetClassificationType" minOccurs="0" maxOccurs="1" >
             <xs:annotation>
                 <xs:documentation>
                 Target type that the status information is applicable to.
                 </xs:documentation>
             </xs:annotation>
           </xs:element>
-          <xs:element name="probablityOfDetection" type="shared:percentage">
+          <xs:element name="probablityOfDetection" type="shared:percentage" minOccurs="0" maxOccurs="1" >
             <xs:annotation>
                 <xs:documentation>
                 Probability that detections produced by the algorithm for this target classification will have an
@@ -247,7 +247,7 @@
                 </xs:documentation>
             </xs:annotation>
           </xs:element>
-          <xs:element name="sensitivity" type="shared:percentage">
+          <xs:element name="sensitivity" type="shared:percentage" minOccurs="0" maxOccurs="1" >
             <xs:annotation>
                 <xs:documentation>
                     Configured sensitivity of the algorithm for this particular target type,

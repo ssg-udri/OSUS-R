@@ -20,7 +20,9 @@
 
   <xs:simpleType name="ObservationSubTypeEnum">
     <xs:annotation>
-      <xs:documentation>Lexical identifier that uniquely defines the type of observation.</xs:documentation>
+      <xs:documentation>
+          Lexical identifier that uniquely defines the type of observation.
+      </xs:documentation>
     </xs:annotation>
     <xs:restriction base="xs:string">
       <xs:enumeration value="none">

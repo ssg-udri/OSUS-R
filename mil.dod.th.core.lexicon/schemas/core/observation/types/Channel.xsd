@@ -26,15 +26,15 @@
     <xs:annotation>
       <xs:documentation>
           Defines channel data stored in a DigitalMedia object. A mime type of application/octet-stream (per RFC2046) is
-          required and all data should be stored in big endian format.
+          required and all data should be stored in big endian format. 
           &lt;p>
           Binary data format used in the DigitalMedia object is as follows:&lt;br>
-          -Freq 1, Channel 1- &amp;lt;sample1>[&amp;lt;sample2>...]&lt;br>
-          -Freq 1, Channel 2- &amp;lt;sample1>[&amp;lt;sample2>...]&lt;br>
+          -Freq 1, Channel 1- &amp;lt;sample1>[&amp;lt;sample2>...]&lt;br> 
+          -Freq 1, Channel 2- &amp;lt;sample1>[&amp;lt;sample2>...]&lt;br>  
           -Freq 2, Channel 1- &amp;lt;sample1>[&amp;lt;sample2>...]&lt;br>
           ...&lt;br>
           -Freq n, Channel n- &amp;lt;sample1>[&amp;lt;sample2>...]&lt;br>
-          &lt;p>
+          &lt;p>  
           Each sample is defined by the channelType and dataType elements. For example, a single sample for a
           channelType of Raw and dataType of Int16 would contain a single 16 bit integer value. If channelType
           is Complex and dataType is Int16, then a single sample would contain two 16 bit integer values (for

@@ -130,7 +130,7 @@
 
     <xs:complexType name="ColorDescriptorType">
         <xs:sequence>
-            <xs:element name="data" type="xs:base64Binary">
+            <xs:element name="data" type="xs:base64Binary" minOccurs="0" maxOccurs="1" >
                 <xs:annotation>
                     <xs:documentation>
                         Descriptor indicating the spatial and hue distribution of colors across the target. Computed on a
@@ -153,7 +153,7 @@
 
     <xs:complexType name="HOGDescriptorType">
         <xs:sequence>
-            <xs:element name="data" type="xs:base64Binary">
+            <xs:element name="data" type="xs:base64Binary" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
                         Feature vector of HOG normalized bin values. Computed on a rescaled 128x128 target image with 8x8 cell size, 16x16 block size, 16 pixel block stride, 9 orientation bins using the unsigned gradient (2304 values).
@@ -177,7 +177,7 @@
 
     <xs:complexType name="OpticalFlowType">
         <xs:sequence>
-            <xs:element name="data" type="xs:base64Binary">
+            <xs:element name="data" type="xs:base64Binary" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
                         Optical flow with given spacing read out row wise, stored as two 16 bit signed integers per point in the order x,y.

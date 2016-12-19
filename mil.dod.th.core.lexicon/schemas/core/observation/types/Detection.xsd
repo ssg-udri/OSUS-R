@@ -39,7 +39,7 @@
       <xs:element name="confidenceFactors" type="shared:ConfidenceFactor" minOccurs="0" maxOccurs="unbounded">
         <xs:annotation>
             <xs:documentation>
-                Probability that this target is actually the type it was classified as.  E.g. If this is 0.9, we would
+                Probability that this target is actually the type it was classified as.  E.g., If this is 0.9, we would
                 expect 9 out of 10 of these detections to be of the reported type, and one to be of something else.
                 There can be multiple confidence factors per classification.
             </xs:documentation>
@@ -49,7 +49,7 @@
         <xs:annotation>
             <xs:documentation>
                 Probability that an actual target of this type with these characteristics would be accurately classified.
-                E.g. if this is 0.1, we would expect 9 missed classifications for each received classification with these
+                E.g., if this is 0.1, we would expect 9 missed classifications for each received classification with these
                 characteristics.
                 There can be multiple probability factors per classification.
             </xs:documentation>

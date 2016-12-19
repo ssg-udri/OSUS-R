@@ -363,7 +363,9 @@
     
     <xs:complexType name="PixelCircle">
         <xs:annotation>
-            <xs:documentation>Defines a circle within the image by pixels.</xs:documentation>
+            <xs:documentation>
+                Defines a circle within the image by pixels.
+            </xs:documentation>
         </xs:annotation>
         <xs:sequence>
             <xs:element name="center" type="PixelPosition" minOccurs="1" maxOccurs="1" >

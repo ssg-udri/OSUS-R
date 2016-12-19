@@ -92,7 +92,7 @@
         Angle on a plane perpendicular to the ground (or platform depending on usage) and parallel to a
         heading/azimuth of 90 degrees. An angle of zero is parallel to the ground (or platform) and 
         positive value is an angle above parallel to the ground (or platform). This value is visualized 
-        as the right handed rotation around y-axis in degrees. (akin to roll).
+        as the right handed rotation around y-axis in degrees (akin to roll).
       </xs:documentation>
     </xs:annotation>
     <xs:simpleContent>

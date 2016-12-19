@@ -187,8 +187,8 @@ public class LexiconParser
         else if (nodeName.equals("xs:documentation") && lexiconField != null)
         {
             lexiconField.setDescription(element.getTextContent().trim().replaceAll(
-                    System.getProperty("line.separator"), "").replaceAll("\\s+", " "));
-        }
+                    System.getProperty("line.separator"), "").replaceAll("\\s+", " ")); //NOCHECKSTYLE repeated empty string
+        }                                                                               //makes code more readable.
         traverseNodes(element.getChildNodes(), element, lexiconField);
     }
     
@@ -242,8 +242,16 @@ public class LexiconParser
     private void  handleElement(final Element element, final String elementName, final LexiconComplexType complexType)
     {
         final String type = getTypeAttribute(element);
-        final String minOccurs = element.getAttribute("minOccurs");
-        final String maxOccurs = element.getAttribute("maxOccurs");
+        String minOccurs = element.getAttribute("minOccurs");
+        if (minOccurs.isEmpty())
+        {
+            minOccurs = " "; 
+        }
+        String maxOccurs = element.getAttribute("maxOccurs");
+        if (maxOccurs.isEmpty())
+        {
+            maxOccurs = " ";
+        }
         final LexiconElement lexElement = new LexiconElement();
         
         lexElement.setName(elementName);
@@ -267,7 +275,11 @@ public class LexiconParser
      */
     private void handleAttribute(final Element element, final String elementName, final LexiconComplexType complexType)
     {
-        final String type = getTypeAttribute(element);
+        String type = getTypeAttribute(element);
+        if (type.isEmpty())
+        {
+            type = " ";
+        }
         final String use = element.getAttribute("use");
         final LexiconAttribute lexAttribute = new LexiconAttribute();
         
