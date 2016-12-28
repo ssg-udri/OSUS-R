@@ -569,6 +569,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="observedTimestampAvailable" type="xs:boolean" use="optional" default="false" />
+        <xs:attribute name="sensorIdAvailable" type="xs:boolean" use="optional" default="false" />
     </xs:complexType>
 
     <xs:element name="AssetCapabilities">

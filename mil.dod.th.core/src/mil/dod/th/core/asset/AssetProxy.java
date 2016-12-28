@@ -49,7 +49,6 @@ import mil.dod.th.core.observation.types.Status;
  * </ul>
  * 
  * @author dhumeniuk
- *
  */
 public interface AssetProxy extends FactoryObjectProxy
 {
@@ -101,6 +100,23 @@ public interface AssetProxy extends FactoryObjectProxy
      * @see Asset#captureData()
      */
     Observation onCaptureData() throws AssetException;
+
+    /**
+     * Implement to perform data capture for the asset based on the given sensor ID.
+     * 
+     * @param sensorId
+     *      capture data for sensor corresponding to this ID
+     * @return
+     *      observation that was captured, core will set additional fields and validate data
+     * @throws AssetException
+     *      if the asset fails to capture data or the operation is not supported
+     * @see Asset#captureData(String)
+     */
+    default Observation onCaptureData(String sensorId) throws AssetException
+    {
+        throw new AssetException(
+            new UnsupportedOperationException("Asset does not support capturing data by sensorId."));
+    }
 
     /**
      * Override to perform built-in test (BIT) on the asset.

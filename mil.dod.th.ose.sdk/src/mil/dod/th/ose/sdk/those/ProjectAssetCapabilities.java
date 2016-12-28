@@ -634,7 +634,7 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
      */
     private static ObservationCapabilities makeObsCapabilities()
     {
-        final ObservationCapabilities obsCaps = new ObservationCapabilities(false);
+        final ObservationCapabilities obsCaps = new ObservationCapabilities(false, false);
         return obsCaps;
     }
 }

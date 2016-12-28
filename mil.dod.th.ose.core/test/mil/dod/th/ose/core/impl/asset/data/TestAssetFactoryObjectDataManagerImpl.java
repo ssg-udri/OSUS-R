@@ -19,6 +19,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import mil.dod.th.core.asset.Asset;
@@ -27,13 +31,17 @@ import mil.dod.th.core.persistence.PersistentData;
 import mil.dod.th.core.persistence.PersistentDataStore;
 import mil.dod.th.core.remote.objectconverter.JaxbProtoObjectConverter;
 import mil.dod.th.core.remote.objectconverter.ObjectConverterException;
+import mil.dod.th.core.types.factory.SpatialTypesFactory;
 import mil.dod.th.core.types.spatial.Coordinates;
 import mil.dod.th.core.types.spatial.Orientation;
 import mil.dod.th.core.validator.ValidationFailedException;
 import mil.dod.th.ose.core.factory.api.data.FactoryObjectInformationException;
 import mil.dod.th.ose.core.factory.proto.FactoryObjectInformation.AssetObjectData;
+import mil.dod.th.ose.core.factory.proto.FactoryObjectInformation.CoordinatesEntry;
 import mil.dod.th.ose.core.factory.proto.FactoryObjectInformation.FactoryObjectData;
+import mil.dod.th.ose.core.factory.proto.FactoryObjectInformation.OrientationEntry;
 import mil.dod.th.remote.lexicon.types.spatial.SpatialTypesGen;
+import mil.dod.th.remote.lexicon.types.spatial.SpatialTypesGen.BankDegrees;
 import mil.dod.th.remote.lexicon.types.spatial.SpatialTypesGen.ElevationDegrees;
 import mil.dod.th.remote.lexicon.types.spatial.SpatialTypesGen.HeadingDegrees;
 import mil.dod.th.remote.lexicon.types.spatial.SpatialTypesGen.LatitudeWgsDegrees;
@@ -46,8 +54,8 @@ import org.mockito.ArgumentCaptor;
 /**
  * Test the asset implementation of the
  * {@link mil.dod.th.ose.core.factory.api.data.BaseFactoryObjectDataManager}.
+ * 
  * @author callen
- *
  */
 public class TestAssetFactoryObjectDataManagerImpl
 {
@@ -58,9 +66,17 @@ public class TestAssetFactoryObjectDataManagerImpl
     private JaxbProtoObjectConverter m_JaxbConverter;
     private UUID m_UUID = UUID.randomUUID();
     private Coordinates m_Coordinates;
+    private Coordinates m_Coordinates2;
+    private Map<String, Coordinates> m_CoordsMap;
     private SpatialTypesGen.Coordinates m_ProtoCoors;
+    private SpatialTypesGen.Coordinates m_ProtoCoors2;
+    private List<CoordinatesEntry> m_ProtoCoorsList;
     private Orientation m_Orientation;
+    private Orientation m_Orientation2;
+    private Map<String, Orientation> m_OrienMap;
     private SpatialTypesGen.Orientation m_ProtoOrien;
+    private SpatialTypesGen.Orientation m_ProtoOrien2;
+    private List<OrientationEntry> m_ProtoOrienList;
     
     @Before
     public void setUp() throws ObjectConverterException
@@ -69,18 +85,39 @@ public class TestAssetFactoryObjectDataManagerImpl
         m_PersistentDataStore = mock(PersistentDataStore.class);
         m_PersistentData = mock(PersistentData.class);
         m_JaxbConverter = mock(JaxbProtoObjectConverter.class);
-        
-        m_Coordinates = new Coordinates();
-        m_Orientation = new Orientation();
-        
+
+        m_Coordinates = SpatialTypesFactory.newCoordinates(40.0, 23.0);
+        m_Coordinates2 = SpatialTypesFactory.newCoordinates(43.0, 33.0);
+        m_CoordsMap = new HashMap<>();
+        m_CoordsMap.put(null, m_Coordinates);
+        m_Orientation = SpatialTypesFactory.newOrientation(21.0, 19.0, 0.0);
+        m_Orientation2 = SpatialTypesFactory.newOrientation(31.0, 29.0, 0.0);
+        m_OrienMap = new HashMap<>();
+        m_OrienMap.put(null, m_Orientation);
+
         m_ProtoCoors = SpatialTypesGen.Coordinates.newBuilder().
                 setLatitude(LatitudeWgsDegrees.newBuilder().setValue(23).build()).
                 setLongitude(LongitudeWgsDegrees.newBuilder().setValue(40).build())
                                 .build();
+        m_ProtoCoors2 = SpatialTypesGen.Coordinates.newBuilder()
+                .setLatitude(LatitudeWgsDegrees.newBuilder().setValue(33).build())
+                .setLongitude(LongitudeWgsDegrees.newBuilder().setValue(43).build())
+                .build();
+        m_ProtoCoorsList = new ArrayList<>();
+        m_ProtoCoorsList.add(CoordinatesEntry.newBuilder().setValue(m_ProtoCoors).build());
         m_ProtoOrien = SpatialTypesGen.Orientation.newBuilder().
                 setElevation(ElevationDegrees.newBuilder().setValue(19).build()).
-                setHeading(HeadingDegrees.newBuilder().setValue(21).build()).build();
-    
+                setHeading(HeadingDegrees.newBuilder().setValue(21).build()).
+                setBank(BankDegrees.newBuilder().setValue(0.0))
+                .build();
+        m_ProtoOrien2 = SpatialTypesGen.Orientation.newBuilder().
+                setElevation(ElevationDegrees.newBuilder().setValue(29).build()).
+                setHeading(HeadingDegrees.newBuilder().setValue(31).build()).
+                setBank(BankDegrees.newBuilder().setValue(0.0))
+                .build();
+        m_ProtoOrienList = new ArrayList<>();
+        m_ProtoOrienList.add(OrientationEntry.newBuilder().setValue(m_ProtoOrien).build());
+
         m_SUT.setPersistentDataStore(m_PersistentDataStore);
         m_SUT.setJaxbProtoObjectConverter(m_JaxbConverter);
     }
@@ -128,7 +165,7 @@ public class TestAssetFactoryObjectDataManagerImpl
 
         when(m_JaxbConverter.convertToProto(m_Coordinates)).thenReturn(m_ProtoCoors);
         
-        m_SUT.setCoordinates(m_UUID, m_Coordinates);
+        m_SUT.setCoordinates(m_UUID, m_CoordsMap);
         
         //verify
         ArgumentCaptor<byte[]> pDataCaptor = ArgumentCaptor.forClass(byte[].class);
@@ -139,10 +176,10 @@ public class TestAssetFactoryObjectDataManagerImpl
         
         FactoryObjectData captMessage = FactoryObjectData.parseFrom(byteData, m_SUT.getRegistry());
         
-        SpatialTypesGen.Coordinates coordCapt = captMessage.getExtension(AssetObjectData.coordinates);
-        assertThat(coordCapt, is(m_ProtoCoors));
+        List<CoordinatesEntry> coordCapt = captMessage.getExtension(AssetObjectData.coordinates);
+        assertThat(coordCapt, is(m_ProtoCoorsList));
     }
-    
+
     /**
      * Verify setting of orientation for an asset.
      * Verify exception if orientation cannot be converted.
@@ -167,7 +204,7 @@ public class TestAssetFactoryObjectDataManagerImpl
         
         try
         {
-            m_SUT.setOrientation(m_UUID, m_Orientation);
+            m_SUT.setOrientation(m_UUID, m_OrienMap);
             fail("Expected exception because the converter should have thrown an exception!");
         }
         catch (FactoryObjectInformationException e)
@@ -175,7 +212,48 @@ public class TestAssetFactoryObjectDataManagerImpl
             //expected exception
         }
     }
-    
+
+    /**
+     * Verify setting of coordinates for an asset when using a sensor ID.
+     */
+    @Test
+    public void testSetCoordinatesBySensorId() throws FactoryObjectInformationException, ObjectConverterException, 
+        IllegalArgumentException, PersistenceFailedException, InvalidProtocolBufferException, ValidationFailedException
+    {
+        //activate to create converters 
+        m_SUT.activate();
+        
+        //persisted message with additional entry
+        m_ProtoCoorsList.add(CoordinatesEntry.newBuilder()
+                .setKey("example-sensor-id")
+                .setValue(m_ProtoCoors2)
+                .build());
+        m_CoordsMap.put("example-sensor-id", m_Coordinates2);
+        m_FactData = FactoryObjectData.newBuilder().
+                setName("original").build();
+        when(m_PersistentData.getEntity()).thenReturn(m_FactData.toByteArray());
+        when(m_PersistentData.getUUID()).thenReturn(m_UUID);
+        
+        when(m_PersistentDataStore.find(m_UUID)).thenReturn(m_PersistentData);
+
+        when(m_JaxbConverter.convertToProto(m_Coordinates)).thenReturn(m_ProtoCoors);
+        when(m_JaxbConverter.convertToProto(m_Coordinates2)).thenReturn(m_ProtoCoors2);
+        
+        m_SUT.setCoordinates(m_UUID, m_CoordsMap);
+        
+        //verify
+        ArgumentCaptor<byte[]> pDataCaptor = ArgumentCaptor.forClass(byte[].class);
+        verify(m_PersistentData).setEntity(pDataCaptor.capture());
+        verify(m_PersistentDataStore).merge(m_PersistentData);
+        
+        byte[] byteData = pDataCaptor.getValue();
+        
+        FactoryObjectData captMessage = FactoryObjectData.parseFrom(byteData, m_SUT.getRegistry());
+        
+        List<CoordinatesEntry> coordCapt = captMessage.getExtension(AssetObjectData.coordinates);
+        assertThat(coordCapt, is(m_ProtoCoorsList));
+    }
+
     /**
      * Verify setting of orientation for an asset.
      */
@@ -196,7 +274,7 @@ public class TestAssetFactoryObjectDataManagerImpl
 
         when(m_JaxbConverter.convertToProto(m_Orientation)).thenReturn(m_ProtoOrien);
         
-        m_SUT.setOrientation(m_UUID, m_Orientation);
+        m_SUT.setOrientation(m_UUID, m_OrienMap);
         
         //verify
         ArgumentCaptor<byte[]> pDataCaptor = ArgumentCaptor.forClass(byte[].class);
@@ -207,10 +285,51 @@ public class TestAssetFactoryObjectDataManagerImpl
         
         FactoryObjectData captMessage = FactoryObjectData.parseFrom(byteData, m_SUT.getRegistry());
         
-        SpatialTypesGen.Orientation orienCapt = captMessage.getExtension(AssetObjectData.orientation);
-        assertThat(orienCapt, is(m_ProtoOrien));
+        List<OrientationEntry> orienCapt = captMessage.getExtension(AssetObjectData.orientation);
+        assertThat(orienCapt, is(m_ProtoOrienList));
     }
-    
+
+    /**
+     * Verify setting of orientation for an asset when using a sensor ID.
+     */
+    @Test
+    public void testSetOrientationBySensorId() throws FactoryObjectInformationException, ObjectConverterException,
+        IllegalArgumentException, PersistenceFailedException, InvalidProtocolBufferException, ValidationFailedException
+    {
+        //activate to create converters 
+        m_SUT.activate();
+        
+        //persisted message with additional entry
+        m_ProtoOrienList.add(OrientationEntry.newBuilder()
+                .setKey("example-sensor-id")
+                .setValue(m_ProtoOrien2)
+                .build());
+        m_OrienMap.put("example-sensor-id", m_Orientation2);
+        m_FactData = FactoryObjectData.newBuilder().
+                setName("original").build();
+        when(m_PersistentData.getEntity()).thenReturn(m_FactData.toByteArray());
+        when(m_PersistentData.getUUID()).thenReturn(m_UUID);
+        
+        when(m_PersistentDataStore.find(m_UUID)).thenReturn(m_PersistentData);
+
+        when(m_JaxbConverter.convertToProto(m_Orientation)).thenReturn(m_ProtoOrien);
+        when(m_JaxbConverter.convertToProto(m_Orientation2)).thenReturn(m_ProtoOrien2);
+        
+        m_SUT.setOrientation(m_UUID, m_OrienMap);
+        
+        //verify
+        ArgumentCaptor<byte[]> pDataCaptor = ArgumentCaptor.forClass(byte[].class);
+        verify(m_PersistentData).setEntity(pDataCaptor.capture());
+        verify(m_PersistentDataStore).merge(m_PersistentData);
+        
+        byte[] byteData = pDataCaptor.getValue();
+        
+        FactoryObjectData captMessage = FactoryObjectData.parseFrom(byteData, m_SUT.getRegistry());
+        
+        List<OrientationEntry> orienCapt = captMessage.getExtension(AssetObjectData.orientation);
+        assertThat(orienCapt, is(m_ProtoOrienList));
+    }
+
     /**
      * Verify setting of coordinates for an asset.
      * Verify exception if coordinates cannot be converted.
@@ -235,7 +354,7 @@ public class TestAssetFactoryObjectDataManagerImpl
         
         try
         {
-            m_SUT.setCoordinates(m_UUID, m_Coordinates);
+            m_SUT.setCoordinates(m_UUID, m_CoordsMap);
             fail("Expected exception because the converter should have thrown an exception!");
         }
         catch (FactoryObjectInformationException e)
@@ -257,7 +376,7 @@ public class TestAssetFactoryObjectDataManagerImpl
         //persisted message
         m_FactData = FactoryObjectData.newBuilder().
                 setName("original").
-                setExtension(AssetObjectData.coordinates, m_ProtoCoors).build();
+                setExtension(AssetObjectData.coordinates, m_ProtoCoorsList).build();
         when(m_PersistentData.getEntity()).thenReturn(m_FactData.toByteArray());
         when(m_PersistentData.getUUID()).thenReturn(m_UUID);
         
@@ -265,12 +384,45 @@ public class TestAssetFactoryObjectDataManagerImpl
 
         when(m_JaxbConverter.convertToJaxb(m_ProtoCoors)).thenReturn(m_Coordinates);
         
-        Coordinates newCoords = m_SUT.getCoordinates(m_UUID);
+        Map<String, Coordinates> newCoords = m_SUT.getCoordinates(m_UUID);
         
         //verify
-        assertThat(newCoords, is(m_Coordinates));
+        assertThat(newCoords, is(m_CoordsMap));
     }
-    
+
+    /**
+     * Verify getting of coordinates for an asset when using a sensor ID.
+     */
+    @Test
+    public void testGetCoordinatesBySensorId() throws FactoryObjectInformationException, ObjectConverterException,
+        IllegalArgumentException, PersistenceFailedException, InvalidProtocolBufferException
+    {
+        //activate to create converters 
+        m_SUT.activate();
+        
+        //persisted message with additional entry
+        m_ProtoCoorsList.add(CoordinatesEntry.newBuilder()
+                .setKey("example-sensor-id")
+                .setValue(m_ProtoCoors2)
+                .build());
+        m_CoordsMap.put("example-sensor-id", m_Coordinates2);
+        m_FactData = FactoryObjectData.newBuilder().
+                setName("original").
+                setExtension(AssetObjectData.coordinates, m_ProtoCoorsList).build();
+        when(m_PersistentData.getEntity()).thenReturn(m_FactData.toByteArray());
+        when(m_PersistentData.getUUID()).thenReturn(m_UUID);
+        
+        when(m_PersistentDataStore.find(m_UUID)).thenReturn(m_PersistentData);
+
+        when(m_JaxbConverter.convertToJaxb(m_ProtoCoors)).thenReturn(m_Coordinates);
+        when(m_JaxbConverter.convertToJaxb(m_ProtoCoors2)).thenReturn(m_Coordinates2);
+        
+        Map<String, Coordinates> newCoords = m_SUT.getCoordinates(m_UUID);
+        
+        //verify
+        assertThat(newCoords, is(m_CoordsMap));
+    }
+
     /**
      * Verify getting of orientation for an asset.
      */
@@ -284,7 +436,7 @@ public class TestAssetFactoryObjectDataManagerImpl
         //persisted message
         m_FactData = FactoryObjectData.newBuilder().
                 setName("original").
-                setExtension(AssetObjectData.orientation, m_ProtoOrien).build();
+                setExtension(AssetObjectData.orientation, m_ProtoOrienList).build();
         when(m_PersistentData.getEntity()).thenReturn(m_FactData.toByteArray());
         when(m_PersistentData.getUUID()).thenReturn(m_UUID);
         
@@ -292,12 +444,45 @@ public class TestAssetFactoryObjectDataManagerImpl
 
         when(m_JaxbConverter.convertToJaxb(m_ProtoOrien)).thenReturn(m_Orientation);
         
-        Orientation newOrien = m_SUT.getOrientation(m_UUID);
+        Map<String, Orientation> newOrien = m_SUT.getOrientation(m_UUID);
         
         //verify orientation is returned
-        assertThat(newOrien, is(m_Orientation));
+        assertThat(newOrien, is(m_OrienMap));
     }
-    
+
+    /**
+     * Verify getting of orientation for an asset when using a sensor ID.
+     */
+    @Test
+    public void testGetOrientationBySensorId() throws FactoryObjectInformationException, ObjectConverterException,
+        IllegalArgumentException, PersistenceFailedException, InvalidProtocolBufferException
+    {
+        //activate to create converters 
+        m_SUT.activate();
+        
+        //persisted message with additional entry
+        m_ProtoOrienList.add(OrientationEntry.newBuilder()
+                .setKey("example-sensor-id")
+                .setValue(m_ProtoOrien2)
+                .build());
+        m_OrienMap.put("example-sensor-id", m_Orientation2);
+        m_FactData = FactoryObjectData.newBuilder().
+                setName("original").
+                setExtension(AssetObjectData.orientation, m_ProtoOrienList).build();
+        when(m_PersistentData.getEntity()).thenReturn(m_FactData.toByteArray());
+        when(m_PersistentData.getUUID()).thenReturn(m_UUID);
+        
+        when(m_PersistentDataStore.find(m_UUID)).thenReturn(m_PersistentData);
+
+        when(m_JaxbConverter.convertToJaxb(m_ProtoOrien)).thenReturn(m_Orientation);
+        when(m_JaxbConverter.convertToJaxb(m_ProtoOrien2)).thenReturn(m_Orientation2);
+        
+        Map<String, Orientation> newOrien = m_SUT.getOrientation(m_UUID);
+        
+        //verify orientation is returned
+        assertThat(newOrien, is(m_OrienMap));
+    }
+
     /**
      * Verify getting of orientation for an asset.
      * Verify exception if the orientation cannot be converted.
@@ -312,7 +497,7 @@ public class TestAssetFactoryObjectDataManagerImpl
         //persisted message
         m_FactData = FactoryObjectData.newBuilder().
                 setName("original").
-                setExtension(AssetObjectData.orientation, m_ProtoOrien).build();
+                setExtension(AssetObjectData.orientation, m_ProtoOrienList).build();
         when(m_PersistentData.getEntity()).thenReturn(m_FactData.toByteArray());
         when(m_PersistentData.getUUID()).thenReturn(m_UUID);
         
@@ -346,7 +531,7 @@ public class TestAssetFactoryObjectDataManagerImpl
         //persisted message
         m_FactData = FactoryObjectData.newBuilder().
                 setName("original").
-                setExtension(AssetObjectData.coordinates, m_ProtoCoors).build();
+                setExtension(AssetObjectData.coordinates, m_ProtoCoorsList).build();
         when(m_PersistentData.getEntity()).thenReturn(m_FactData.toByteArray());
         when(m_PersistentData.getUUID()).thenReturn(m_UUID);
         
@@ -378,7 +563,7 @@ public class TestAssetFactoryObjectDataManagerImpl
         
         when(m_PersistentDataStore.find(m_UUID)).thenReturn(null);
         
-        Coordinates newCoords = m_SUT.getCoordinates(m_UUID);
+        Map<String, Coordinates> newCoords = m_SUT.getCoordinates(m_UUID);
         
         //verify
         assertThat(newCoords, is(nullValue()));
@@ -396,7 +581,7 @@ public class TestAssetFactoryObjectDataManagerImpl
         
         when(m_PersistentDataStore.find(m_UUID)).thenReturn(null);
         
-        Orientation newOrien = m_SUT.getOrientation(m_UUID);
+        Map<String, Orientation> newOrien = m_SUT.getOrientation(m_UUID);
         
         //verify
         assertThat(newOrien, is(nullValue()));
@@ -419,10 +604,10 @@ public class TestAssetFactoryObjectDataManagerImpl
         
         when(m_PersistentDataStore.find(m_UUID)).thenReturn(m_PersistentData);
         
-        Coordinates newCoords = m_SUT.getCoordinates(m_UUID);
+        Map<String, Coordinates> newCoords = m_SUT.getCoordinates(m_UUID);
         
         //verify
-        assertThat(newCoords, is(nullValue()));
+        assertThat(newCoords.size(), is(0));
     }
     
     /**
@@ -442,9 +627,9 @@ public class TestAssetFactoryObjectDataManagerImpl
         
         when(m_PersistentDataStore.find(m_UUID)).thenReturn(m_PersistentData);
         
-        Orientation newOrient = m_SUT.getOrientation(m_UUID);
+        Map<String, Orientation> newOrient = m_SUT.getOrientation(m_UUID);
         
         //verify
-        assertThat(newOrient, is(nullValue()));
+        assertThat(newOrient.size(), is(0));
     }
 }

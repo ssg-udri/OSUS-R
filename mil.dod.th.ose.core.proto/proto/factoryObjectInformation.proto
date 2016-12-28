@@ -33,17 +33,31 @@ option java_package = "mil.dod.th.ose.core.factory.proto";
 option java_outer_classname = "FactoryObjectInformation";
 import "types/spatial/SpatialTypes.proto";
 
+message CoordinatesEntry
+{
+    // Key is optional to support null case where there is not a sensor ID
+    optional string key = 1;
+    required Coordinates value = 2;
+}
+
+message OrientationEntry
+{
+    // Key is optional to support null case where there is not a sensor ID
+    optional string key = 1;
+    required Orientation value = 2;
+}
+
 // Factory object information for Assets that is stored in the persistent datastore.
 message AssetObjectData
 {
     //Extensions for assets to the factory object data message
     extend FactoryObjectData
     {
-        //the coordinates of the object
-        optional Coordinates coordinates = 102;
+        //the coordinates of the object for each sensor ID
+        repeated CoordinatesEntry coordinates = 102;
 
-        //the orientation of the object
-        optional Orientation orientation = 103;
+        //the orientation of the object for each sensor ID
+        repeated OrientationEntry orientation = 103;
     }
 }
 
@@ -56,7 +70,6 @@ message StreamProfileObjectData
         // String representation of URI for stream port of the object.
         optional string streamPort = 200;
     }
-
 }
 
 // Factory object information base message that is stored in the persistent datastore.

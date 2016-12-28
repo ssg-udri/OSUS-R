@@ -13,6 +13,7 @@
 package mil.dod.th.core.asset;
 
 import aQute.bnd.annotation.ProviderType;
+
 import mil.dod.th.core.asset.commands.Command;
 import mil.dod.th.core.asset.commands.Response;
 import mil.dod.th.core.commands.CommandExecutionException;
@@ -313,7 +314,29 @@ public interface Asset extends FactoryObject
      *      if the asset fails to create an observation from the data capture operation
      */
     Observation captureData() throws AssetException;
-    
+
+    /**
+     * Request the asset to capture data for the given sensor ID. Capture data can mean something different for
+     * different assets. For example, capture data for a camera would mean take a snapshot, where capture data for a
+     * motion detector would mean store the current signal signature.
+     * 
+     * <p>
+     * This method will block until the data has been captured and returned by {@link AssetProxy#onCaptureData(String)}
+     * which could take some time. If wanting to get data asynchronously, register for the {@link #TOPIC_DATA_CAPTURED}
+     * event instead.
+     * 
+     * <p>
+     * It is not required for an asset to be activated in order to capture data. The exact behavior is left up to the 
+     * plug-in implementation.
+     * 
+     * @param sensorId
+     *      capture data for the given sensor ID unless the value is null
+     * @return Observation that was captured, should not be null
+     * @throws AssetException
+     *      if the asset fails to create an observation from the data capture operation
+     */
+    Observation captureData(String sensorId) throws AssetException;
+
     /**
      * Get the last persisted status {@link Observation} containing information about the status of this asset.
      * If the status has not been established, a status {@link Observation} containing a 

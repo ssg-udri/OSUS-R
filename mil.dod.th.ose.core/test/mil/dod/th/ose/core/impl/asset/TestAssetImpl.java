@@ -151,10 +151,15 @@ public class TestAssetImpl
         m_SUT.setFactoryObjectDataManager(m_ObjectDataManager);
         m_SUT.setLoggingService(LoggingServiceMocker.createMock());
 
+        Map<String, Coordinates> coordsMap = new HashMap<>();
         Ellipse ellipse = SpatialTypesFactory.newEllipse(1, 2, 90);
-        when(m_ObjectDataManager.getCoordinates(OBJ_UUID)).thenReturn(
-                SpatialTypesFactory.newCoordinates(100, 10, 5, ellipse));
-        when(m_ObjectDataManager.getOrientation(OBJ_UUID)).thenReturn(SpatialTypesFactory.newOrientation(100, 90, 45));
+        coordsMap.put(null, SpatialTypesFactory.newCoordinates(100, 10, 5, ellipse));
+        coordsMap.put("example-sensor-id", SpatialTypesFactory.newCoordinates(101, 11, 6, ellipse));
+        Map<String, Orientation> orienMap = new HashMap<>();
+        orienMap.put(null, SpatialTypesFactory.newOrientation(100, 90, 45));
+        orienMap.put("example-sensor-id", SpatialTypesFactory.newOrientation(101, 91, 46));
+        when(m_ObjectDataManager.getCoordinates(OBJ_UUID)).thenReturn(coordsMap);
+        when(m_ObjectDataManager.getOrientation(OBJ_UUID)).thenReturn(orienMap);
 
         // by default have core use basic position handling
         Dictionary<String, Object> table = new Hashtable<>();
@@ -268,6 +273,23 @@ public class TestAssetImpl
 
         verify(m_WakeLock).activate();
         verify(m_WakeLock).cancel();
+    }
+
+    @Test
+    public void testCaptureDataWithSensorId()
+            throws AssetException, IllegalArgumentException, PersistenceFailedException, ValidationFailedException
+    {
+        Observation observation = new Observation();
+        when(m_Proxy.onCaptureData(anyString())).thenReturn(observation);
+        assertThat(m_SUT.captureData("example-sensor-id"), is(observation));
+
+        verify(m_WakeLock).activate();
+        verify(m_Proxy).onCaptureData(eq("example-sensor-id"));
+        verify(m_WakeLock).cancel();
+
+        verify(m_ObservationStore, atLeastOnce()).persist(Mockito.any(Observation.class));
+
+        EventAdminVerifier.assertEventByTopicAsset(m_EventAdmin, Asset.TOPIC_DATA_CAPTURED, m_SUT);
     }
 
     /**
@@ -526,10 +548,37 @@ public class TestAssetImpl
         props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE, notNullValue());
         EventAdminVerifier.assertLastEvent(m_EventAdmin, Asset.TOPIC_COMMAND_RESPONSE, props);
 
-        Coordinates setCoords = getCoordsFromCommand();
+        Coordinates setCoords = getCoordsFromCommand(null);
         verifyCoordsWithEllipse(setCoords, 88d, 99d, 3d, 1d, 2d, 3d);
 
-        Orientation setOrient = getOrientationFromCommand();
+        Orientation setOrient = getOrientationFromCommand(null);
+        verifyOrientation(setOrient, 12d, 13d, 14d);
+    }
+
+    @Test
+    public void testExecuteSetPositionCommandNoPosOverrideBySensorId()
+            throws CommandExecutionException, ValidationFailedException, InterruptedException, IOException
+    {
+        SetPositionCommand command = new SetPositionCommand()
+                .withSensorId("example-sensor-id")
+                .withLocation(
+                    SpatialTypesFactory.newCoordinates(88d, 99d, 3d, SpatialTypesFactory.newEllipse(1d, 2d, 3d)))
+                .withOrientation(SpatialTypesFactory.newOrientation(12d, 13d, 14d));
+        m_SUT.executeCommand(command);
+
+        verify(m_Proxy, never()).onExecuteCommand(command);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
+
+        Map<String, Object> props = new HashMap<>();
+        props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE_TYPE, SetPositionResponse.class.getName());
+        props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE, notNullValue());
+        EventAdminVerifier.assertLastEvent(m_EventAdmin, Asset.TOPIC_COMMAND_RESPONSE, props);
+
+        Coordinates setCoords = getCoordsFromCommand("example-sensor-id");
+        verifyCoordsWithEllipse(setCoords, 88d, 99d, 3d, 1d, 2d, 3d);
+
+        Orientation setOrient = getOrientationFromCommand("example-sensor-id");
         verifyOrientation(setOrient, 12d, 13d, 14d);
     }
 
@@ -552,10 +601,10 @@ public class TestAssetImpl
         props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE, notNullValue());
         EventAdminVerifier.assertLastEvent(m_EventAdmin, Asset.TOPIC_COMMAND_RESPONSE, props);
 
-        Coordinates setCoords = getCoordsFromCommand();
+        Coordinates setCoords = getCoordsFromCommand(null);
         verifyCoordsWithEllipse(setCoords, 100d, 10d, 5d, 1d, 2d, 90d);
 
-        Orientation setOrient = getOrientationFromCommand();
+        Orientation setOrient = getOrientationFromCommand(null);
         verifyOrientation(setOrient, 100d, 90d, 45d);
     }
 
@@ -610,6 +659,27 @@ public class TestAssetImpl
 
         verifyCoordsWithEllipse(response.getLocation(), 100d, 10d, 5d, 1d, 2d, 90d);
         verifyOrientation(response.getOrientation(), 100d, 90d, 45d);
+    }
+
+    @Test
+    public void testExecuteGetPositionCommandNoOverridePosBySensorId()
+            throws CommandExecutionException, ValidationFailedException, InterruptedException, IOException
+    {
+        GetPositionCommand command = new GetPositionCommand().withSensorId("example-sensor-id");
+        GetPositionResponse response = (GetPositionResponse)m_SUT.executeCommand(command);
+
+        verify(m_Proxy, never()).onExecuteCommand(command);
+        verify(m_WakeLock).activate();
+        verify(m_WakeLock).cancel();
+
+        Map<String, Object> props = new HashMap<>();
+        props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE_TYPE, response.getClass().getName());
+        props.put(Asset.EVENT_PROP_ASSET_COMMAND_RESPONSE, response);
+        EventAdminVerifier.assertLastEvent(m_EventAdmin, Asset.TOPIC_COMMAND_RESPONSE, props);
+
+        assertThat(response.getSensorId(), is("example-sensor-id"));
+        verifyCoordsWithEllipse(response.getLocation(), 101d, 11d, 6d, 1d, 2d, 90d);
+        verifyOrientation(response.getOrientation(), 101d, 91d, 46d);
     }
 
     /**
@@ -1019,13 +1089,14 @@ public class TestAssetImpl
         assertThat(props.getValue(), rawDictionaryHasEntry(AssetAttributes.CONFIG_PROP_ACTIVATE_ON_STARTUP, false));
     }
 
-    private Coordinates getCoordsFromCommand()
+    private Coordinates getCoordsFromCommand(final String sensorId)
     {
-        GetPositionCommand command = new GetPositionCommand();
+        GetPositionCommand command = new GetPositionCommand().withSensorId(sensorId);
         GetPositionResponse response;
         try
         {
             response = (GetPositionResponse)m_SUT.executeCommand(command);
+            assertThat(response.getSensorId(), is(sensorId));
         }
         catch (CommandExecutionException | InterruptedException e)
         {
@@ -1034,13 +1105,14 @@ public class TestAssetImpl
         return response.getLocation();
     }
 
-    private Orientation getOrientationFromCommand()
+    private Orientation getOrientationFromCommand(final String sensorId)
     {
-        GetPositionCommand command = new GetPositionCommand();
+        GetPositionCommand command = new GetPositionCommand().withSensorId(sensorId);
         GetPositionResponse response;
         try
         {
             response = (GetPositionResponse)m_SUT.executeCommand(command);
+            assertThat(response.getSensorId(), is(sensorId));
         }
         catch (CommandExecutionException | InterruptedException e)
         {

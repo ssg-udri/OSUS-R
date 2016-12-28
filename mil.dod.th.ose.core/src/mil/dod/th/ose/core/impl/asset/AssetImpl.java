@@ -93,12 +93,12 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
     /**
      * Coordinates object representing the location of the represented asset.
      */
-    private Coordinates m_AssetLocation;
+    private Map<String, Coordinates> m_AssetLocation;
 
     /**
      * Orientation object representing the orientation of the represented asset.
      */
-    private Orientation m_AssetOrientation;
+    private Map<String, Orientation> m_AssetOrientation;
 
     /**
      * The {@link AssetProxy} that is associated with this implementation.
@@ -274,7 +274,14 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
     @Override
     public Observation captureData() throws AssetException
     {
-        m_Log.debug("Asset %s has begun to capture data.", getName());
+        return captureData(null);
+    }
+
+    @Override
+    public Observation captureData(final String sensorId) throws AssetException
+    {
+        m_Log.debug("Asset %s%s has begun to capture data.", getName(),
+                sensorId == null ? "" : String.format(" sensor %s", sensorId));
 
         m_CapturingData = true;
 
@@ -282,7 +289,15 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
         {
             m_WakeLock.activate();
 
-            final Observation observation = m_AssetProxy.onCaptureData();
+            final Observation observation;
+            if (sensorId == null)
+            {
+                observation = m_AssetProxy.onCaptureData();
+            }
+            else
+            {
+                observation = m_AssetProxy.onCaptureData(sensorId);
+            }
 
             persistObservation(observation);
 
@@ -299,7 +314,6 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
                     getUuid().toString());
             m_Log.error(errorString);
             throw new AssetException(errorString, ex);
-
         }
         catch (final ValidationFailedException ex)
         {
@@ -372,7 +386,8 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
     @Override
     public Response executeCommand(final Command command) throws CommandExecutionException, InterruptedException
     {
-        m_Log.debug("Executing command [%s] for asset [%s]", command.getClass().getName(), getName());
+        m_Log.debug("Executing command [%s] for asset [%s]%s", command.getClass().getName(), getName(),
+            command.getSensorId() == null ? "" : String.format(" sensor [%s]", command.getSensorId()));
 
         try
         {
@@ -400,7 +415,8 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
                 else
                 {
                     final SetPositionCommand positionCommand = (SetPositionCommand)command;
-                    commandResponse = updatePosition(positionCommand.getLocation(), positionCommand.getOrientation());
+                    commandResponse = updatePosition(positionCommand.getSensorId(), positionCommand.getLocation(),
+                        positionCommand.getOrientation());
                 }
             }
             else if (command instanceof GetPositionCommand)
@@ -412,14 +428,14 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
                 // position is not handled in a special way by the asset proxy, so retrieve what we got cached
                 else
                 {
-                    final GetPositionResponse response = new GetPositionResponse();
-                    if (m_AssetLocation != null)
+                    final GetPositionResponse response = new GetPositionResponse().withSensorId(command.getSensorId());
+                    if (m_AssetLocation.containsKey(command.getSensorId()))
                     {
-                        response.withLocation(cloneCoordinates(m_AssetLocation));
+                        response.withLocation(cloneCoordinates(m_AssetLocation.get(command.getSensorId())));
                     }
-                    if (m_AssetOrientation != null)
+                    if (m_AssetOrientation.containsKey(command.getSensorId()))
                     {
-                        response.withOrientation(cloneOrientation(m_AssetOrientation));
+                        response.withOrientation(cloneOrientation(m_AssetOrientation.get(command.getSensorId())));
                     }
                     commandResponse = response;
                 }
@@ -428,9 +444,9 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
             {
                 commandResponse = m_AssetProxy.onExecuteCommand(command);
             }
-    
+
             m_Log.debug("Completed executing command [%s] for asset [%s]", command.getClass().getName(), getName());
-    
+
             final Map<String, Object> props = new HashMap<>();
             props.put(EVENT_PROP_ASSET_COMMAND_RESPONSE_TYPE, commandResponse.getClass().getName());
             props.put(EVENT_PROP_ASSET_COMMAND_RESPONSE, commandResponse);
@@ -662,37 +678,31 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
     /**
      * Update the position of the asset.
      * 
+     * @param sensorId
+     *            sensor ID or null
      * @param location
      *            the coordinates information to update the asset's location to
      * @param orientation
      *            the orientation information to update the asset's orientation to
      * @return set position command response
      * @throws CommandExecutionException
-     *             if the new location information could not be persisted
+     *            if the new location information could not be persisted
      */
-    private synchronized Response updatePosition(final Coordinates location, final Orientation orientation)
-            throws CommandExecutionException
+    private synchronized Response updatePosition(final String sensorId, final Coordinates location,
+        final Orientation orientation) throws CommandExecutionException
     {
-
-        // pull out position objects
-        if (location != null)
-        {
-            m_AssetLocation = location;
-        }
-        if (orientation != null)
-        {
-            m_AssetOrientation = orientation;
-        }
-
         try
         {
-            if (m_AssetOrientation != null)
+            // pull out position objects
+            if (location != null)
             {
-                m_AssetDataManager.setOrientation(getUuid(), m_AssetOrientation);
-            }
-            if (m_AssetLocation != null)
-            {
+                m_AssetLocation.put(sensorId, location);
                 m_AssetDataManager.setCoordinates(getUuid(), m_AssetLocation);
+            }
+            if (orientation != null)
+            {
+                m_AssetOrientation.put(sensorId, orientation);
+                m_AssetDataManager.setOrientation(getUuid(), m_AssetOrientation);
             }
         }
         catch (final FactoryObjectInformationException e)
@@ -701,7 +711,7 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
                     String.format("Unable to update asset %s for new location information!", getName()), e);
         }
 
-        return new SetPositionResponse();
+        return new SetPositionResponse().withSensorId(sensorId);
     }
 
     /**
@@ -750,14 +760,14 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
             observation.setCreatedTimestamp(System.currentTimeMillis());
         }
 
-        if (m_AssetLocation != null && !m_PluginOverridesPosition)
+        if (m_AssetLocation.containsKey(observation.getSensorId()) && !m_PluginOverridesPosition)
         {
-            observation.setAssetLocation(cloneCoordinates(m_AssetLocation));
+            observation.setAssetLocation(cloneCoordinates(m_AssetLocation.get(observation.getSensorId())));
         }
 
-        if (m_AssetOrientation != null && !m_PluginOverridesPosition)
+        if (m_AssetOrientation.containsKey(observation.getSensorId()) && !m_PluginOverridesPosition)
         {
-            observation.setAssetOrientation(cloneOrientation(m_AssetOrientation));
+            observation.setAssetOrientation(cloneOrientation(m_AssetOrientation.get(observation.getSensorId())));
         }
     }
 

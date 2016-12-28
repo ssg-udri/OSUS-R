@@ -137,7 +137,13 @@ public class ExampleCommandAsset implements AssetProxy
     {
         return createDefaultObservation();
     }
-    
+
+    @Override
+    public Observation onCaptureData(String sensorId) throws AssetException
+    {
+        return createDefaultObservation().withSensorId(sensorId);
+    }
+
     @Override
     public Status onPerformBit() throws AssetException
     {

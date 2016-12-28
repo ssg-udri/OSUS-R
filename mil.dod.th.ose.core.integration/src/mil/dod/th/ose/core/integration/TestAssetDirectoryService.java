@@ -81,11 +81,12 @@ import example.asset.ExampleAssetAttributes;
 import example.asset.ExampleAssetScanner;
 import example.asset.exception.ExampleExceptionAsset;
 import example.asset.exception.ExampleObsExAsset;
+import example.asset.lexicon.ExampleCommandAsset;
 
 /**
  * Just an initial test to see if Bnd integration testing works.
+ * 
  * @author dhumeniuk
- *
  */
 public class TestAssetDirectoryService extends TestCase
 {
@@ -180,7 +181,8 @@ public class TestAssetDirectoryService extends TestCase
         final Command setPT = new SetPanTiltCommand().withPanTilt(SpatialTypesFactory.newOrientationOffset(30));
         assertThat(setPT, is(notNullValue()));
         final SetPanTiltResponse setPTResponse = (SetPanTiltResponse)asset.executeCommand(setPT);
-        assertThat("PT Response is null",setPTResponse, is(notNullValue()));
+        assertThat(setPTResponse.isSetSensorId(), is(false));
+        assertThat("PT Response is null", setPTResponse, is(notNullValue()));
         syncer.waitForEvent(5);
         
         // Test validate for value out of range
@@ -336,7 +338,40 @@ public class TestAssetDirectoryService extends TestCase
         
         asset.captureData();
     }
-    
+
+    /**
+     * Verify data can be captured from an asset when a sensor ID is provided.
+     */
+    public void testCaptureDataWithSensorId() throws Exception
+    {
+        AssetDirectoryService assetDirectoryService = ServiceUtils.getService(m_Context, AssetDirectoryService.class);
+        
+        Asset asset = assetDirectoryService.createAsset(ExampleCommandAsset.class.getName());
+        
+        Observation observation = asset.captureData("sensor-id");
+        assertThat(observation.getSensorId(), is("sensor-id"));
+    }
+
+    /**
+     * Verify exception is thrown if the asset has not implemented captureData with sensor ID.
+     */
+    public void testCaptureDataWithSensorIdException() throws Exception
+    {
+        AssetDirectoryService assetDirectoryService = ServiceUtils.getService(m_Context, AssetDirectoryService.class);
+        
+        Asset asset = assetDirectoryService.createAsset(ExampleAsset.class.getName());
+        
+        try
+        {
+            asset.captureData("sensor-id");
+            fail("expecting exception");
+        }
+        catch (AssetException e)
+        {
+            // Expected
+        }
+    }
+
     /**
      * Verify exception is thrown when invalid Observation is captured from an asset.
      */
@@ -392,26 +427,54 @@ public class TestAssetDirectoryService extends TestCase
         // Syncer to listen event that data was persisted
         EventHandlerSyncer syncer = new EventHandlerSyncer(m_Context, PersistentDataStore.TOPIC_DATA_MERGED);
         
-        //location
-        final Command setPos = new SetPositionCommand().withLocation(
+        //location without sensor ID
+        Command setPos = new SetPositionCommand().withLocation(
             new Coordinates().
                 withLongitude(
                     new LongitudeWgsDegrees().withValue(31)).
                 withLatitude(
                     new LatitudeWgsDegrees().withValue(-15)));
         assertThat(setPos, is(notNullValue()));
-        final SetPositionResponse setPTResponse = (SetPositionResponse)asset.executeCommand(setPos);
+        SetPositionResponse setPTResponse = (SetPositionResponse)asset.executeCommand(setPos);
         syncer.waitForEvent(10);
         assertThat("Position Response is null", setPTResponse, is(notNullValue()));
+        assertThat(setPTResponse.getSensorId(), is(nullValue()));
         
-        //verify that the value is retrievable
-        final Command getPos = new GetPositionCommand();
+        // Syncer to listen event that data was persisted
+        syncer = new EventHandlerSyncer(m_Context, PersistentDataStore.TOPIC_DATA_MERGED);
+
+        //location with sensor ID
+        setPos = new SetPositionCommand().withSensorId("sensor-1").withLocation(
+            new Coordinates().
+                withLongitude(
+                    new LongitudeWgsDegrees().withValue(41)).
+                withLatitude(
+                    new LatitudeWgsDegrees().withValue(-25)));
+        assertThat(setPos, is(notNullValue()));
+        setPTResponse = (SetPositionResponse)asset.executeCommand(setPos);
+        syncer.waitForEvent(10);
+        assertThat("Position Response is null", setPTResponse, is(notNullValue()));
+        assertThat(setPTResponse.getSensorId(), is("sensor-1"));
         
-        final GetPositionResponse getPTResponse = (GetPositionResponse)asset.executeCommand(getPos);
+        //verify that the value is retrievable when sensor ID is not set
+        Command getPos = new GetPositionCommand();
+        
+        GetPositionResponse getPTResponse = (GetPositionResponse)asset.executeCommand(getPos);
         assertThat("Get Position Response is null", getPTResponse, is(notNullValue()));
+        assertThat(getPTResponse.getSensorId(), is(nullValue()));
         
         assertThat(getPTResponse.getLocation().getLongitude().getValue(), is((double)31));
         assertThat(getPTResponse.getLocation().getLatitude().getValue(), is((double)-15));
+
+        //verify that the value is retrievable when sensor ID is set
+        getPos = new GetPositionCommand().withSensorId("sensor-1");
+        
+        getPTResponse = (GetPositionResponse)asset.executeCommand(getPos);
+        assertThat("Get Position Response is null", getPTResponse, is(notNullValue()));
+        assertThat(getPTResponse.getSensorId(), is("sensor-1"));
+        
+        assertThat(getPTResponse.getLocation().getLongitude().getValue(), is((double)41));
+        assertThat(getPTResponse.getLocation().getLatitude().getValue(), is((double)-25));
     }
     
     /**

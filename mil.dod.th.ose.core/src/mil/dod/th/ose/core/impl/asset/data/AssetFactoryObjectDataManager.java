@@ -12,6 +12,7 @@
 //==============================================================================
 package mil.dod.th.ose.core.impl.asset.data;
 
+import java.util.Map;
 import java.util.UUID;
 
 import mil.dod.th.core.types.spatial.Coordinates;
@@ -21,8 +22,8 @@ import mil.dod.th.ose.core.factory.api.data.FactoryObjectInformationException;
 
 /**
  * Describe asset specific service needed to persist asset information.
+ * 
  * @author callen
- *
  */
 public interface AssetFactoryObjectDataManager extends FactoryObjectDataManager
 {
@@ -37,7 +38,8 @@ public interface AssetFactoryObjectDataManager extends FactoryObjectDataManager
      * @throws FactoryObjectInformationException
      *     if an error occurs that prevents the data from being retrieved
      */
-    Coordinates getCoordinates(UUID uuid) throws IllegalArgumentException, FactoryObjectInformationException;
+    Map<String, Coordinates> getCoordinates(UUID uuid)
+            throws IllegalArgumentException, FactoryObjectInformationException;
     
     /**
      * Get the orientation information for an asset.
@@ -50,33 +52,34 @@ public interface AssetFactoryObjectDataManager extends FactoryObjectDataManager
      * @throws FactoryObjectInformationException
      *     if an error occurs that prevents the data from being retrieved
      */
-    Orientation getOrientation(UUID uuid) throws IllegalArgumentException, FactoryObjectInformationException;
+    Map<String, Orientation> getOrientation(UUID uuid)
+            throws IllegalArgumentException, FactoryObjectInformationException;
     
     /**
      * Get the coordinate information for an asset.
      * @param uuid
      *     the uuid of the asset
-     * @param coords
+     * @param coordsMap
      *     the coordinate values to persist for the asset
      * @throws IllegalArgumentException
      *     if a data message cannot be found for the given UUID
      * @throws FactoryObjectInformationException
      *     if an error occurs that prevents the data from being persisted
      */
-    void setCoordinates(UUID uuid, Coordinates coords) throws IllegalArgumentException, 
+    void setCoordinates(UUID uuid, Map<String, Coordinates> coordsMap) throws IllegalArgumentException, 
             FactoryObjectInformationException;
     
     /**
      * Get the orientation information for an asset.
      * @param uuid
      *     the uuid of the asset
-     * @param orien
+     * @param orienMap
      *     the orientation values to persist for the asset
      * @throws IllegalArgumentException
      *     if a data message cannot be found for the given UUID
      * @throws FactoryObjectInformationException
      *     if an error occurs that prevents the data from being persisted
      */
-    void setOrientation(UUID uuid, Orientation orien) throws IllegalArgumentException, 
+    void setOrientation(UUID uuid, Map<String, Orientation> orienMap) throws IllegalArgumentException, 
             FactoryObjectInformationException;
 }

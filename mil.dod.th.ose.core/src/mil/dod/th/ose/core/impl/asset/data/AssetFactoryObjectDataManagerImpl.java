@@ -12,6 +12,10 @@
 //==============================================================================
 package mil.dod.th.ose.core.impl.asset.data;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import aQute.bnd.annotation.component.Activate;
@@ -30,14 +34,16 @@ import mil.dod.th.core.types.spatial.Orientation;
 import mil.dod.th.ose.core.factory.api.data.BaseFactoryObjectDataManager;
 import mil.dod.th.ose.core.factory.api.data.FactoryObjectInformationException;
 import mil.dod.th.ose.core.factory.proto.FactoryObjectInformation.AssetObjectData;
+import mil.dod.th.ose.core.factory.proto.FactoryObjectInformation.CoordinatesEntry;
 import mil.dod.th.ose.core.factory.proto.FactoryObjectInformation.FactoryObjectData;
+import mil.dod.th.ose.core.factory.proto.FactoryObjectInformation.OrientationEntry;
 import mil.dod.th.remote.lexicon.types.spatial.SpatialTypesGen;
 
 /**
  * Asset specific implementation of the {@link BaseFactoryObjectDataManager}. This implementation includes support
  * for being able to persist asset specific information like the asset's location.
+ * 
  * @author callen
- *
  */
 @Component
 public class AssetFactoryObjectDataManagerImpl extends BaseFactoryObjectDataManager implements
@@ -79,15 +85,22 @@ public class AssetFactoryObjectDataManagerImpl extends BaseFactoryObjectDataMana
     }
 
     @Override
-    public Coordinates getCoordinates(final UUID uuid) throws FactoryObjectInformationException
+    public Map<String, Coordinates> getCoordinates(final UUID uuid) throws FactoryObjectInformationException
     {
         final FactoryObjectData factData = tryGetMessage(uuid);
-        if (factData != null && factData.hasExtension(AssetObjectData.coordinates))
+        if (factData != null)
         {
             try
             {
-                return (Coordinates)m_JaxbProtoObjectConverter.
-                   convertToJaxb(factData.getExtension(AssetObjectData.coordinates));
+                final List<CoordinatesEntry> coords = factData.getExtension(AssetObjectData.coordinates);
+
+                final Map<String, Coordinates> coordsMap = new HashMap<>();
+                for (CoordinatesEntry entry : coords)
+                {
+                    coordsMap.put(entry.getKey().isEmpty() ? null : entry.getKey(),
+                            (Coordinates) m_JaxbProtoObjectConverter.convertToJaxb(entry.getValue()));
+                }
+                return coordsMap;
             }
             catch (final ObjectConverterException e)
             {
@@ -100,16 +113,23 @@ public class AssetFactoryObjectDataManagerImpl extends BaseFactoryObjectDataMana
     }
 
     @Override
-    public Orientation getOrientation(final UUID uuid) throws FactoryObjectInformationException
+    public Map<String, Orientation> getOrientation(final UUID uuid) throws FactoryObjectInformationException
     {
         final FactoryObjectData factData = tryGetMessage(uuid);
         
-        if (factData != null && factData.hasExtension(AssetObjectData.orientation))
+        if (factData != null)
         {
             try
             {
-                return (Orientation)m_JaxbProtoObjectConverter.
-                    convertToJaxb(factData.getExtension(AssetObjectData.orientation));
+                final List<OrientationEntry> orientations = factData.getExtension(AssetObjectData.orientation);
+
+                final Map<String, Orientation> orienMap = new HashMap<>();
+                for (OrientationEntry entry : orientations)
+                {
+                    orienMap.put(entry.getKey().isEmpty() ? null : entry.getKey(),
+                        (Orientation) m_JaxbProtoObjectConverter.convertToJaxb(entry.getValue()));
+                }
+                return orienMap;
             }
             catch (final ObjectConverterException e)
             {
@@ -122,15 +142,30 @@ public class AssetFactoryObjectDataManagerImpl extends BaseFactoryObjectDataMana
     }
 
     @Override
-    public void setCoordinates(final UUID uuid, final Coordinates coords) throws FactoryObjectInformationException
+    public void setCoordinates(final UUID uuid, final Map<String, Coordinates> coordsMap)
+            throws FactoryObjectInformationException
     {
         //persist new coords
         final FactoryObjectData factDataMessage = getMessage(uuid);
         final FactoryObjectData.Builder updated = factDataMessage.toBuilder();
         try
         {
-            updated.setExtension(AssetObjectData.coordinates,
-                    (SpatialTypesGen.Coordinates)m_JaxbProtoObjectConverter.convertToProto(coords));
+            final List<CoordinatesEntry> coords = new ArrayList<>();
+            for (String key : coordsMap.keySet())
+            {
+                final CoordinatesEntry.Builder entry = CoordinatesEntry.newBuilder();
+                if (key != null)
+                {
+                    entry.setKey(key);
+                }
+
+                entry.setValue(
+                    (SpatialTypesGen.Coordinates) m_JaxbProtoObjectConverter.convertToProto(coordsMap.get(key)));
+
+                coords.add(entry.build());
+            }
+
+            updated.setExtension(AssetObjectData.coordinates, coords);
         }
         catch (final ObjectConverterException e)
         {
@@ -144,15 +179,30 @@ public class AssetFactoryObjectDataManagerImpl extends BaseFactoryObjectDataMana
     }
 
     @Override
-    public void setOrientation(final UUID uuid, final Orientation orien) throws FactoryObjectInformationException
+    public void setOrientation(final UUID uuid, final Map<String, Orientation> orienMap)
+            throws FactoryObjectInformationException
     {
         //persist new orientation
         final FactoryObjectData factDataMessage = getMessage(uuid);
         final FactoryObjectData.Builder updated = factDataMessage.toBuilder();
         try
         {
-            updated.setExtension(AssetObjectData.orientation, 
-                        (SpatialTypesGen.Orientation)m_JaxbProtoObjectConverter.convertToProto(orien));
+            final List<OrientationEntry> oriens = new ArrayList<>();
+            for (String key : orienMap.keySet())
+            {
+                final OrientationEntry.Builder entry = OrientationEntry.newBuilder();
+                if (key != null)
+                {
+                    entry.setKey(key);
+                }
+
+                entry.setValue(
+                    (SpatialTypesGen.Orientation)m_JaxbProtoObjectConverter.convertToProto(orienMap.get(key)));
+
+                oriens.add(entry.build());
+            }
+
+            updated.setExtension(AssetObjectData.orientation, oriens);
         }
         catch (final ObjectConverterException e)
         {
