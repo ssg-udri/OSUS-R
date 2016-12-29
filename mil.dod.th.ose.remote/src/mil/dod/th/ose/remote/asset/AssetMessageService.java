@@ -497,12 +497,25 @@ public class AssetMessageService implements MessageService
         final Asset asset = m_AssetDirectoryService.getAssetByUuid(SharedMessageUtils.
                     convertProtoUUIDtoUUID(captureRequest.getUuid()));
 
-        
         try
         {
-            final Observation observation = asset.captureData();
+            final Observation observation;
+            if (captureRequest.hasSensorId())
+            {
+                observation = asset.captureData(captureRequest.getSensorId());
+            }
+            else
+            {
+                observation = asset.captureData();
+            }
+
             final CaptureDataResponseData.Builder responseBuilder = CaptureDataResponseData.newBuilder();
             responseBuilder.setAssetUuid(captureRequest.getUuid());
+
+            if (captureRequest.hasSensorId())
+            {
+                responseBuilder.setSensorId(captureRequest.getSensorId());
+            }
 
             switch (captureRequest.getObservationFormat())
             {
@@ -518,7 +531,7 @@ public class AssetMessageService implements MessageService
                     final SharedMessages.UUID uuid = SharedMessageUtils.convertUUIDToProtoUUID(observation.getUuid());
                     responseBuilder.setObservationUuid(uuid);
                     break;
-                    
+
                 default:
                     throw new UnsupportedOperationException(
                             String.format("Asset capture data request does not support the %s format", 
@@ -540,7 +553,8 @@ public class AssetMessageService implements MessageService
                     asset.getName());
             m_MessageFactory.createBaseErrorMessage(request, ErrorCode.CONVERTER_ERROR, 
                     GENERIC_ERR_MSG + e.getMessage()).queue(channel);
-        }       
+        }
+
         return captureRequest;
     }
     

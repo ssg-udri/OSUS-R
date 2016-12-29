@@ -238,6 +238,9 @@ message CaptureDataRequestData
     // Indicates what data format the observation object should be sent as. Only NATIVE and UUID_ONLY is supported at 
     // this time.
     optional LexiconFormat.Enum observationFormat = 3 [default = NATIVE];
+
+    // Used if requesting capture of data from an Asset with multiple sensors
+    optional string sensorId = 4;
 }
 
 //This message returns an observation from data capture.
@@ -253,6 +256,9 @@ message CaptureDataResponseData
         Observation observationNative = 3;
         bytes observationXml = 4;
     }
+
+    // Set if capture of data was requested for a specific sensor of the Asset
+    optional string sensorId = 5;
 }
 
 //This message requests that an asset execute a specified command.

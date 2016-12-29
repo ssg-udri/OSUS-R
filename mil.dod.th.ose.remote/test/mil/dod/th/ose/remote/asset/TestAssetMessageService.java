@@ -1007,6 +1007,73 @@ public class TestAssetMessageService
         verify(m_ResponseWrapper).queue(channel);
     }
 
+    @Test
+    public final void testCaptureData_SensorId() throws Exception
+    {
+        // build request
+        CaptureDataRequestData request = CaptureDataRequestData.newBuilder()
+                .setUuid(SharedMessageUtils.convertUUIDToProtoUUID(m_AssetUuid))
+                .setObservationFormat(RemoteTypesGen.LexiconFormat.Enum.UUID_ONLY)
+                .setSensorId("sensor-id").build();        
+        AssetNamespace assetMessage = AssetNamespace.newBuilder().
+                setType(AssetMessageType.CaptureDataRequest).
+                setData(request.toByteString()).build();
+        TerraHarvestPayload payload = createPayload(assetMessage);
+        TerraHarvestMessage message = createMessage(assetMessage);
+
+        //mock necessary objects/actions
+        Asset asset = mock(Asset.class);
+        Observation obs = mock(Observation.class);
+
+        UUID obsGenUuid = UUID.randomUUID();
+        UUID obsUuid = UUID.randomUUID();
+        //Observation proto message
+        Message obsGen = ObservationGen.
+                Observation.newBuilder().
+                setSystemInTestMode(true).
+                setAssetUuid(SharedMessageUtils.convertUUIDToProtoUUID(m_AssetUuid)).
+                setAssetName("AssetOne").
+                setCreatedTimestamp(System.currentTimeMillis()).
+                setAssetType("AssetTwo").
+                setVersion(Version.newBuilder().setMajorNumber(1).setMinorNumber(2).build()).
+                setSystemId(0).
+                setUuid(SharedMessageUtils.convertUUIDToProtoUUID(obsGenUuid)).
+                setSensorId("sensor-id").build();
+
+        when(asset.captureData("sensor-id")).thenReturn(obs);
+        when(obs.getUuid()).thenReturn(obsUuid);
+        when(m_Converter.convertToProto(obs)).thenReturn(obsGen);
+        when(m_AssetDirectoryService.getAssetByUuid(m_AssetUuid)).thenReturn(asset);
+
+        // mock the channel the message came from
+        RemoteChannel channel = mock(RemoteChannel.class);
+
+        // replay
+        m_SUT.handleMessage(message, payload, channel);
+
+        //capture and verify event has been posted locally
+        ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(m_EventAdmin).postEvent(eventCaptor.capture());
+        Event event = eventCaptor.getValue();
+        assertThat((CaptureDataRequestData)event.getProperty(RemoteConstants.EVENT_PROP_DATA_MESSAGE),
+                is(request));
+
+        //capture and verify response
+        ArgumentCaptor<CaptureDataResponseData> messageCaptor = ArgumentCaptor.forClass(CaptureDataResponseData.class); 
+        verify(m_MessageFactory).createAssetResponseMessage(eq(message), 
+                eq(AssetMessageType.CaptureDataResponse), messageCaptor.capture());
+        verify(m_ResponseWrapper).queue(channel);
+
+        CaptureDataResponseData response = messageCaptor.getValue();
+        assertThat(response.isInitialized(), is(true));
+        verify(asset, never()).captureData();
+        verify(asset).captureData("sensor-id");
+        assertThat(response.getAssetUuid(), is(SharedMessageUtils.convertUUIDToProtoUUID(m_AssetUuid)));
+        assertThat(response.getObservationCase(), is(ObservationCase.OBSERVATIONUUID));        
+        assertThat(response.getObservationUuid(), is(SharedMessageUtils.convertUUIDToProtoUUID(obsUuid)));
+        assertThat(response.getSensorId(), is("sensor-id"));
+    }
+
     /**
      * Verify that a property request is properly handled
      */

@@ -76,6 +76,7 @@ import org.junit.Test;
 import com.google.protobuf.Message;
 
 import example.asset.ExampleAsset;
+import example.asset.lexicon.ExampleCommandAsset;
 
 /**
  * Tests the interaction of the remote interface with the {@link AssetNamespace}.  Specifically, 
@@ -214,7 +215,45 @@ public class TestAssetNamespace
         assertThat(dataResponse.getObservationCase(), is(ObservationCase.OBSERVATIONUUID));
         assertThat(dataResponse.hasObservationUuid(), is(true));
     }
-    
+
+    /**
+     * Verifies ability of the system to have an asset remotely capture data with the sensor ID parameter. 
+     */
+    @Test
+    public final void testCaptureData_SensorId() throws IOException, AssetException, ObjectConverterException, 
+        InterruptedException
+    {
+        CreateAssetResponseData createAssetResponse = AssetNamespaceUtils.createAsset(socket,
+                ExampleCommandAsset.class.getName(), null, null);
+        SharedMessages.UUID sensorAssetUuid = createAssetResponse.getInfo().getUuid();
+
+        MessageListener listener = new MessageListener(socket);
+
+        // build request
+        CaptureDataRequestData request = CaptureDataRequestData.newBuilder()
+                .setUuid(sensorAssetUuid)
+                .setObservationFormat(RemoteTypesGen.LexiconFormat.Enum.UUID_ONLY)
+                .setSensorId("sensor-id")
+                .build();        
+        
+        TerraHarvestMessage message = AssetNamespaceUtils.createAssetMessage(
+                AssetMessageType.CaptureDataRequest, request);         
+        message.writeDelimitedTo(socket.getOutputStream());
+        
+        //listen for messages for a specific time interval
+        Message responseRcvd = listener.waitForMessage(Namespace.Asset, 
+                AssetMessageType.CaptureDataResponse, 1200);  
+        AssetNamespace response = (AssetNamespace)responseRcvd;
+        CaptureDataResponseData dataResponse = CaptureDataResponseData.parseFrom(response.getData());
+        
+        //ensure that observation UUID is set
+        assertThat(dataResponse.getObservationCase(), is(ObservationCase.OBSERVATIONUUID));
+        assertThat(dataResponse.hasObservationUuid(), is(true));
+        assertThat(dataResponse.getSensorId(), is("sensor-id"));
+
+        AssetNamespaceUtils.removeAsset(socket, sensorAssetUuid);
+    }
+
     /**
      * Verifies ability of the system to have an asset remotely capture data. 
      */

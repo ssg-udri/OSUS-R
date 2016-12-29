@@ -416,7 +416,8 @@ public final class AssetNamespaceUtils
     }
     
     /**
-     * Request the specified asset to capture data. This is convenience method, which DOES NOT wait for a response.
+     * Request the specified asset to capture data. This is convenience method, which DOES wait for a response.
+     * 
      * @param socket
      *     the socket connection to use
      * @param uuid
