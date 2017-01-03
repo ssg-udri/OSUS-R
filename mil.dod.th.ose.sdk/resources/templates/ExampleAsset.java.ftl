@@ -211,7 +211,15 @@ public class ${class} implements AssetProxy
             .withModalities(new SensingModality().withValue(SensingModalityEnum.IMAGER));
         return obs;
     }
-    
+
+    @Override
+    public Observation onCaptureData(final String sensorId) throws AssetException
+    {
+        // Update the capabilities flag and provide implementation if the asset supports multiple sensors
+        throw new AssetException(
+            new UnsupportedOperationException("Asset does not support capturing data by sensorId."));
+    }
+
     @Override
     public Status onPerformBit()
     {
@@ -238,11 +246,20 @@ public class ${class} implements AssetProxy
         if (command instanceof SetPanTiltCommand)
         {
             final SetPanTiltCommand setPT = (SetPanTiltCommand)command;
+            if (setPT.isSetSensorId())
+            {
+                // If the asset supports executing commands for different sensors, use the command.getSensorId() method
+                // to retrieve the sensor ID and handle accordingly.
+            }
+
             Logging.log(LogService.LOG_INFO, "Updated pan to: " + setPT.getPanTilt().getAzimuth());
 
-            //Executing this command may typically take some time to execute. When executing any command,
-            //the code implemented should wait for some kind of verification that the command
-            //successfully affected a change to the asset before returning the response.
+            // Executing this command may typically take some time to execute. When executing any command,
+            // the code implemented should wait for some kind of verification that the command
+            // successfully affected a change to the asset before returning the response.
+            // 
+            // If the command has the sensorId field set, it should also be included in the response:
+            //  return new SetPanTiltResponse().withSensorId(setPT.getSensorId());
             return new SetPanTiltResponse();
         }
         else
