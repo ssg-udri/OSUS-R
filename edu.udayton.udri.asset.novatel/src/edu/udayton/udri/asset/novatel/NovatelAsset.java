@@ -373,6 +373,13 @@ public class NovatelAsset implements AssetProxy, MessageReceiver, StatusHandler
     }
 
     @Override
+    public Observation onCaptureData(final String sensorId)
+    {
+        throw new UnsupportedOperationException(String.format("Asset [%s] does not support capturing data by sensorId.",
+                m_Context.getName()));
+    }
+
+    @Override
     public Status onPerformBit() throws AssetException
     {
         throw new UnsupportedOperationException(String.format(

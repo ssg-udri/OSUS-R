@@ -393,8 +393,9 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
         final CreateActionListParameters createActionList = makeCreateActionList();
         final boolean captureData = false;
         final boolean performBIT = false;
+        final boolean captureDataBySensor = false;
         return new CommandCapabilities(supportedCommands, supportedModes, panTilt, cameraSettings, captureImage,
-                detectTarget, tuneSettings, createActionList, captureData, performBIT);
+                detectTarget, tuneSettings, createActionList, captureData, performBIT, captureDataBySensor);
     }
 
     /**

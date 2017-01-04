@@ -289,6 +289,13 @@ public class IpCameraAsset implements AssetProxy
     }
     
     @Override
+    public Observation onCaptureData(final String sensorId) throws AssetException
+    {
+        throw new AssetException(
+            new UnsupportedOperationException("IpCameraAsset does not support capturing data by sensorId."));
+    }
+
+    @Override
     public Status onPerformBit() throws CommandExecutionException
     {
         try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())

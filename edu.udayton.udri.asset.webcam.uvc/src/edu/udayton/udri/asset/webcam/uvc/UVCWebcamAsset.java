@@ -195,6 +195,13 @@ public class UVCWebcamAsset implements AssetProxy
     }
     
     @Override
+    public Observation onCaptureData(final String sensorId) throws AssetException
+    {
+        throw new AssetException(
+            new UnsupportedOperationException("UVCWebcamAsset does not support capturing data by sensorId."));
+    }
+
+    @Override
     public Status onPerformBit() throws UnsupportedOperationException
     {
         throw new UnsupportedOperationException("BIT is currently unsupported.");

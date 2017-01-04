@@ -308,6 +308,13 @@ public class GPSAsset implements AssetProxy
     }
     
     @Override
+    public Observation onCaptureData(final String sensorId)
+    {
+        throw new UnsupportedOperationException(String.format("Asset [%s] does not support capturing data by sensorId.",
+                m_Context.getName()));
+    }
+    
+    @Override
     public Status onPerformBit()
     {
         Logging.log(LogService.LOG_INFO, "Performing Plug-in BIT");

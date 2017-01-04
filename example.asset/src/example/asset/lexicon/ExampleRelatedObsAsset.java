@@ -191,7 +191,14 @@ public class ExampleRelatedObsAsset implements AssetProxy
             tryDeactivateWakeLock();
         }
     }
-    
+
+    @Override
+    public Observation onCaptureData(final String sensorId) throws AssetException
+    {
+        throw new AssetException(
+            new UnsupportedOperationException("ExampleRelatedObsAsset does not support capturing data by sensorId."));
+    }
+
     /**
      * Creates and sets randomly generated related observations on the pased in observation.
      * @param observation

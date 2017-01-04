@@ -104,6 +104,13 @@ public class ExampleSlowUpdateAsset implements AssetProxy
     }
 
     @Override
+    public Observation onCaptureData(final String sensorId) throws AssetException
+    {
+        throw new UnsupportedOperationException(
+                "The example slow update asset does not support capturing data by sensorId.");
+    }
+
+    @Override
     public Status onPerformBit() throws AssetException
     {
         throw new UnsupportedOperationException("The example slow update asset does not support a BIT.");

@@ -49,5 +49,5 @@
         <availableCameraIDs>1</availableCameraIDs>
         <framesPerSecond>30.0</framesPerSecond>
     </videoCapabilities>
-    <commandCapabilities captureData="true" performBIT="false"/>
+    <commandCapabilities captureData="true" performBIT="false" captureDataBySensor="false"/>
 </AssetCapabilities>

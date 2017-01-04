@@ -189,6 +189,13 @@ public class AxisAsset implements AssetProxy
     }
 
     @Override
+    public Observation onCaptureData(final String sensorId) throws AssetException
+    {
+        throw new AssetException(
+            new UnsupportedOperationException("AxisAsset does not support capturing data by sensorId."));
+    }
+
+    @Override
     public Status onPerformBit() throws AssetException
     {
         throw new UnsupportedOperationException("AXIS Camera Asset does not support performing a BIT");

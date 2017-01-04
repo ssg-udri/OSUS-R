@@ -453,6 +453,13 @@ public class ExampleObservationsAsset implements AssetProxy
     }
 
     @Override
+    public Observation onCaptureData(final String sensorId) throws AssetException
+    {
+        throw new AssetException(
+            new UnsupportedOperationException("ExampleObservationsAsset does not support capturing data by sensorId."));
+    }
+
+    @Override
     public void onDeactivate() throws AssetException
     {
         try

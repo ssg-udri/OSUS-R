@@ -112,11 +112,7 @@ public interface AssetProxy extends FactoryObjectProxy
      *      if the asset fails to capture data or the operation is not supported
      * @see Asset#captureData(String)
      */
-    default Observation onCaptureData(String sensorId) throws AssetException
-    {
-        throw new AssetException(
-            new UnsupportedOperationException("Asset does not support capturing data by sensorId."));
-    }
+    Observation onCaptureData(String sensorId) throws AssetException;
 
     /**
      * Override to perform built-in test (BIT) on the asset.

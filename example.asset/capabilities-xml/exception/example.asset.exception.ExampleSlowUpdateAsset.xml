@@ -22,6 +22,6 @@
 
     <modalities description="none" value="Acoustic"/>
 
-    <commandCapabilities captureData="false" performBIT="false">
+    <commandCapabilities captureData="false" performBIT="false" captureDataBySensor="false">
     </commandCapabilities>
 </AssetCapabilities>

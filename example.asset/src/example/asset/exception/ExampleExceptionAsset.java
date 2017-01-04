@@ -60,9 +60,16 @@ public class ExampleExceptionAsset implements AssetProxy
     }
 
     @Override
+    public Observation onCaptureData(final String sensorId) throws AssetException
+    {
+        throw new AssetException(
+            new UnsupportedOperationException("ExampleExceptionAsset does not support capturing data by sensorId."));
+    }
+
+    @Override
     public void onDeactivate() throws AssetException
     {
-        throw new AssetException("Unable to activate");
+        throw new AssetException("Unable to deactivate");
     }
 
     @Override

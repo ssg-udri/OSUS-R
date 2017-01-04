@@ -194,6 +194,12 @@ public class RasPIRAsset implements AssetProxy
     }
     
     @Override
+    public Observation onCaptureData(final String sensorId) throws UnsupportedOperationException
+    {
+        throw new UnsupportedOperationException("onCaptureData(sensorId) is not supported");
+    }
+    
+    @Override
     public Status onPerformBit()
     {
         Logging.log(LogService.LOG_INFO, "Performing Plug-in BIT");

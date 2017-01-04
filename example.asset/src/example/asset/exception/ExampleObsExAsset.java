@@ -121,6 +121,13 @@ public class ExampleObsExAsset implements AssetProxy
     }
 
     @Override
+    public Observation onCaptureData(final String sensorId) throws AssetException
+    {
+        throw new AssetException(
+            new UnsupportedOperationException("ExampleObsExAsset does not support capturing data by sensorId."));
+    }
+
+    @Override
     public void onDeactivate() throws AssetException
     {
         m_Context.setStatus(SummaryStatusEnum.OFF, "Asset Deactivated");

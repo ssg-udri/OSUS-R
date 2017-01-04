@@ -19,6 +19,6 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xsi:schemaLocation="capability.asset.core.th.dod.mil AssetCapabilities.xsd ">
     <p:modalities value="Acoustic"/>
-    <p:commandCapabilities captureData="false" performBIT="false">
+    <p:commandCapabilities captureData="false" performBIT="false" captureDataBySensor="false">
     </p:commandCapabilities>
 </p:AssetCapabilities>

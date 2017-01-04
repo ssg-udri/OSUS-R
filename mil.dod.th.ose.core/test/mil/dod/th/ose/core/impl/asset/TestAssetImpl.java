@@ -41,6 +41,8 @@ import mil.dod.th.core.asset.Asset.AssetActiveStatus;
 import mil.dod.th.core.asset.AssetAttributes;
 import mil.dod.th.core.asset.AssetException;
 import mil.dod.th.core.asset.AssetProxy;
+import mil.dod.th.core.asset.capability.AssetCapabilities;
+import mil.dod.th.core.asset.capability.CommandCapabilities;
 import mil.dod.th.core.asset.commands.Command;
 import mil.dod.th.core.asset.commands.GetPanTiltResponse;
 import mil.dod.th.core.asset.commands.GetPositionCommand;
@@ -115,6 +117,7 @@ public class TestAssetImpl
     private PowerManagerInternal m_PowerInternal;
     private WakeLock m_WakeLock;
     private Configuration m_Configuration;
+    private AssetCapabilities m_AssetCaps;
 
     @Mock
     private FactoryInternal factoryInternal;
@@ -139,9 +142,12 @@ public class TestAssetImpl
         m_PowerInternal = mock(PowerManagerInternal.class);
         m_Configuration = mock(Configuration.class);
         m_WakeLock = mock(WakeLock.class);
+        m_AssetCaps = new AssetCapabilities()
+                .withCommandCapabilities(new CommandCapabilities().withCaptureData(true).withPerformBIT(true));
 
         // stub
         when(factoryInternal.getProductType()).thenReturn(PRODUCT_TYPE);
+        when(factoryInternal.getAssetCapabilities()).thenReturn(m_AssetCaps);
 
         when(m_ObservationStore.getObservationVersion()).thenReturn(new Version(1, 2));
 
@@ -279,6 +285,8 @@ public class TestAssetImpl
     public void testCaptureDataWithSensorId()
             throws AssetException, IllegalArgumentException, PersistenceFailedException, ValidationFailedException
     {
+        m_AssetCaps.getCommandCapabilities().setCaptureDataBySensor(true);
+
         Observation observation = new Observation();
         when(m_Proxy.onCaptureData(anyString())).thenReturn(observation);
         assertThat(m_SUT.captureData("example-sensor-id"), is(observation));

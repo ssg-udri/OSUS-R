@@ -49,7 +49,7 @@
         <availableCameraIDs>1</availableCameraIDs>
         <framesPerSecond>30.0</framesPerSecond>
     </videoCapabilities>
-    <commandCapabilities captureData="true" performBIT="true">
+    <commandCapabilities captureData="true" performBIT="true" captureDataBySensor="false">
         <supportedCommands>GetPositionCommand</supportedCommands>
         <supportedCommands>SetPositionCommand</supportedCommands>
         <panTilt azimuthSupported="true" elevationSupported="false" bankSupported="false">

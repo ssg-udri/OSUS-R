@@ -24,6 +24,7 @@ import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetAttributes;
 import mil.dod.th.core.asset.AssetException;
 import mil.dod.th.core.asset.AssetProxy;
+import mil.dod.th.core.asset.capability.AssetCapabilities;
 import mil.dod.th.core.asset.commands.Command;
 import mil.dod.th.core.asset.commands.GetPositionCommand;
 import mil.dod.th.core.asset.commands.GetPositionResponse;
@@ -296,7 +297,16 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
             }
             else
             {
-                observation = m_AssetProxy.onCaptureData(sensorId);
+                final AssetCapabilities assetCaps = getFactory().getAssetCapabilities();
+                if (assetCaps.isSetCommandCapabilities() && assetCaps.getCommandCapabilities().isCaptureDataBySensor())
+                {
+                    observation = m_AssetProxy.onCaptureData(sensorId);
+                }
+                else
+                {
+                    throw new AssetException(
+                        new UnsupportedOperationException("Asset does not support capturing data by sensorId."));
+                }
             }
 
             persistObservation(observation);

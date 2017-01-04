@@ -331,6 +331,13 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="captureDataBySensor" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                       Whether the Asset#captureData(String) method is supported for sensor IDs.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="StatusCapabilities">

@@ -46,7 +46,7 @@
         <availableCameraIDs>1</availableCameraIDs>
         <framesPerSecond>30.0</framesPerSecond>
     </videoCapabilities>
-    <commandCapabilities captureData="true" performBIT="true">
+    <commandCapabilities captureData="true" performBIT="true" captureDataBySensor="true">
         <supportedCommands>CaptureImageCommand</supportedCommands>
         <supportedCommands>ConfigureProfileCommand</supportedCommands>
         <supportedCommands>CreateActionListCommand</supportedCommands>

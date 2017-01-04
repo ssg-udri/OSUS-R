@@ -232,6 +232,13 @@ public class Bmp180Sensor implements AssetProxy
     }
     
     @Override
+    public Observation onCaptureData(final String sensorId) throws AssetException
+    {
+        throw new AssetException(
+            new UnsupportedOperationException("Bmp180Sensor does not support capturing data by sensorId."));
+    }
+
+    @Override
     public Status onPerformBit()
     {
         throw new UnsupportedOperationException("Built-In Testing is not supported");

@@ -76,6 +76,12 @@ public class ExampleRequiredPropAsset implements AssetProxy
     }
 
     @Override
+    public Observation onCaptureData(final String sensorId) throws AssetException
+    {
+        throw new UnsupportedOperationException("Asset does not support capturing data by sensorId.");
+    }
+
+    @Override
     public Status onPerformBit() throws AssetException
     {
         throw new UnsupportedOperationException("Asset does not support a BIT.");

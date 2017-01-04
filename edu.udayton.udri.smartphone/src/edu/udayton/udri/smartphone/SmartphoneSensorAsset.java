@@ -131,6 +131,12 @@ public class SmartphoneSensorAsset implements AssetProxy
     }
 
     @Override
+    public Observation onCaptureData(final String sensorId) throws AssetException 
+    {
+        throw new UnsupportedOperationException("Capturing data by sensorId is not supported.");
+    }
+
+    @Override
     public Status onPerformBit() throws AssetException 
     {
         throw new UnsupportedOperationException("BIT is not supported.");
