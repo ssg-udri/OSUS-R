@@ -16,5 +16,5 @@
  * 
  * @author cweisenborn
  */
-@aQute.bnd.annotation.Version("1.1.0")
+@aQute.bnd.annotation.Version("1.2.0")
 package mil.dod.th.remote.lexicon.types.observation;

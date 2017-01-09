@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 1.0
+Bundle-Version: 1.0.1.${tstamp}
 Bundle-Description: Captures the temperature and barometric pressure using the BMP180 sensor on the Raspberry Pi 2.
 Bundle-Name: BMP180 RPi Plug-In
 Bundle-SymbolicName: edu.udayton.udri.asset.raspi.bmp180

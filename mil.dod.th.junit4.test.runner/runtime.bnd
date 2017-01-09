@@ -14,7 +14,7 @@
 Bundle-Name: JUnit4 XML Test Runner Bundle
 Bundle-Description: \
     Junit4 XML Test Runner Bundle. Bundle should be used at runtime only, not for compiling.
-Bundle-Version: 2.0.0.${tstamp}
+Bundle-Version: 2.0.1.${tstamp}
 Bundle-Vendor: UDRI
 Export-Package: org.junit.*;version=4.8.2,\
     junit.*;version=4.8.2,\

@@ -14,5 +14,5 @@
 /**
  * This package contains classes that define directory services and factory objects.
  */
-@aQute.bnd.annotation.Version("1.0.0")
+@aQute.bnd.annotation.Version("1.1.0")
 package mil.dod.th.ose.core.factory.api;

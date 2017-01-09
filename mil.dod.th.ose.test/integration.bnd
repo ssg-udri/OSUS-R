@@ -14,7 +14,7 @@
 # components.
 #
 Bundle-Name: THOSE Integration Test Library
-Bundle-Version: 1.0.2.${tstamp}
+Bundle-Version: 1.0.3.${tstamp}
 Bundle-Description: This library contains classes that help with integration testing THOSE componenets
 Bundle-Vendor: UDRI
 Export-Package: mil.dod.th.ose.test.matchers, mil.dod.th.ose.test.remote

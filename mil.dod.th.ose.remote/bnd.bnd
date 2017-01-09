@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 2.0.0.${tstamp}
+Bundle-Version: 2.1.0.${tstamp}
 Bundle-Description: THOSE Remote Interface
 Bundle-Name: THOSE Remote Interface
 Bundle-Vendor: UDRI

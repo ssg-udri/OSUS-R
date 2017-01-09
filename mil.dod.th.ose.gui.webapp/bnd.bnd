@@ -13,7 +13,7 @@
 #
 -include: ../cnf/ext/defaultproperties.bnd
 Web-ContextPath: ${gui.contextpath}
-Bundle-Version: 1.0.2.${tstamp}
+Bundle-Version: 1.0.3.${tstamp}
 Bundle-Description: Bundle containing the JSF web application for THOSE
 Bundle-Name: THOSE GUI Web Application
 Export-Package: mil.dod.th.ose.gui.webapp.controller.history;hasPersistentTypes=true

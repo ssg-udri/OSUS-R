@@ -14,5 +14,5 @@
 /**
  * Contains the common audio types, XJC generated, from the XSDs.
  */
-@aQute.bnd.annotation.Version("1.0.1")
+@aQute.bnd.annotation.Version("1.1.0")
 package mil.dod.th.core.types.audio;

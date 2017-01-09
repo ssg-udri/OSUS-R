@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 6.1.0.${tstamp}
+Bundle-Version: 6.2.0.${tstamp}
 Bundle-Description: Terra Harvest Core API
 Bundle-Name: Terra Harvest Core API
 

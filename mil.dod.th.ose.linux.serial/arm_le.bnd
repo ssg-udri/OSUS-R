@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 
-Bundle-Version: 1.1.0.${tstamp}
+Bundle-Version: 1.1.1.${tstamp}
 Bundle-Description: Linux ARM Serial Port Library
 Bundle-Name: Linux ARM Serial Port Library
 Bundle-NativeCode: libserialport.so; osname = Linux; processor = arm_le

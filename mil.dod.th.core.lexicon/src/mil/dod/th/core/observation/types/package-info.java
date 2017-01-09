@@ -14,5 +14,5 @@
 /**
  * Contains the asset/sensor observation classes xjc generated from the Observation.xsd and its imported XSDs.
  */
-@aQute.bnd.annotation.Version("4.1.0")
+@aQute.bnd.annotation.Version("4.2.0")
 package mil.dod.th.core.observation.types;

@@ -14,5 +14,5 @@
 /**
  * Generated enumeration converters for the remote interface.
  */
-@aQute.bnd.annotation.Version("1.1.0")
+@aQute.bnd.annotation.Version("1.2.0")
 package mil.dod.th.remote.converter;

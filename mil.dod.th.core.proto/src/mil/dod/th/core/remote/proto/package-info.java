@@ -17,5 +17,5 @@
  * @author dhumeniuk
  *
  */
-@aQute.bnd.annotation.Version("6.1.0")
+@aQute.bnd.annotation.Version("6.2.0")
 package mil.dod.th.core.remote.proto;

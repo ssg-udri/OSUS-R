@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 1.1.0.${tstamp}
+Bundle-Version: 1.2.0.${tstamp}
 Bundle-Name: All Example Comm Bundles
 Bundle-Description: Contains all of the examples comm bundles except duplicates
 Bundle-Vendor: UDRI

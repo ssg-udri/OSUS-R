@@ -14,6 +14,6 @@
 /**
  * Contains the shared spatial types, xjc generated, from the shared XSDs.
  */
-@aQute.bnd.annotation.Version("2.0.2")
+@aQute.bnd.annotation.Version("2.1.0")
 package mil.dod.th.core.types.spatial;
 

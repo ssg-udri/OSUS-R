@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 1.4.3.${tstamp}
+Bundle-Version: 1.4.4.${tstamp}
 Bundle-Description: RXTX Serial Port Platform Interface Library for Windows and OS/X
 Bundle-Name: RXTX Serial Port Platform Interface Library
 Bundle-Vendor: UDRI

@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 2.1.0.${tstamp}
+Bundle-Version: 2.2.0.${tstamp}
 Bundle-Name: Terra Harvest Core Implementation Protocol Buffer Classes
 Bundle-Description: Contains the protocol buffer sourced Java source used by the core implementation.
 Bundle-Vendor: UDRI

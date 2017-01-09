@@ -13,7 +13,7 @@
 #
 # Terra Harvest Plug-in BND Specification
 #
-Bundle-Version: 1.0.2.${tstamp}
+Bundle-Version: 1.1.0.${tstamp}
 Bundle-Description: Novatel IMU/GPS Asset
 Bundle-Name: Novatel Asset
 Bundle-Vendor: UDRI

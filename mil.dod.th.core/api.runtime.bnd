@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 6.1.0.${tstamp}
+Bundle-Version: 6.2.0.${tstamp}
 Bundle-Name: Terra Harvest Core API Runtime
 Bundle-Description: \
     Core API bundle to be used at runtime as it contains JDO enhanced classes. Not to be used at build time.

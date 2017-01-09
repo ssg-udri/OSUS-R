@@ -13,5 +13,5 @@
 /**
  * Contains the base capability classes xjc generated from the BaseCapabilities.xsd.
  */
-@aQute.bnd.annotation.Version("1.0.4")
+@aQute.bnd.annotation.Version("1.0.5")
 package mil.dod.th.core.capability;
