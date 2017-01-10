@@ -517,7 +517,7 @@
             <arg line="-build-project"/>
             <arg line="${env.JOB_NAME}"/>
             <arg line="-build-version"/>
-            <arg line="${env.GIT_COMMIT}"/>
+            <arg line="${git.hash}"/>
             <arg line="-machine-output"/>
             <arg line="-format"/>
             <arg line="fpr"/>
@@ -565,15 +565,20 @@
             <arg value="--dirty"/>
             <arg value="--always"/>
         </exec>
+        <exec executable="git" failonerror="true" outputproperty="git.hash" >
+            <arg value="rev-parse"/>
+            <arg value="--verify"/>
+            <arg value="HEAD"/>
+        </exec>
         <propertyfile file="${bp.tmp.build.file}" comment="${bp.tmp.build.file.comments}">
             <entry key="build.buildnum" type="string" value="${env.BUILD_NUMBER}" />
             <entry key="build.node" type="string" value="${env.NODE_NAME}" />
             <entry key="build.workspace" type="string" value="${bp.workspace.dir}" />
-            <entry key="build.git.sha" type="string" value="${env.GIT_COMMIT}" />
+            <entry key="build.git.sha" type="string" value="${git.hash}" />
             <entry key="build.job" type="string" value="${env.JOB_NAME}" />
             <entry key="build.time" type="date" value="now" />
             <entry key="build.descriptor" type="string" value="${git.descriptor}" />
-            <entry key="build.branch" type="string" value="${env.GIT_BRANCH}" />
+            <entry key="build.branch" type="string" value="${env.BRANCH_NAME}" />
         </propertyfile>
     </target>
 
