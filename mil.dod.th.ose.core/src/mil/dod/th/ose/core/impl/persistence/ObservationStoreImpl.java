@@ -44,6 +44,7 @@ import mil.dod.th.core.validator.ValidationFailedException;
 import mil.dod.th.core.validator.Validator;
 import mil.dod.th.ose.shared.H2DataStore;
 import mil.dod.th.ose.shared.JdoDataStore;
+import mil.dod.th.ose.shared.SystemConfigurationConstants;
 import mil.dod.th.ose.utils.ClassService;
 import mil.dod.th.ose.utils.FileUtils;
 import mil.dod.th.ose.utils.PropertyRetriever;
@@ -178,7 +179,8 @@ public class ObservationStoreImpl extends AbstractH2DataStore<Observation> imple
             combindedProps.put(H2DataStoreConfig.MAX_CACHE_SIZE_KEY, maxCacheSizeFrameworkProp);
         }
         
-        activateStore(String.format("jdbc:h2:file:%s", DATABASE_FILE_BASE), combindedProps);
+        final String dataDir = context.getProperty(SystemConfigurationConstants.DATA_DIR_PROPERTY);
+        activateStore(String.format("jdbc:h2:file:%s", dataDir + File.separator + DATABASE_FILE_BASE), combindedProps);
         
         //pull out the version numbers
         final URL entry = m_ClassService.getResource(Observation.class, "version.properties");

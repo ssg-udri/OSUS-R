@@ -40,18 +40,14 @@ import aQute.bnd.annotation.component.Reference;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-
-
-
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.remote.proto.RemoteBase.EncryptInfo;
 import mil.dod.th.core.remote.proto.RemoteBase.EncryptType;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestPayload;
 
-
-
 import mil.dod.th.ose.remote.api.EncryptionUtility;
+import mil.dod.th.ose.shared.SystemConfigurationConstants;
 
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -61,18 +57,17 @@ import org.bouncycastle.crypto.signers.DSADigestSigner;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.math.ec.ECPoint;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
 /**
  * Implementation of EncryptMessage Service.
+ * 
  * @author powarniu
- *
  */
-
 @Component // NOCHECKSTYLE: Class Fan-Out Complexity: Class works with a lot of other things.
 public class EncryptMessageServiceImpl implements EncryptMessageService 
 {
-
     /**
      *  The public keys are stored in this file.
     */
@@ -182,9 +177,13 @@ public class EncryptMessageServiceImpl implements EncryptMessageService
     
     /**
      * Activate the encryption component.
+     * <p>
      * We have three files for each system. one file is for saving all static public key,
      * second file is used for saving all static private key and third file is used for saving
      * all the public remote keys for all systems. 
+     * 
+     * @param context
+     *      this bundle's context
      * @throws IOException 
      *         Component is not activated if there is an IOException
      * @throws NoSuchPaddingException 
@@ -193,16 +192,17 @@ public class EncryptMessageServiceImpl implements EncryptMessageService
      *         Incorrect name of the provider, should be BC.
      * @throws NoSuchAlgorithmException 
      *         Incorrect name of the algorithm, should be AES.
-     * 
      */
     @Activate
-    public void activate() throws IOException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException
+    public void activate(final BundleContext context)
+            throws IOException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException
     {
         // Bouncy castle provider is added during execution
         Security.addProvider(new BouncyCastleProvider());
         m_Input = Cipher.getInstance(FULL_ENCRYPT_ALGORITHM, BOUNCY_CASTLE_PROVIDER);
         m_Output = Cipher.getInstance(FULL_ENCRYPT_ALGORITHM, BOUNCY_CASTLE_PROVIDER);
-        final String dir = "encrypt-conf";
+        final String dataDir = context.getProperty(SystemConfigurationConstants.DATA_DIR_PROPERTY);
+        final String dir = dataDir + File.separator + "encrypt-conf";
         
         //open up the files
         m_PropFileAuthorized = new File(dir, PROP_FILE_NAME_AUTHORIZED);

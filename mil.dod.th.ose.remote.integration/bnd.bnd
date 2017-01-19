@@ -34,4 +34,3 @@
     mil.dod.th.ose.integration.example.metatype;version=latest,\
     mil.dod.th.ose.remote;version=latest,\
     example.remote.interface.demo.example.standalone;version=latest
-    

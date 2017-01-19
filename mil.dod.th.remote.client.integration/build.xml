@@ -24,11 +24,6 @@
         
     <target name="setup" depends="init" description="Deploy needed files to run controller">
 
-        <!-- put in necessary location for running controller.bnd directly from Eclipse Bnd launcher -->
-        <copy todir="encrypt-conf" >
-            <fileset dir="${common.target.dir}/encrypt-conf" />
-        </copy>
-        
         <!-- put controller in deploy folder to be run by Ant (requires felix main and conf folders too) -->
         <mkdir dir="${deploy.dir}" />
         <delete dir="${deploy.dir}/${bin}" />

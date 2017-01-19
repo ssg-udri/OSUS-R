@@ -13,7 +13,7 @@
 package mil.dod.th.ose.core.integration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.*;
 
 import java.util.Map;
 
@@ -92,7 +92,7 @@ public class TestFactoryObject extends TestCase
         
         Map<String, Object> properties = asset.getProperties();
         //verify that initial creation does not add in props that are not required
-        assertThat(properties, not(hasKey(ExampleAssetAttributes.CONFIG_PROP_DEVICE_POWER_NAME)));
+        assertThat(properties.keySet(), not(hasItem(ExampleAssetAttributes.CONFIG_PROP_DEVICE_POWER_NAME)));
 
         //set the activate property
         properties.put(ExampleAssetAttributes.CONFIG_PROP_ACTIVATE_ON_STARTUP, true);
@@ -102,7 +102,7 @@ public class TestFactoryObject extends TestCase
         //This is done to ensure that the act of setting a property whether to its default or not,
         //does not introduce other property's values which were not previously set to values
         //different than their defaults into the map of known properties.
-        assertThat(asset.getProperties(), not(hasKey(ExampleAssetAttributes.CONFIG_PROP_DEVICE_POWER_NAME)));
+        assertThat(asset.getProperties().keySet(), not(hasItem(ExampleAssetAttributes.CONFIG_PROP_DEVICE_POWER_NAME)));
     }
     
     /**

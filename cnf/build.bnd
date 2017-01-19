@@ -78,7 +78,9 @@ Git-SHA:              ${system-allow-fail;git rev-list -1 HEAD}
 -runee: JavaSE-1.8
 -runfw: org.apache.felix.framework
 -runsystempackages:  \
-    com.sun.xml.internal.bind
+    com.sun.xml.internal.bind,\
+    sun.misc,\
+    sun.reflect
 -runvm: -ea
 -runtrace: true
 -runproperties: \

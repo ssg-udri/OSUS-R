@@ -58,6 +58,7 @@ import mil.dod.th.core.types.observation.ObservationSubTypeEnum;
 import mil.dod.th.core.validator.ValidationFailedException;
 import mil.dod.th.core.validator.Validator;
 import mil.dod.th.ose.shared.JdoDataStore;
+import mil.dod.th.ose.shared.SystemConfigurationConstants;
 import mil.dod.th.ose.test.PropertyRetrieverMocker;
 import mil.dod.th.ose.utils.ClassService;
 import mil.dod.th.ose.utils.PropertyRetriever;
@@ -106,7 +107,8 @@ public class TestObservationStoreImpl
         m_Query = mock(Query.class);
         
         when(m_PersistenceManagerFactoryCreator
-                .createPersistenceManagerFactory(Observation.class, "jdbc:h2:file:datastores/ObservationStore"))
+                .createPersistenceManagerFactory(Observation.class,
+                                                 "jdbc:h2:file:data-dir/datastores/ObservationStore"))
                 .thenReturn(m_PersistenceManagerFactory);
         when(m_PersistenceManagerFactory.getPersistenceManager()).thenReturn(m_PersistenceManager);
         when(m_PersistenceManager.currentTransaction()).thenReturn(m_Transaction);
@@ -147,6 +149,8 @@ public class TestObservationStoreImpl
         m_SUT.setPropertyRetriever(m_Retriever);
         
         m_Context = mock(BundleContext.class);
+        when(m_Context.getProperty(SystemConfigurationConstants.DATA_DIR_PROPERTY)).thenReturn("data-dir");
+
         m_SUT.activate(Collections.unmodifiableMap(props), m_Context);
     }
 

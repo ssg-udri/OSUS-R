@@ -31,9 +31,7 @@ Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
     mil.dod.th.ose.shared;version=latest,\
     mil.dod.th.ose.test.integration;version=latest,\
     mil.dod.th.ose.integration.commons;version=latest,\
-    ${junit},\
-    org.knowhowlab.osgi.testing.assertions,\
-    org.knowhowlab.osgi.testing.utils,\
+    ${junit.integration},\
     mil.dod.th.core.proto.messages;version=latest,\
     com.google.protobuf;version=2.6.1,\
     example.asset.main;version=latest,\
@@ -44,9 +42,6 @@ Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
     example.ccomm.exception;version=latest,\
     example.ccomm.serial;version=latest,\
     example.platform.power;version=latest
-# override libraries provided by bnd test runner JAR
--testpath: \
-    ${junit}
 -runbundles: \
     ${osusr.core.bundles},\
     ${osusr.core.integration.bundles},\

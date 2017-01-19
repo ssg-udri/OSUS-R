@@ -13,9 +13,8 @@
 package mil.dod.th.ose.core.integration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -241,7 +240,7 @@ public class TestManagedExecutors extends TestCase
             
             // should have capture 1/second 4-5 in 4500 ms, depends on how quickly this check is made
             Collection<Observation> observations1 = observationStore.queryByAsset(asset);
-            assertThat(observations1.size(), is(greaterThanOrEqualTo(4)));
+            assertThat("At least 4 observations not found", observations1.size() >= 4);
             
             // wait and make sure no more captured
             Thread.sleep(2500);

@@ -18,15 +18,9 @@ Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
 
 -buildpath:  \
     osgi.core,\
-    ${junit},\
+    ${junit.integration},\
     biz.aQute.bnd.annotation,\
-    mil.dod.th.core.api;version=latest,\
-    org.knowhowlab.osgi.testing.assertions,\
-    org.knowhowlab.osgi.testing.utils
-
-# override libraries provided by bnd test runner JAR
--testpath:  \
-    ${junit}
+    mil.dod.th.core.api;version=latest
 -runbundles:  \
     ${osusr.core.bundles},\
     ${osusr.core.integration.bundles},\

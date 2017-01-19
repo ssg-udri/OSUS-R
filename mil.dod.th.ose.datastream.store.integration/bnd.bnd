@@ -18,7 +18,7 @@ Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
 -buildpath: \
     osgi.core,\
     osgi.cmpn,\
-    ${junit},\
+    ${junit.integration},\
     com.google.guava,\
     biz.aQute.bnd.annotation,\
     example.stream.profile;version=latest,\
@@ -26,12 +26,7 @@ Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
     mil.dod.th.ose.integration.commons;version=latest,\
     mil.dod.th.ose.shared;version=latest,\
     mil.dod.th.ose.datastream.store;version=latest,\
-    mil.dod.th.ose.test.integration;version=latest,\
-    org.knowhowlab.osgi.testing.assertions;version=latest,\
-    org.knowhowlab.osgi.testing.utils;version=latest
-
--testpath:\
-    ${junit}
+    mil.dod.th.ose.test.integration;version=latest
 -runbundles: \
     ${osusr.core.bundles},\
     ${osusr.core.integration.bundles},\

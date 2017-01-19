@@ -13,7 +13,7 @@
 package mil.dod.th.ose.core.integration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.*;
 
 import java.util.UUID;
 
@@ -36,7 +36,6 @@ import mil.dod.th.core.xml.XmlUnmarshalService;
 import mil.dod.th.model.commands.AddressedCommand;
 import mil.dod.th.model.commands.AddressedResponse;
 
-import org.hamcrest.Matchers;
 import org.knowhowlab.osgi.testing.utils.ServiceUtils;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -108,7 +107,7 @@ public class TestAddressedCommandResponse extends TestCase
         assertThat(unmarshalledAddrResponse.getDestId(), is(destId));
         SetPanTiltResponse unMarshResponse = (SetPanTiltResponse)unmarshalledAddrResponse.getResponse();
         assertThat(unMarshResponse, is(response));
-        assertThat(unMarshResponse.getReserved(), Matchers.contains(entry));
+        assertThat(unMarshResponse.getReserved(), hasItem(entry));
 
         //try validating
         Validator validator = ServiceUtils.getService(m_Context, Validator.class);

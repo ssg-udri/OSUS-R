@@ -32,7 +32,7 @@ Service-Component: *
     osgi.cmpn;version=5.0.0,\
     com.google.guava;version=15.0.0,\
     com.google.protobuf;version=2.6.1,\
-    biz.aQute.bnd.annotation;version=2.4.0,\
+    biz.aQute.bnd.annotation;version=3.1.0,\
     org.apache.commons.lang;version=2.6.0,\
     org.apache.felix.gogo.runtime;version=0.12.0,\
     ${junit},\

@@ -21,7 +21,6 @@
     <file-match-pattern match-pattern=".classpath|.project|.settings|.checkstyle|.gitignore|.DS_Store" include-pattern="false"/>
     <file-match-pattern match-pattern="^generated/|^bin/|^test-bin/" include-pattern="false"/>
     <file-match-pattern match-pattern=".jar" include-pattern="false"/>
-    <file-match-pattern match-pattern="datastores" include-pattern="false"/>
   </fileset>
   <filter name="NonSrcDirs" enabled="false"/>
 </fileset-config>

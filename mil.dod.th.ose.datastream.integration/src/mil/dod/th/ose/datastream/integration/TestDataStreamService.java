@@ -14,7 +14,7 @@ package mil.dod.th.ose.datastream.integration;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.*;
 
 import java.io.IOException;
 import java.util.Dictionary;

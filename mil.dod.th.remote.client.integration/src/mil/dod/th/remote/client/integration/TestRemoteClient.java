@@ -13,7 +13,7 @@
 package mil.dod.th.remote.client.integration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.*;
 
 import java.net.Socket;
 import java.util.Dictionary;

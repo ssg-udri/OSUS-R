@@ -13,7 +13,7 @@
 package mil.dod.th.ose.controller.integration.linux;
 
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import junit.framework.TestCase;

@@ -33,8 +33,8 @@
     <property name="th.junit.report.path" value="reports" />
 
     <!-- Define properties for commonly used files -->
-    <property name="bnd.annotation.jar.file" value="${th.sdk.dir}/lib/biz.aQute.bnd.annotation-2.4.0.jar" />
-    <property name="bnd.jar.file" value="${th.sdk.dir}/lib/biz.aQute.bnd-2.4.0.jar" />
+    <property name="bnd.annotation.jar.file" value="${th.sdk.dir}/lib/biz.aQute.bnd.annotation-3.1.0.jar" />
+    <property name="bnd.jar.file" value="${th.sdk.dir}/lib/biz.aQute.bnd-3.1.0.jar" />
     <property name="hamcrest.jar.file" value="${th.sdk.dir}/lib/hamcrest-all-1.3.jar" />
     <property name="mockito.jar.file" value="${th.sdk.dir}/lib/mockito-core-1.9.5.jar" />
     <property name="objenesis.jar.file" value="${th.sdk.dir}/lib/com.springsource.org.objenesis-1.0.0.jar" />

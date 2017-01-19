@@ -43,6 +43,7 @@ import mil.dod.th.core.persistence.PersistentDataStore;
 import mil.dod.th.core.pm.PowerManager;
 import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.ose.shared.JdoDataStore;
+import mil.dod.th.ose.shared.SystemConfigurationConstants;
 
 import org.junit.After;
 import org.junit.Before;
@@ -92,7 +93,8 @@ public class TestPersistentDataStoreImpl
                 .thenReturn(m_PersistentData);
         
         when(m_PersistenceManagerFactoryCreator
-              .createPersistenceManagerFactory(PersistentData.class, "jdbc:h2:file:datastores/PersistentDataStore"))
+              .createPersistenceManagerFactory(PersistentData.class,
+                                               "jdbc:h2:file:data-dir/datastores/PersistentDataStore"))
               .thenReturn(m_PersistenceManagerFactory);
         when(m_PersistenceManagerFactory.getPersistenceManager()).thenReturn(m_PersistenceManager);
         when(m_PersistenceManager.currentTransaction()).thenReturn(m_Transaction);
@@ -115,6 +117,8 @@ public class TestPersistentDataStoreImpl
         props.put("minUsableSpace", 1024L);
         
         m_Context = mock(BundleContext.class);
+        when(m_Context.getProperty(SystemConfigurationConstants.DATA_DIR_PROPERTY)).thenReturn("data-dir");
+
         m_SUT.activate(Collections.unmodifiableMap(props), m_Context);
     }
 

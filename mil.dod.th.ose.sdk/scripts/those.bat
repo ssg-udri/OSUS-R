@@ -20,7 +20,7 @@ rem=============================================================================
 rem Save reference to the base directory of the SDK
 set SDK_DIR=%~dp0
 
-set CLASSPATH="%SDK_DIR%lib\mil.dod.th.ose.sdk.jar";"%SDK_DIR%api\mil.dod.th.core.api.jar";"%SDKDIR%lib\biz.aQute.bndlib-2.4.0.jar"
+set CLASSPATH="%SDK_DIR%lib\mil.dod.th.ose.sdk.jar";"%SDK_DIR%api\mil.dod.th.core.api.jar";"%SDKDIR%lib\biz.aQute.bndlib-3.1.0.jar"
 
 rem Execute the application
 java -cp %CLASSPATH% mil.dod.th.ose.sdk.those.ThoseMain %*

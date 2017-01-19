@@ -46,6 +46,7 @@ osusr.core.bundles:\
 # includes integration testing bundles, these should be added along with osusr.core.bundles for a minimum set of bundles
 # needed to run integration tests 
 osusr.core.integration.bundles:\
+    biz.aQute.junit,\
     org.knowhowlab.osgi.testing.assertions,\
     org.knowhowlab.osgi.testing.utils,\
     mil.dod.th.ose.integration.commons;version=latest,\

@@ -14,34 +14,26 @@
 Bundle-Version: 1.0.1.${tstamp}
 Private-Package:  \
     mil.dod.th.remote.client.integration
-    
+
 Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}
-    
+
 -buildpath:  \
     osgi.core;version='[5,6)',\
     osgi.cmpn,\
     biz.aQute.bnd.annotation,\
     com.google.guava;version=15.0.0,\
     com.google.protobuf;version=2.6.1,\
-    ${junit},\
-    org.knowhowlab.osgi.testing.assertions,\
-    org.knowhowlab.osgi.testing.utils,\
+    ${junit.integration},\
     mil.dod.th.core.api;version=latest,\
     mil.dod.th.core.proto.messages;version=latest,\
     mil.dod.th.remote.client;version=latest
-    
-# override libraries provided by bnd test runner JAR
--testpath:  \
-    ${junit}
 -runbundles:  \
     org.apache.felix.scr,\
     org.apache.felix.configadmin,\
     org.apache.felix.eventadmin,\
     org.apache.felix.metatype,\
     org.apache.felix.log,\
-    org.knowhowlab.osgi.testing.assertions,\
-    org.knowhowlab.osgi.testing.utils,\
+    ${junit.integration},\
     com.google.guava;version=15.0.0,\
     com.google.protobuf;version=2.6.1,\
     mil.dod.th.remote.client;version=latest
-    

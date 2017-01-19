@@ -13,7 +13,7 @@
 package mil.dod.th.ose.core.integration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.*;
 
 import junit.framework.TestCase;
 

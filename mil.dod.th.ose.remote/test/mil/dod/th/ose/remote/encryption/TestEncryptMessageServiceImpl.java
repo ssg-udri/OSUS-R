@@ -14,6 +14,7 @@ package mil.dod.th.ose.remote.encryption;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,6 +35,7 @@ import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestPayload;
 import mil.dod.th.ose.remote.api.EncryptionHelper;
 import mil.dod.th.ose.remote.api.EncryptionUtility;
+import mil.dod.th.ose.shared.SystemConfigurationConstants;
 import mil.dod.th.ose.test.LoggingServiceMocker;
 
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
@@ -42,12 +44,14 @@ import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.osgi.framework.BundleContext;
 
 /**
- * @author powarniu
- * verify the encrypted payload can be successfully decrypted and compare the original payload
- * with decrypted payload.
+ * Verify the encrypted payload can be successfully decrypted and compare the original payload with decrypted payload.
  *
+ * @author powarniu
  */
 public class TestEncryptMessageServiceImpl 
 {
@@ -56,9 +60,13 @@ public class TestEncryptMessageServiceImpl
     private File m_Temp_pub;
     private File m_Temp_priv;
     private EncryptMessageServiceImpl m_SUT;
+    @Mock private BundleContext m_Context;
+
     @Before
     public final void setup() throws IOException
     {
+        MockitoAnnotations.initMocks(this);
+
         // this is the normal set-up
         m_Folder = new File(".", "encrypt-conf");
         m_Folder.mkdir();
@@ -72,9 +80,12 @@ public class TestEncryptMessageServiceImpl
         FileOutputStream outPrivate = new FileOutputStream(m_Temp_priv, false); 
         outPrivate.close();
 
+        when(m_Context.getProperty(SystemConfigurationConstants.DATA_DIR_PROPERTY)).thenReturn(".");
+
         m_SUT = new EncryptMessageServiceImpl();
         m_SUT.setLoggingService(LoggingServiceMocker.createMock());      
     }
+
     @After
     public void tearDown() throws Exception
     {
@@ -88,18 +99,18 @@ public class TestEncryptMessageServiceImpl
     /**
      * This function encrypts a TerraHarvest payload which is inside a TerraHarvest message.
      * On the other end it is decrypted at the destination controller. The decrypted message is compared
-     * to the unencrypted payload to make sure they are the same
-     * System 1, Key A are all related to Source or sender controller
+     * to the unencrypted payload to make sure they are the same.
+     * <p>
+     * System 1, Key A are all related to Source or sender controller<br>
      * System 2, Key B are all related to Destination or recipient controller
-     *  
-     *  
      */   
     @Test
     public final void testEncryptDecryptPayload() 
         throws IOException, NoSuchAlgorithmException, NoSuchProviderException, 
         NoSuchPaddingException, InvalidKeySignatureException 
     {
-        m_SUT.activate();
+        m_SUT.activate(m_Context);
+
         // First generate keys for the controllers. In reality this would be done in advance and the keys
         // loaded into a config file on each controller.
         // In our case source is controller A with controller id =1 and destination is controller B with id = 2
@@ -129,7 +140,6 @@ public class TestEncryptMessageServiceImpl
         //First convert the key to hexadecimal format string to save it into the file
         final String staticPrivateKeyStringB = staticPrivateKeyBytesB.toString(16);
         
-
         //set the private static keys for both the controller 2 which is the destination controller
         //In normal circumstances you don't have to do this step
 

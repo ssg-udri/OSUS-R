@@ -13,8 +13,8 @@
 package mil.dod.th.ose.test.matchers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 import java.lang.reflect.InvocationTargetException;  // NOCHECKSTYLE: TD: illegal package, new warning, old code
 import java.lang.reflect.Method; // NOCHECKSTYLE: ditto

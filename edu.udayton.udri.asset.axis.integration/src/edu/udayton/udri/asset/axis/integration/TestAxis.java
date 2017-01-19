@@ -13,9 +13,11 @@
 package edu.udayton.udri.asset.axis.integration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+
 import junit.framework.TestCase;
+
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetDirectoryService;
 import mil.dod.th.core.asset.commands.SetPanTiltCommand;

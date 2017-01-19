@@ -20,8 +20,6 @@
     <file-match-pattern match-pattern="^.checkstyle" include-pattern="false"/>
     <file-match-pattern match-pattern="generated/" include-pattern="false"/>
     <file-match-pattern match-pattern="packageinfo" include-pattern="false"/>
-    <file-match-pattern match-pattern="datastores/" include-pattern="false"/>
-    <file-match-pattern match-pattern="conf/" include-pattern="false"/>
   </fileset>
   <filter name="NonSrcDirs" enabled="false"/>
 </fileset-config>

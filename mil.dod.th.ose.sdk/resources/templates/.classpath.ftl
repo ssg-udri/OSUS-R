@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" output="test-bin" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="lib" path="${sdk}/lib/biz.aQute.bnd.annotation-2.4.0.jar"/>
+	<classpathentry kind="lib" path="${sdk}/lib/biz.aQute.bnd.annotation-3.1.0.jar"/>
     <classpathentry kind="lib" path="${sdk}/lib/hamcrest-all-1.3.jar"/>
     <classpathentry kind="lib" path="${sdk}/lib/mockito-core-1.9.5.jar"/>
     <classpathentry kind="lib" path="${sdk}/lib/com.springsource.org.objenesis-1.0.0.jar"/>

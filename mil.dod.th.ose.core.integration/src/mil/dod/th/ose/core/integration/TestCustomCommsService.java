@@ -14,7 +14,7 @@ package mil.dod.th.ose.core.integration;
 
 
 import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -135,7 +135,7 @@ public class TestCustomCommsService extends TestCase
         Set<LinkLayerFactory> factories = customCommsService.getLinkLayerFactories();
         
         //check that the example link layer is returned
-        assertThat(factories.size(), greaterThanOrEqualTo(1));
+        assertThat("Link layer factories not found", factories.size() >= 1);
         List<String> productTypes = new ArrayList<>();
         for (LinkLayerFactory factory : factories)
         {
@@ -157,7 +157,7 @@ public class TestCustomCommsService extends TestCase
         Set<PhysicalLinkFactory> factories = customCommsService.getPhysicalLinkFactories();
         
         //check that the example physical link factory is returned
-        assertThat(factories.size(), greaterThanOrEqualTo(1));
+        assertThat("Physical link factories not found", factories.size() > 1);
         
         //gather all the physical link product types
         List<String> productTypes = new ArrayList<String>();
@@ -182,7 +182,7 @@ public class TestCustomCommsService extends TestCase
                 customCommsService.getTransportLayerFactories();
         
         //check that the example physical link factory is returned
-        assertThat(factories.size(), greaterThanOrEqualTo(1));
+        assertThat("Transport layer factories not found", factories.size() > 1);
         
         //gather all the product names
         List<String> productTypes = new ArrayList<>();
@@ -563,9 +563,9 @@ public class TestCustomCommsService extends TestCase
                         });
 
         // base props first
-        assertThat(attributeDefMap, hasKey(PhysicalLinkAttributes.CONFIG_PROP_DATA_BITS));
+        assertThat(attributeDefMap.keySet(), hasItem(PhysicalLinkAttributes.CONFIG_PROP_DATA_BITS));
         // make sure extended properties are there
-        assertThat(attributeDefMap, hasKey(SerialPortAttributes.CONFIG_PROP_BAUD_RATE));
+        assertThat(attributeDefMap.keySet(), hasItem(SerialPortAttributes.CONFIG_PROP_BAUD_RATE));
     }
     
     /**

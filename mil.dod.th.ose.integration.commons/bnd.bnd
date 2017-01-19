@@ -22,7 +22,5 @@ Export-Package:  \
     osgi.core;version='[5,6)',\
     osgi.cmpn,\
     mil.dod.th.core.api;version=latest,\
-    ${junit},\
-    mil.dod.th.ose.test.integration;version=latest,\
-    org.knowhowlab.osgi.testing.assertions,\
-    org.knowhowlab.osgi.testing.utils
+    ${junit.integration},\
+    mil.dod.th.ose.test.integration;version=latest

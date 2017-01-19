@@ -34,6 +34,6 @@ SDKDIR=`dirname $0`
 # Execute the application
 $PROGRAM -cp "$SDKDIR/lib/mil.dod.th.ose.sdk.jar":\
 "$SDKDIR/api/mil.dod.th.core.api.jar":\
-"$SDKDIR/lib/biz.aQute.bndlib-2.4.0.jar" \
+"$SDKDIR/lib/biz.aQute.bndlib-3.1.0.jar" \
 mil.dod.th.ose.sdk.those.ThoseMain $@ 
 

@@ -13,7 +13,7 @@
 package mil.dod.th.ose.core.integration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.*;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -181,7 +181,7 @@ public class TestPowerManager extends TestCase
             Set<WakeLock> currentLocks = powerManager.getWakeLocks(ExampleAsset.class, WakeLockState.Inactive);
             printWakeLocks(currentLocks);
             // make sure there is at least 1, might be more if other ExampleAssets have been activated
-            assertThat(currentLocks.size(), greaterThanOrEqualTo(1));
+            assertThat("FactoryObject wake locks not found", currentLocks.size() >= 1);
         }
         finally
         {
@@ -242,7 +242,8 @@ public class TestPowerManager extends TestCase
         outputLogVaules(log);      
         assertThat(log.getWakeLockId(), is("TestCreatedDurationLock"));  
         assertThat(log.getCalledMethod(), is(ExamplePowerManagerMethodLog.MethodCalled.Activate));
-        assertThat((double)log.getEndTimeMs(), closeTo(endDateInMs, 200.0));
+        assertThat("End time not within range",
+                log.getEndTimeMs() > (endDateInMs - 200) && log.getEndTimeMs() < (endDateInMs + 200));
         
         // Check that lock has been made active
         Set<WakeLock> activeLocks = powerManager.getWakeLocks(WakeLockState.Active);

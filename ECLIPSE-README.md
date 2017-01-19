@@ -24,9 +24,9 @@ listed below.
 
 ## Required Plug-ins:
   * Java Developer Tools
+  * BndTools 3.1.1 ([Update Site](https://dl.bintray.com/bndtools/bndtools/3.1.1/))
 
 ## Optional Plug-is:
-  * BndTools
   * Checkstyle
   * PMD
   * Java Decompiler

@@ -13,7 +13,7 @@
 package mil.dod.th.ose.core.integration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -207,7 +207,8 @@ public class TestPersistence extends TestCase
         // should allow no parameters
         List<Observation> afterObs = new ArrayList<>(m_ObservationStore.newQuery().execute());
         
-        assertThat(afterObs.size() - initialObs.size(), is(greaterThanOrEqualTo(expectedObs.size())));
+        assertThat("Query did not return number of expected observations",
+                (afterObs.size() - initialObs.size()) >= expectedObs.size());
     }
     
     /**
@@ -612,8 +613,8 @@ public class TestPersistence extends TestCase
         assertThat(pData.getContext(), is(ExampleNonLexiconData.class.getName()));
         assertThat(pData.getDescription(), is(dataDescriptor));
         assertThat(pData.getUUID(), is(uuid));
-        assertThat(pData.getTimestamp(), is(greaterThanOrEqualTo(lowerBound)));
-        assertThat(pData.getTimestamp(), is(lessThanOrEqualTo(upperBound)));
+        assertThat("Timestamp lower than expected", pData.getTimestamp() >= lowerBound);
+        assertThat("Timestamp higher than expected", pData.getTimestamp() <= upperBound);
         
         final Collection<? extends PersistentData> pDataColl = 
                 m_PersistentDataStore.query(ExampleNonLexiconData.class);

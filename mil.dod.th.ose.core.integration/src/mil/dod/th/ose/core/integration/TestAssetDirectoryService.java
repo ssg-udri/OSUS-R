@@ -14,7 +14,7 @@
 package mil.dod.th.ose.core.integration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.*;
 
 import java.io.IOException;
 import java.util.Map;
@@ -23,6 +23,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.UnmarshalException;
+
+import com.google.common.math.DoubleMath;
 
 import junit.framework.TestCase;
 
@@ -310,7 +312,7 @@ public class TestAssetDirectoryService extends TestCase
         syncer.waitForEvent(20);
         
         Set<Asset> assets = assetDirectoryService.getAssets();
-        assertThat(assets.size(), greaterThan(0));
+        assertThat("Scanning did not create assets", assets.size() > 0);
         
         Set<Asset> exampleAssets = assetDirectoryService.getAssetsByType(ExampleAsset.class.getName());
         assertThat(exampleAssets.size(), is(1));
@@ -659,7 +661,8 @@ public class TestAssetDirectoryService extends TestCase
         
         assertThat(audioCaps.getRecorders().size(), is(1));
         assertThat(audioCaps.getRecorders(), hasItem(new AudioRecorder(AudioRecorderEnum.MICROPHONE, "none", null)));
-        assertThat(audioCaps.getSampleRatesKHz().get(0).doubleValue(), closeTo(14.4, 0.00001));
+        assertThat("Audio sample rate not equal to 14.4",
+                   DoubleMath.fuzzyEquals(audioCaps.getSampleRatesKHz().get(0).doubleValue(), 14.4, 0.00001));
     }
     
     /**
@@ -671,7 +674,6 @@ public class TestAssetDirectoryService extends TestCase
         throws IllegalArgumentException, AssetException, IllegalStateException, 
             FactoryException, InterruptedException, BundleException 
     {
-        
         AssetDirectoryService assetDirectoryService = ServiceUtils.getService(m_Context, AssetDirectoryService.class);
         
         final String assetName = "shutdownAsset";

@@ -17,7 +17,7 @@
     <import file="../cnf/build.xml" />
     
     <target name="setup" depends="init" description="Copy in common configuration files">
-        <copy todir="${projectdir}/encrypt-conf" >
+        <copy todir="${data.dir}/encrypt-conf" >
             <fileset dir="${common.target.dir}/encrypt-conf" />
         </copy>
     </target>

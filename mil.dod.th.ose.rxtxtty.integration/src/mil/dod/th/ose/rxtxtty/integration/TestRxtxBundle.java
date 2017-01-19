@@ -13,9 +13,11 @@
 package mil.dod.th.ose.rxtxtty.integration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+
 import junit.framework.TestCase;
+
 import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.CustomCommsService;
 import mil.dod.th.core.persistence.PersistenceFailedException;
