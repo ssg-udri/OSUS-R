@@ -107,7 +107,7 @@ platforms['linux32'] = {
 }
 
 platforms['docs'] = {
-    node {
+    node('linux') {
         deleteDir()
         unstash 'sources'
         withEnv([

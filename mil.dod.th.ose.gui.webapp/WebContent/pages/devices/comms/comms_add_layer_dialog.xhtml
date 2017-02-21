@@ -129,7 +129,7 @@
                                                         </tr>
                                                     </table>
                                                 </p:tab>
-                                                <p:tab title="Select Physical Link (required)" id="physTab">
+                                                <p:tab title="Select Physical Link (if required)" id="physTab">
                                                     <h:outputText value="Force-Add Physical Link " style="vertical-align:top"/>
                                                     <p:selectBooleanCheckbox id="forceAddCheckBox" value="#{newStackModel.forceAdd}">
                                                         <p:ajax listener="#{addCommsHelper.resetState()}" update="@form"/>
@@ -201,7 +201,7 @@
                                                                     <p:message for="selectedPhysType" />
                                                                     <p:inputText id="selectedPhys" style="display:none"
                                                                         value="#{newStackModel.selectedPhysicalLink}"
-                                                                        required="#{!newStackModel.forceAdd}"
+                                                                        required="#{!newStackModel.forceAdd and commsTypesMgr.getLinkLayerRequiresPhysical(activeController.activeController.id, newStackModel.selectedLinkLayerType)}"
                                                                         requiredMessage="Physical link must be selected."/>
                                                                     <p:message for="selectedPhys" />
                                                                 </td>

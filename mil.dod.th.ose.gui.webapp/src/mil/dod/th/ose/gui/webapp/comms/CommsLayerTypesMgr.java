@@ -49,7 +49,19 @@ public interface CommsLayerTypesMgr
      *      List of link layer types for an active controller.
      */
     List<String> getLinkLayerTypes(int systemId);
-    
+
+    /**
+     * Function to retrieve whether a link layer requires a physical link.
+     * 
+     * @param systemId
+     *      the id of the system that the link layer resides on
+     * @param clazzName
+     *      the name of the link layer class
+     * @return
+     *      true if the link layer requires a physical link
+     */
+    boolean getLinkLayerRequiresPhysical(int systemId, String clazzName);
+
     /**
      * Method which returns a list of all physical layer classes for a particular controller.
      * Type is represented by the fully qualified class name of the layer.
