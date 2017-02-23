@@ -10,6 +10,7 @@
 // with this software. If not, see
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==============================================================================
+
 package mil.dod.th.core.remote;
 
 import aQute.bnd.annotation.ProviderType;
@@ -19,12 +20,10 @@ import aQute.bnd.annotation.ProviderType;
  * Interface for a remote channel that is {@link java.net.Socket} based.
  * 
  * @author Dave Humeniuk
- *
  */
 @ProviderType
 public interface SocketChannel extends RemoteChannel
 {
-
     /**
      * Get the hostname of the remote endpoint this channel connects to.
      * 
@@ -41,4 +40,11 @@ public interface SocketChannel extends RemoteChannel
      */
     int getPort();
 
+    /**
+     * Indicates whether SSL is enabled on this channel or not.
+     * 
+     * @return
+     *      true if SSL is enabled, false otherwise
+     */
+    boolean isSslEnabled();
 }

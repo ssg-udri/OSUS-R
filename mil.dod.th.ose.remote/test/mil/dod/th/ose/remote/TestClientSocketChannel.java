@@ -89,7 +89,7 @@ public class TestClientSocketChannel
         SocketAddress socketAddress = mock(SocketAddress.class);
         when(socketAddress.toString()).thenReturn("test:10");
         when(m_Socket.getRemoteSocketAddress()).thenReturn(socketAddress);
-        when(clientSocketFactory.createClientSocket("test", 10)).thenReturn(m_Socket);
+        when(clientSocketFactory.createClientSocket(eq("test"), eq(10), anyBoolean())).thenReturn(m_Socket);
         
         // mock out listener factory
         m_ListenerFactory = mock(ComponentFactory.class);
@@ -143,6 +143,7 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
 
         // verify wake lock is activated
@@ -194,6 +195,7 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
 
         // verify wake lock is activated
@@ -219,6 +221,7 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
         
         m_SUT.deactivate();
@@ -255,6 +258,7 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
         
         // construct a single base namespace message to verify sent to socket
@@ -293,6 +297,7 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
         
         // verify bytes transmitted starts off at zero
@@ -343,6 +348,7 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
         
         // construct a single base namespace message to verify sent to socket
@@ -368,6 +374,7 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
         
         // construct a single base namespace message to verify sent to socket
@@ -408,6 +415,7 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
         
         when(m_MessageSender.getQueuedMessageCount()).thenReturn(100);
@@ -425,6 +433,7 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
         
         //request clear
@@ -443,6 +452,7 @@ public class TestClientSocketChannel
         Map<String, Object> actualProps = new HashMap<String, Object>();
         actualProps.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         actualProps.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        actualProps.put(ClientSocketChannel.SSL_PROP_KEY, false);
         actualProps.put(ComponentConstants.COMPONENT_ID, 23);
         actualProps.put(ComponentConstants.COMPONENT_NAME, AbstractSocketChannel.class.getName());
         actualProps.put("some random value that might be there", "blah");
@@ -452,16 +462,25 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 20);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         assertThat(m_SUT.matches(props), is(false));
         
         // different host, same port, should not match
         props.put(ClientSocketChannel.HOST_PROP_KEY, "other-host");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         assertThat(m_SUT.matches(props), is(false));
         
+        // same host and port but different SSL flag, should not match
+        props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
+        props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, true);
+        assertThat(m_SUT.matches(props), is(false));
+
         // same props for host and port should match, should ignore default props of a component
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         assertThat(m_SUT.matches(props), is(true));
     }
     
@@ -475,6 +494,7 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
         
         assertThat(m_SUT.getChannelType(), is(RemoteChannelTypeEnum.SOCKET));
@@ -490,6 +510,7 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
         
         assertThat(m_SUT.getHost(), is("test"));
@@ -505,11 +526,28 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
         
         assertThat(m_SUT.getPort(), is(10));
     }
-    
+
+    /**
+     * Verify SSL flag returned is the one associated with the incoming socket. 
+     */
+    @Test
+    public void testIsSslEnabled() throws IOException
+    {
+        // activate the component
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
+        props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, true);
+        m_SUT.activate(props);
+
+        assertThat(m_SUT.isSslEnabled(), is(true));
+    }
+
     /**
      * Verify toString prints a short readable string.
      */
@@ -520,6 +558,7 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
         
         assertThat("string rep is combination of host and port", m_SUT.toString(), is("test:10"));
@@ -542,6 +581,7 @@ public class TestClientSocketChannel
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(ClientSocketChannel.HOST_PROP_KEY, "test");
         props.put(ClientSocketChannel.PORT_PROP_KEY, 10);
+        props.put(ClientSocketChannel.SSL_PROP_KEY, false);
         m_SUT.activate(props);
         
         // construct a single base namespace message to verify sent to socket

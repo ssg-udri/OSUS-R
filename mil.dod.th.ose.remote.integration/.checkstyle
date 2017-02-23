@@ -9,6 +9,7 @@
     <file-match-pattern match-pattern="^\..*" include-pattern="false"/>
     <file-match-pattern match-pattern="/\..*" include-pattern="false"/>
     <file-match-pattern match-pattern="bin/|generated/|.DS_Store" include-pattern="false"/>
+    <file-match-pattern match-pattern=".jks" include-pattern="false"/>
   </fileset>
   <filter name="NonSrcDirs" enabled="false"/>
 </fileset-config>

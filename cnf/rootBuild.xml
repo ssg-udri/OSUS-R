@@ -234,6 +234,7 @@
         <!-- Exclude generated/binary code/files -->
         <exclude name="**/*.class" />
         <exclude name="**/*.jar" />
+        <exclude name="**/*.jks" />
         <exclude name="**/*.o" />
         <exclude name="**/*.so" />
         <exclude name="**/*.zip" />

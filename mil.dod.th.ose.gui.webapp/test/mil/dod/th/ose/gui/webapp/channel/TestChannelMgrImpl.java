@@ -96,18 +96,19 @@ public class TestChannelMgrImpl
     {
         // mock lookup
         SocketChannel remoteChannel = mock(SocketChannel.class);
-        when(m_RemoteChannelLookup.syncClientSocketChannel("localhost", 3001, 1957)).thenReturn(remoteChannel);
+        when(m_RemoteChannelLookup.syncClientSocketChannel("localhost", 3001, 1957, true, false))
+            .thenReturn(remoteChannel);
         
         // replay
-        m_SUT.createSocketChannel(1957, "localhost", 3001);
+        m_SUT.createSocketChannel(1957, "localhost", 3001, false);
         
         // verify channel is created and synced
-        verify(m_RemoteChannelLookup).syncClientSocketChannel("localhost", 3001, 1957);
+        verify(m_RemoteChannelLookup).syncClientSocketChannel("localhost", 3001, 1957, true, false);
         
         // change sync call to throw exception
-        when(m_RemoteChannelLookup.syncClientSocketChannel("localhost", 3001, 1957))
+        when(m_RemoteChannelLookup.syncClientSocketChannel("localhost", 3001, 1957, true, false))
             .thenThrow(new ComponentException("fail"));
-        m_SUT.createSocketChannel(1957, "localhost", 3001);
+        m_SUT.createSocketChannel(1957, "localhost", 3001, false);
         
         // verify exception is caught and appropriately handled with a growl message
         verify(m_GrowlUtil).createLocalFacesMessage(eq(FacesMessage.SEVERITY_ERROR), anyString(), anyString(),

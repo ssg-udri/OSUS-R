@@ -53,12 +53,12 @@ public class RemoteChannelLoaderImpl implements RemoteChannelLoader
     {
         for (SocketChannelConfig config: socketChannelConfigs)
         {            
-            m_LoggingService.debug("Loading socket channel for system id: 0x%08x, hostname: %s, and port: %d", 
-                    config.getSystemId(), config.getHost(), config.getPort());
+            m_LoggingService.debug("Loading socket channel for system id: 0x%08x, hostname: %s, and port: %d [SSL=%b]",
+                    config.getSystemId(), config.getHost(), config.getPort(), config.isSsl());
             try
             {
-                m_RemoteChannelLookup.syncClientSocketChannel(config.getHost(), config.getPort(), config.getSystemId(), 
-                        false);
+                m_RemoteChannelLookup.syncClientSocketChannel(config.getHost(), config.getPort(), config.getSystemId(),
+                        false, config.isSsl());
             }
             catch (final Exception ex)
             {

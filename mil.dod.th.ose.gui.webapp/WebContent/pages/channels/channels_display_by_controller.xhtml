@@ -39,13 +39,16 @@
                         <f:converter converterId="hexConverter"/>
                     </h:outputText>
                 </f:facet>
-                 <p:fieldset id="socketByController" style="margin-top:10px" legend="Socket Channels" toggleable="true" rendered="#{channelManager.getChannelsForController(controller.id, 'Socket').size() != 0}">
-                    <p:dataTable id="sockets" styleClass="allTableStylesWithBorder" value="#{channelManager.getChannelsForController(controller.id, 'Socket')}" var="channel">
+                 <p:fieldset id="socketByController" style="margin-top:10px" legend="Socket Channels" toggleable="true" rendered="#{channelManager.getChannelsForController(controller.id, 'SOCKET').size() != 0}">
+                    <p:dataTable id="sockets" styleClass="allTableStylesWithBorder" value="#{channelManager.getChannelsForController(controller.id, 'SOCKET')}" var="channel">
                         <p:column headerText="Host Name">
                             #{channel.host}
                         </p:column>
                         <p:column headerText="Host Port">
                             #{channel.port}
+                        </p:column>
+                        <p:column headerText="SSL">
+                            #{channel.sslEnabled}
                         </p:column>
                         <!--p:column headerText="Status">
                             <div class="channelStatusDimensions channelStatus#{channel.channelStatus}"/>
@@ -63,8 +66,8 @@
                         
                     </p:dataTable>
                  </p:fieldset>
-                 <p:fieldset id="transportsByController" style="margin-top:10px" legend="Transport Channels" toggleable="true" rendered="#{channelManager.getChannelsForController(controller.id, 'Transport').size() != 0}">
-                    <p:dataTable id="transports" styleClass="allTableStylesWithBorder" value="#{channelManager.getChannelsForController(controller.id, 'Transport')}" var="channel">
+                 <p:fieldset id="transportsByController" style="margin-top:10px" legend="Transport Channels" toggleable="true" rendered="#{channelManager.getChannelsForController(controller.id, 'TRANSPORT').size() != 0}">
+                    <p:dataTable id="transports" styleClass="allTableStylesWithBorder" value="#{channelManager.getChannelsForController(controller.id, 'TRANSPORT')}" var="channel">
                         <p:column headerText="Name">
                             #{channel.name}
                         </p:column>

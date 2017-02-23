@@ -26,8 +26,8 @@ import mil.dod.th.ose.gui.webapp.controller.ControllerStatus;
  * Once a response from the remote system is received, the channel is updated to an active status.
  * Any further interactions utilizing the created channel is done via various
  * remote interface interactions and NOT through this manager.
+ * 
  * @author callen
- *
  */
 public interface ChannelMgr 
 {
@@ -38,15 +38,18 @@ public interface ChannelMgr
     
     /**
      * Create a new {@link SocketChannelModel} type channel.
+     * 
      * @param controllerId
      *     the Terra Harvest System id that the channel will be used to communicate with
      * @param hostName
      *     the hostname of the socket type channel
      * @param socketPort
-     *     the port to use for the new socket channel, if the value is 0 the default, 4000, will be assigned      
+     *     the port to use for the new socket channel, if the value is 0 the default, 4000, will be assigned
+     * @param sslEnabled
+     *     true is SSL should be enabled on the new socket channel, false otherwise
      */
-    void createSocketChannel(int controllerId, String hostName, int socketPort);   
-    
+    void createSocketChannel(int controllerId, String hostName, int socketPort, final boolean sslEnabled);
+
     /**
      * Create a new {@link TransportChannelModel} type channel.
      * @param controllerId
@@ -63,6 +66,7 @@ public interface ChannelMgr
     
     /**
      * Remove the specified channel. This removes the channel from the remote channel lookup service.
+     * 
      * @param channel
      *     the channel object representing the {@link mil.dod.th.core.remote.RemoteChannel} to remove
      */
@@ -70,6 +74,7 @@ public interface ChannelMgr
     
     /**
      * Get a transport layer based channel object by name and address.
+     * 
      * @param transportName
      *      the name of the transport layer 
      * @param localMessageAddress
@@ -84,6 +89,7 @@ public interface ChannelMgr
     
     /**
      * List of all transport layer channels known to the local system.
+     * 
      * @return
      *    list of transport layer based channel base objects
      */
@@ -91,6 +97,7 @@ public interface ChannelMgr
     
     /**
      * Get a socket channel base object by host name and port.
+     * 
      * @param hostName
      *    host name used to register the channel
      * @param port
@@ -102,6 +109,7 @@ public interface ChannelMgr
     
     /**
      * Get all socket type channels.
+     * 
      * @return
      *     list of channel base objects representing socket type channels
      */
@@ -109,6 +117,7 @@ public interface ChannelMgr
     
     /**
      * Get channels for a controller by {@link RemoteChannelTypeEnum} type.
+     * 
      * @param controllerId
      *     the Terra Harvest System id
      * @param type
@@ -120,6 +129,7 @@ public interface ChannelMgr
     
     /**
      * Get all channels known to the channel manager for the system with the id passed.
+     * 
      * @param controllerId
      *     the Terra Harvest System id
      * @return
@@ -129,6 +139,7 @@ public interface ChannelMgr
     
     /**
      * Get all channels know to the channel manager.
+     * 
      * @return
      *     a list of channels representing all the channels known to the system
      */
@@ -136,6 +147,7 @@ public interface ChannelMgr
     
     /**
      * Method that renders the controller status for the controller specified.
+     * 
      * @param controllerId
      *     the id of the controller to get the status of
      * @return
@@ -145,6 +157,7 @@ public interface ChannelMgr
     
     /**
      * Method that clears all queued messages from a channel.
+     * 
      * @param channel
      *      channel to clear all queued messages from
      */

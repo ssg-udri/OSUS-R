@@ -74,33 +74,34 @@
     <properties key="bundleSymbolicFilter" value="org.apache.felix.configadmin"/>
   </osgiConfigs>
 
-   <!-- Below is an example of a event registration entry. Uncomment and fill in the appropriate fields. Add as
-        many of the below entries as needed to create all desired event registrations. -->
-   <!-- 
-   <eventRegs eventFiler="The LDAP filter string to be applied to the event topics."
-        canQueueEvent="true | false"
-        objectFormat="NATIVE | XML"
-        systemId="ID of the system that should receive the events.">
-        <eventTopics>mil/dod/th/core/asset/Asset/DATA_CAPTURED</eventTopics>
-        <eventTopics>mil/dod/th/core/asset/Asset/STATUS_CHANGED</eventTopics>
-        <eventTopics>mil/dod/th/core/persistence/ObservationStore/OBSERVATION_PERSISTED</eventTopics>
-   </eventRegs>
-   -->
+  <!-- Below is an example of a event registration entry. Uncomment and fill in the appropriate fields. Add as
+       many of the below entries as needed to create all desired event registrations. -->
+  <!-- 
+  <eventRegs eventFiler="The LDAP filter string to be applied to the event topics."
+      canQueueEvent="true | false"
+      objectFormat="NATIVE | XML"
+      systemId="ID of the system that should receive the events.">
+    <eventTopics>mil/dod/th/core/asset/Asset/DATA_CAPTURED</eventTopics>
+    <eventTopics>mil/dod/th/core/asset/Asset/STATUS_CHANGED</eventTopics>
+    <eventTopics>mil/dod/th/core/persistence/ObservationStore/OBSERVATION_PERSISTED</eventTopics>
+  </eventRegs>
+  -->
    
-   <!-- Below is an example of a socket channel configuration entry. Uncomment and fill in the appropriate fields. Add
-        as many of the below entries as is needed to create all desired socket channels. -->
-   <!--
-   <socketChannels host="Hostname or IP address of the remote system the socket channel will connect to." 
-        port="Port number the socket channel will connect to on the remote system." 
-        systemId="ID number of the remote system the channel will connect to."/> 
-   -->
+  <!-- Below is an example of a socket channel configuration entry. Uncomment and fill in the appropriate fields. Add
+       as many of the below entries as is needed to create all desired socket channels. -->
+  <!--
+  <socketChannels host="Hostname or IP address of the remote system the socket channel will connect to." 
+      port="Port number the socket channel will connect to on the remote system." 
+      systemId="ID number of the remote system the channel will connect to."
+      ssl="false"/> 
+  -->
     
-    <!-- Below is an example of a transport channel configuration entry. Uncomment and fill in the appropriate fields. 
-        Add as many of the below entries as is needed to crate all desired transport channels. -->
-    <!--
-    <transportChannels transportLayerName="Name of the transport layer to be used by the transport channel."
-        localAddress="String that describes the local address where data is sent/received." 
-        remoteAddress="String that describes the remote address where data is sent to/received from." 
-        systemId="ID number of the remote system the channel will connect to."/>
-    -->
+  <!-- Below is an example of a transport channel configuration entry. Uncomment and fill in the appropriate fields. 
+       Add as many of the below entries as is needed to crate all desired transport channels. -->
+  <!--
+  <transportChannels transportLayerName="Name of the transport layer to be used by the transport channel."
+      localAddress="String that describes the local address where data is sent/received." 
+      remoteAddress="String that describes the remote address where data is sent to/received from." 
+      systemId="ID number of the remote system the channel will connect to."/>
+  -->
 </p:Configurations>

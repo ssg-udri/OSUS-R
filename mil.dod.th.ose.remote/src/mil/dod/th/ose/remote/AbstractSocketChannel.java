@@ -236,11 +236,12 @@ abstract class AbstractSocketChannel extends AbstractRemoteChannel implements So
                 message.writeDelimitedTo(m_Socket.getOutputStream());
             }
             m_BytesTransmitted += message.getSerializedSize();
-            
+            m_Status = ChannelStatus.Active;
         }
         catch (final IOException e)
         {
             m_Logging.debug("Failed to send message to socket [%s]", m_Socket.getRemoteSocketAddress());
+            m_Status = ChannelStatus.Unavailable;
             return false;
         }
 
@@ -248,6 +249,7 @@ abstract class AbstractSocketChannel extends AbstractRemoteChannel implements So
         {
             m_Logging.debug("Remote message written to socket [%s]%n%s", m_Socket.getRemoteSocketAddress(), message);
         }
+
         return true;
     }
     

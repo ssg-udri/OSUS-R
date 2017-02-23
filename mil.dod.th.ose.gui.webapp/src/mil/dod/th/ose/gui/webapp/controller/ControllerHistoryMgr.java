@@ -260,6 +260,7 @@ public class ControllerHistoryMgr
             final PersistentData data = controllerCollection.iterator().next();
             final ControllerHistory controllerData = (ControllerHistory)data.getEntity();
             controllerData.setControllerId(controllerId);
+            controllerData.setSslEnabled(socketChannel.isSslEnabled());
             controllerData.setLastConnected(System.currentTimeMillis());
             data.setEntity(controllerData);
             try
@@ -278,6 +279,7 @@ public class ControllerHistoryMgr
             controllerData.setControllerId(controllerId);
             controllerData.setHostName(socketChannel.getHost());
             controllerData.setPort(socketChannel.getPort());
+            controllerData.setSslEnabled(socketChannel.isSslEnabled());
             controllerData.setLastConnected(System.currentTimeMillis());
             m_PersistentDataStore.persist(ControllerHistory.class, UUID.randomUUID(), 
                     createDataDescription(socketChannel), controllerData);

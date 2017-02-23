@@ -254,7 +254,7 @@ public class TestRemoteChannelLookupImpl
         InvalidProtocolBufferException
     {
         // mock the socket props used for syncing, have socket channel match with it
-        stubSocketChannel(m_ClientSocketChannel, "host", 100);
+        stubSocketChannel(m_ClientSocketChannel, "host", 100, false);
         stubAsExistingSocketChannel(m_ClientSocketChannel);
         
         int systemId = 300;
@@ -309,9 +309,9 @@ public class TestRemoteChannelLookupImpl
         assertThat(channel, is(m_ClientSocketChannel));
         
         ArgumentCaptor<TerraHarvestMessage> messageCaptor = ArgumentCaptor.forClass(TerraHarvestMessage.class);
-        verify(channel, times(3)).queueMessage(messageCaptor.capture());
-        verify(m_ThSystem, times(3)).getId();
-        verify(m_RemoteSettings, times(3)).getEncryptionMode();
+        verify(channel, times(1)).queueMessage(messageCaptor.capture());
+        verify(m_ThSystem, times(1)).getId();
+        verify(m_RemoteSettings, times(1)).getEncryptionMode();
         
         for (TerraHarvestMessage message : messageCaptor.getAllValues())
         {
@@ -340,9 +340,9 @@ public class TestRemoteChannelLookupImpl
         when(m_ClientSocketChannelInstance.getInstance()).thenReturn(persistedChannel, nonPersistedChannel, 
                 alwaysPersistedChannel);
         
-        stubSocketChannel(persistedChannel, "host1", 1000);
-        stubSocketChannel(nonPersistedChannel, "host2", 1005);
-        stubSocketChannel(alwaysPersistedChannel, "host3", 1010);
+        stubSocketChannel(persistedChannel, "host1", 1000, false);
+        stubSocketChannel(nonPersistedChannel, "host2", 1005, true);
+        stubSocketChannel(alwaysPersistedChannel, "host3", 1010, false);
 
         //Define remote system IDs
         Integer systemId1 = 75;
@@ -351,7 +351,7 @@ public class TestRemoteChannelLookupImpl
         
         //Sync the socket channels
         SocketChannel returned1 = m_SUT.syncClientSocketChannel("host1", 1000, systemId1, true);
-        SocketChannel returned2 = m_SUT.syncClientSocketChannel("host2", 1005, systemId2, false);
+        SocketChannel returned2 = m_SUT.syncClientSocketChannel("host2", 1005, systemId2, false, true);
         SocketChannel returned3 = m_SUT.syncClientSocketChannel("host3", 1010, systemId3);
         
         //Verify that the appropriate channels are returned by the sync methods.
@@ -502,7 +502,7 @@ public class TestRemoteChannelLookupImpl
         
         int systemId = 100;
         
-        stubSocketChannel(m_ClientSocketChannel, "host", 100);
+        stubSocketChannel(m_ClientSocketChannel, "host", 100, false);
         
         // create channels
         SocketChannel serverChannel = m_SUT.newServerSocketChannel(socket1);
@@ -537,7 +537,7 @@ public class TestRemoteChannelLookupImpl
         // mock the sockets
         Socket socket1 = mock(Socket.class);
         
-        stubSocketChannel(m_ClientSocketChannel, "host", 100);
+        stubSocketChannel(m_ClientSocketChannel, "host", 100, false);
         stubTransportChannel(m_TransportChannel, "test", "local", "remote");
         
         // replay
@@ -547,24 +547,24 @@ public class TestRemoteChannelLookupImpl
         m_SUT.syncTransportChannel("test", "local", "remote", 2);
         
         // mock channels to be completely different
-        stubSocketChannel(m_ServerSocketChannel, "test-host1", 1000);
-        stubSocketChannel(m_ClientSocketChannel, "test-host2", 2000);
+        stubSocketChannel(m_ServerSocketChannel, "test-host1", 1000, false);
+        stubSocketChannel(m_ClientSocketChannel, "test-host2", 2000, false);
         
         // verify channel is returned for the given socket
         assertThat(m_SUT.getSocketChannel("test-host1", 1000), is(m_ServerSocketChannel));
         assertThat(m_SUT.getSocketChannel("test-host2", 2000), is(m_ClientSocketChannel));
         
         // mock channels so port is the same
-        stubSocketChannel(m_ServerSocketChannel, "test-host1", 1000);
-        stubSocketChannel(m_ClientSocketChannel, "test-host2", 1000);
+        stubSocketChannel(m_ServerSocketChannel, "test-host1", 1000, false);
+        stubSocketChannel(m_ClientSocketChannel, "test-host2", 1000, false);
         
         // verify channel is returned for the given socket
         assertThat(m_SUT.getSocketChannel("test-host1", 1000), is(m_ServerSocketChannel));
         assertThat(m_SUT.getSocketChannel("test-host2", 1000), is(m_ClientSocketChannel));
         
         // mock channels so hosts are the same
-        stubSocketChannel(m_ServerSocketChannel, "test-host1", 1000);
-        stubSocketChannel(m_ClientSocketChannel, "test-host1", 2000);
+        stubSocketChannel(m_ServerSocketChannel, "test-host1", 1000, false);
+        stubSocketChannel(m_ClientSocketChannel, "test-host1", 2000, false);
         
         // verify channel is returned for the given socket
         assertThat(m_SUT.getSocketChannel("test-host1", 1000), is(m_ServerSocketChannel));
@@ -797,7 +797,7 @@ public class TestRemoteChannelLookupImpl
         when(context.registerService(eq(EventHandler.class), Mockito.any(EventHandlerImpl.class), 
             Mockito.any(Dictionary.class))).thenReturn(service, service2);
         
-        stubSocketChannel(m_ClientSocketChannel, "host", 100);
+        stubSocketChannel(m_ClientSocketChannel, "host", 100, false);
         stubTransportChannel(m_TransportChannel, "t12", "blah", "foo");
         
         m_SUT.activate(context);
@@ -868,8 +868,10 @@ public class TestRemoteChannelLookupImpl
         SystemChannels.Builder systemChannels2 = SystemChannels.newBuilder().setSysId(2);
         
         // mock channel info for system id 1
-        systemChannels1.addSocketChannel(SocketChannelType.newBuilder().setHost("hosta").setPort(50).build());
-        systemChannels1.addSocketChannel(SocketChannelType.newBuilder().setHost("hostb").setPort(60).build());
+        systemChannels1.addSocketChannel(
+                SocketChannelType.newBuilder().setHost("hosta").setPort(50).setSslEnabled(false).build());
+        systemChannels1.addSocketChannel(
+                SocketChannelType.newBuilder().setHost("hostb").setPort(60).setSslEnabled(false).build());
         systemChannels1.addTransportChannel(TransportChannelType.newBuilder()
                     .setTransportName("tl1")
                     .setLocalAddress("la-1")
@@ -880,8 +882,10 @@ public class TestRemoteChannelLookupImpl
                 .setRemoteAddress("ra-b").build());
         
         // mock channel info for system id 2
-        systemChannels2.addSocketChannel(SocketChannelType.newBuilder().setHost("hostc").setPort(50).build());
-        systemChannels2.addSocketChannel(SocketChannelType.newBuilder().setHost("hostb").setPort(80).build());
+        systemChannels2.addSocketChannel(
+                SocketChannelType.newBuilder().setHost("hostc").setPort(50).setSslEnabled(false).build());
+        systemChannels2.addSocketChannel(
+                SocketChannelType.newBuilder().setHost("hostb").setPort(80).setSslEnabled(false).build());
         systemChannels2.addTransportChannel(TransportChannelType.newBuilder()
                 .setTransportName("tl2")
                 .setLocalAddress("la-1")
@@ -971,14 +975,16 @@ public class TestRemoteChannelLookupImpl
             .thenReturn(channelDataList);
         
         // mock channel that will be created
-        stubSocketChannel(m_ClientSocketChannel, "host", 100);
+        stubSocketChannel(m_ClientSocketChannel, "host", 100, false);
         
         // sync channel to see if it is persisted
         m_SUT.syncClientSocketChannel("host", 100, systemId);
         
         // construct the expected model object that will be created based on the current list
         SystemChannels expectedChannels = SystemChannels.newBuilder().setSysId(systemId)
-                .addSocketChannel(SocketChannelType.newBuilder().setHost("host").setPort(100).build()).build();
+                .addSocketChannel(
+                        SocketChannelType.newBuilder().setHost("host").setPort(100).setSslEnabled(false).build())
+                .build();
         
         // verify data is persisted
         ArgumentCaptor<UUID> uuid1 = ArgumentCaptor.forClass(UUID.class);
@@ -986,7 +992,7 @@ public class TestRemoteChannelLookupImpl
         verify(m_PersistentDataStore).persist(eq(RemoteChannelLookupImpl.class), uuid1.capture(), 
                 eq(new Integer(systemId).toString()), byteCapture.capture());   
         SystemChannels actualChannels = SystemChannels.parseFrom(byteCapture.getValue());
-        assertThat(expectedChannels, is(actualChannels));
+        assertThat(actualChannels, is(expectedChannels));
         
         // mock so that the existing channel shows up
         stubAsExistingSocketChannel(m_ClientSocketChannel);
@@ -1000,7 +1006,9 @@ public class TestRemoteChannelLookupImpl
         
         // expected channels should be the same but have a different system id
         expectedChannels = SystemChannels.newBuilder().setSysId(systemId + 1)
-                .addSocketChannel(SocketChannelType.newBuilder().setHost("host").setPort(100).build()).build();
+                .addSocketChannel(
+                        SocketChannelType.newBuilder().setHost("host").setPort(100).setSslEnabled(false).build())
+                .build();
         
         // verify object is persisted with different system id
         ArgumentCaptor<UUID> uuid2 = ArgumentCaptor.forClass(UUID.class);
@@ -1039,7 +1047,7 @@ public class TestRemoteChannelLookupImpl
             .thenReturn(channelDataList);
         
         // mock channel that will be created
-        stubSocketChannel(m_ClientSocketChannel, "host", 100);
+        stubSocketChannel(m_ClientSocketChannel, "host", 100, false);
         
         // sync channel to see if it is persisted
         SocketChannel channel = m_SUT.syncClientSocketChannel("host", 100, systemId);
@@ -1056,14 +1064,16 @@ public class TestRemoteChannelLookupImpl
         
         // expected channels will be the same but with a different system id
         SystemChannels expectedChannels = SystemChannels.newBuilder().setSysId(systemId + 1)
-                .addSocketChannel(SocketChannelType.newBuilder().setHost("host").setPort(100).build()).build();
+                .addSocketChannel(
+                        SocketChannelType.newBuilder().setHost("host").setPort(100).setSslEnabled(false).build())
+                .build();
         
         // verify object is persisted with different system id
         ArgumentCaptor<byte[]> byteCapture = ArgumentCaptor.forClass(byte[].class);
         verify(m_PersistentDataStore).persist(eq(RemoteChannelLookupImpl.class), Mockito.any(UUID.class), 
                 eq(new Integer(systemId + 1).toString()), byteCapture.capture());   
         SystemChannels actualChannels = SystemChannels.parseFrom(byteCapture.getValue());
-        assertThat(expectedChannels, is(actualChannels));
+        assertThat(actualChannels, is(expectedChannels));
         
         // expected channels are empty for the old system id
         expectedChannels = SystemChannels.newBuilder().setSysId(systemId).build();
@@ -1071,7 +1081,7 @@ public class TestRemoteChannelLookupImpl
         // verify new channel data is merged with existing data
         verify(channelData).setEntity(byteCapture.capture());
         actualChannels = SystemChannels.parseFrom(byteCapture.getValue());
-        assertThat(expectedChannels, is(actualChannels));
+        assertThat(actualChannels, is(expectedChannels));
         
         verify(m_PersistentDataStore).merge(channelData);
     }
@@ -1158,7 +1168,7 @@ public class TestRemoteChannelLookupImpl
             .thenReturn(channelDataList);
         
         // mock channel that will be created
-        stubSocketChannel(m_ClientSocketChannel, "host", 100);
+        stubSocketChannel(m_ClientSocketChannel, "host", 100, false);
         
         // sync channel to see if it is persisted
         SocketChannel channel = m_SUT.syncClientSocketChannel("host", 100, systemId);
@@ -1197,7 +1207,7 @@ public class TestRemoteChannelLookupImpl
                 Mockito.any(Serializable.class))).thenThrow(new PersistenceFailedException());
         doThrow(new PersistenceFailedException()).when(m_PersistentDataStore).merge(Mockito.any(PersistentData.class));
         
-        stubSocketChannel(m_ClientSocketChannel, "host", 100);
+        stubSocketChannel(m_ClientSocketChannel, "host", 100, false);
         
         // sync channel to see if it is added even if not persisted
         m_SUT.syncClientSocketChannel("host", 100, systemId);
@@ -1236,7 +1246,7 @@ public class TestRemoteChannelLookupImpl
         assertThat(m_SUT.checkChannelSocketExists("localhost", 4000), is(false));
         
         //add a channel
-        SocketChannel sChan = mockSocketChannel("localhost", 4000);
+        SocketChannel sChan = mockSocketChannel("localhost", 4000, false);
         
         m_SUT.syncChannel(sChan, 1);
         assertThat(m_SUT.checkChannelSocketExists("localhost", 12), is(false));
@@ -1254,7 +1264,7 @@ public class TestRemoteChannelLookupImpl
         assertThat(m_SUT.checkChannelTransportExists("1111", "1111"), is(false));
         
         //add a socket channel
-        SocketChannel sChan = mockSocketChannel("localhost", 4000);
+        SocketChannel sChan = mockSocketChannel("localhost", 4000, false);
         
         m_SUT.syncChannel(sChan, 1);
         assertThat(m_SUT.checkChannelTransportExists("1111", "1111"), is(false));
@@ -1272,17 +1282,20 @@ public class TestRemoteChannelLookupImpl
         assertThat(m_SUT.checkChannelTransportExists("1111", "1111"), is(true));
     }
     
-    private SocketChannel mockSocketChannel(String host, int port)
+    private SocketChannel mockSocketChannel(String host, int port, boolean sslEnabled)
     {
         SocketChannel sChan = mock(SocketChannel.class);
-        stubSocketChannel(sChan, host, port);
+        stubSocketChannel(sChan, host, port, sslEnabled);
         return sChan;
     }
     
-    private void stubSocketChannel(SocketChannel channel, String host, int port)
+    private void stubSocketChannel(SocketChannel channel, String host, int port, boolean sslEnabled)
     {
         when(channel.getHost()).thenReturn(host);
         when(channel.getPort()).thenReturn(port);
+        when(channel.isSslEnabled()).thenReturn(sslEnabled);
+        //doReturn(true).when(channel).trySendMessage(Mockito.any(TerraHarvestMessage.class));
+        //when(channel.trySendMessage(Mockito.any(TerraHarvestMessage.class))).thenReturn(true);
     }
     
     private void stubAsExistingSocketChannel(SocketChannel channel)
@@ -1290,6 +1303,7 @@ public class TestRemoteChannelLookupImpl
         Map<String, Object> socketProps = new HashMap<String, Object>();
         socketProps.put(ClientSocketChannel.HOST_PROP_KEY, channel.getHost());
         socketProps.put(ClientSocketChannel.PORT_PROP_KEY, channel.getPort());
+        socketProps.put(ClientSocketChannel.SSL_PROP_KEY, channel.isSslEnabled());
         when(channel.matches(socketProps)).thenReturn(true);
     }
     

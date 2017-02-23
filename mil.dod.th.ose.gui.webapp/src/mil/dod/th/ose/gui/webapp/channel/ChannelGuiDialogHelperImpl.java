@@ -70,7 +70,12 @@ public class ChannelGuiDialogHelperImpl implements ChannelGuiDialogHelper
      * creating a new socket channel.
      */
     private int m_NewSocketPort;
-    
+
+    /**
+     * Variable which holds whether the new socket is enabled by the user or not.
+     */
+    private boolean m_NewSocketSsl;
+
     /**
      * Variable which holds the transport layer name. By default it is set to 
      * the name of the transport layer that the user has selected on the initial
@@ -127,7 +132,6 @@ public class ChannelGuiDialogHelperImpl implements ChannelGuiDialogHelper
     {
         m_AddressService = addressService;
     }
-    
     
     /**
      * Set the custom comms service. 
@@ -235,6 +239,24 @@ public class ChannelGuiDialogHelperImpl implements ChannelGuiDialogHelper
     }
 
     /* (non-Javadoc)
+     * @see mil.dod.th.ose.gui.webapp.channel.ChannelGuiDialogHelper#isNewSocketSsl()
+     */
+    @Override
+    public boolean isNewSocketSsl()
+    {
+        return m_NewSocketSsl;
+    }
+
+    /* (non-Javadoc)
+     * @see mil.dod.th.ose.gui.webapp.channel.ChannelGuiDialogHelper#setNewSocketSsl(boolean)
+     */
+    @Override
+    public void setNewSocketSsl(final boolean ssl)
+    {
+        m_NewSocketSsl = ssl;
+    }
+
+    /* (non-Javadoc)
      * @see mil.dod.th.ose.gui.webapp.channel.ChannelGuiDialogHelper#getNewTransportName()
      */
     @Override
@@ -333,6 +355,7 @@ public class ChannelGuiDialogHelperImpl implements ChannelGuiDialogHelper
         m_NewTransportLocalAddress = "";
         m_NewTransportName = "";
         m_NewSocketHost = "localhost";
+        m_NewSocketSsl = false;
         
         m_NewChannelControllerId = 0;
         

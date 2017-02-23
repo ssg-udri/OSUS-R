@@ -16,9 +16,9 @@ import mil.dod.th.core.remote.SocketChannel;
 import mil.dod.th.core.types.remote.RemoteChannelTypeEnum;
 
 /**
- * Socket channel type implementation of the {@link Channel} interface. 
+ * Socket channel type implementation of the {@link Channel} interface.
+ * 
  * @author callen
- *
  */
 public class SocketChannelModel extends Channel 
 {
@@ -31,9 +31,15 @@ public class SocketChannelModel extends Channel
      * Address or port for the channel.
      */
     private final int m_Port;
-        
+
+    /**
+     * Flag that indicates whether SSL is enabled or not.
+     */
+    private final boolean m_SslEnabled;
+
     /**
      * Public constructor for the SocketChannelModel type.
+     * 
      * @param controllerId
      *    the id of the controller to which this channel belongs to
      * @param channel
@@ -45,10 +51,12 @@ public class SocketChannelModel extends Channel
                 channel.getBytesReceived(), channel.getQueuedMessageCount());
         m_HostName = channel.getHost();
         m_Port = channel.getPort();
+        m_SslEnabled = channel.isSslEnabled();
     }
 
     /**
      * Get the assigned port for this connection.
+     * 
      * @return
      *    the port number for this channel
      */
@@ -59,11 +67,23 @@ public class SocketChannelModel extends Channel
 
     /**
      * Get the host for this connection.
+     * 
      * @return
      *    string representing the host for this channel
      */
     public String getHost()
     {
         return m_HostName;
+    }
+
+    /**
+     * Indicates whether SSL is enabled for this connection.
+     * 
+     * @return
+     *    true if SSL is enabled, false otherwise
+     */
+    public boolean isSslEnabled()
+    {
+        return m_SslEnabled;
     }
 }

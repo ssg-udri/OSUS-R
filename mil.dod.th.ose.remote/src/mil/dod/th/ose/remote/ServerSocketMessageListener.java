@@ -36,7 +36,6 @@ import org.osgi.framework.BundleContext;
  * property, but could be updated.
  * 
  * @author Dave Humeniuk
- *
  */
 @Component
 public class ServerSocketMessageListener
@@ -50,6 +49,11 @@ public class ServerSocketMessageListener
      * Key for the property containing the port for listening for remote interface connections.
      */
     public final static String PORT_PROP_KEY = "mil.dod.th.ose.remote.socket.port";
+
+    /**
+     * Key for the property containing the port for listening for remote interface connections.
+     */
+    public final static String SSL_PROP_KEY = "mil.dod.th.ose.remote.socket.ssl";
 
     /**
      * How long to wait when joining on the server socket thread.
@@ -132,12 +136,20 @@ public class ServerSocketMessageListener
         // set port, use default if not set
         int serverPort = DEFAULT_PORT;
         
+        // set SSL flag, use default if not set
+        boolean enableSsl = false;
+        
         if (context.getProperty(PORT_PROP_KEY) != null)
         {
             serverPort = Integer.parseInt(context.getProperty(PORT_PROP_KEY));
         }
             
-        m_ServerSocket = m_ServerSocketFactory.createServerSocket(serverPort);
+        if (context.getProperty(SSL_PROP_KEY) != null)
+        {
+            enableSsl = Boolean.parseBoolean(context.getProperty(SSL_PROP_KEY));
+        }
+
+        m_ServerSocket = m_ServerSocketFactory.createServerSocket(serverPort, enableSsl);
 
         m_Logging.info("Server socket listening on port %d for remote messages", m_ServerSocket.getLocalPort());
         

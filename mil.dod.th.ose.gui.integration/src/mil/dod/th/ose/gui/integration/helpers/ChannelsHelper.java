@@ -55,7 +55,17 @@ public class ChannelsHelper
      * String representation of the default port for connecting to the gui.
      */
     public static final String DEFAULT_GUI_CONNECTION_PORT = "4001";
-    
+
+    /**
+     * String representation of the SSL button when disabled.
+     */
+    public static final String DISABLE_SSL = "No";
+
+    /**
+     * String representation of the SSL button when enabled.
+     */
+    public static final String ENABLE_SSL = "Yes";
+
     /**
      * CSS selector that represents the socket channel table on the channels page.
      */
@@ -68,7 +78,8 @@ public class ChannelsHelper
     
     /**
      * Creates a socket channel for the controller with the id and name specified with 
-     * the specified host name and port. This function assumes currently on channels page.
+     * the specified host name and port and SSL disabled. This function assumes currently
+     * on channels page.
      * @param driver
      *  the web driver performing the tests
      * @param host
@@ -78,6 +89,26 @@ public class ChannelsHelper
      */
     public static void createSocketChannel(final WebDriver driver, final String host, final String port) 
             throws InterruptedException, ExecutionException, TimeoutException
+    {
+        //create channel
+        createSocketChannel(driver, host, port, DISABLE_SSL);
+    }
+
+    /**
+     * Creates a socket channel for the controller with the id and name specified with 
+     * the specified host name, port and SSL state. This function assumes currently on
+     * channels page.
+     * @param driver
+     *  the web driver performing the tests
+     * @param host
+     *  the host name of the socket to be created
+     * @param port
+     *  the port of the socket to be created 
+     * @param ssl
+     *  Yes or No to indicate whether an SSL socket should be used
+     */
+    public static void createSocketChannel(final WebDriver driver, final String host, final String port,
+            final String ssl) throws InterruptedException, ExecutionException, TimeoutException
     {
         //navigate to the channels page if not already there.
         NavigationHelper.pageAndTabCheck(driver, NavigationButtonNameConstants.NAVBUT_PROP_CHANNELS, null);
@@ -97,10 +128,12 @@ public class ChannelsHelper
         
         WebElement hostName = propsOutputPanel.findElement(By.xpath("//input[contains(@id, 'hostName')]"));
         WebElement hostPort = propsOutputPanel.findElement(By.xpath("//input[contains(@id, 'hostPort')]"));
+        WebElement enableSsl = propsOutputPanel.findElement(By.cssSelector("div[id$='enableSsl']"));
         WebElement createButton = propsOutputPanel.findElement(By.xpath("//button[contains(@id, 'createChanButton')]"));
         
         assertThat(hostName, is(notNullValue()));
         assertThat(hostPort, is(notNullValue()));
+        assertThat(enableSsl, is(notNullValue()));
         assertThat(createButton, is(notNullValue()));
         
         //change host if not default
@@ -117,13 +150,19 @@ public class ChannelsHelper
             hostPort.sendKeys(port);
         }
         
+        //change SSL if not equal to desired state
+        if (!enableSsl.findElement(By.cssSelector("span")).getText().equals(ssl))
+        {
+            //toggle SSL button
+            enableSsl.click();
+        }
+
         //Create channel and verify controller added growl message is displayed.
         GrowlVerifier.verifyAndWaitToDisappear(25, createButton, "Controller Info:");
         
         final Wait<WebDriver> fwait = new FluentWait<WebDriver>(driver).withTimeout(30, TimeUnit.SECONDS).
                 pollingEvery(5, TimeUnit.SECONDS).ignoring(NoSuchElementException.class, 
                         StaleElementReferenceException.class);
-        
         
         //confirm that socket with specified ID and port is there
         final Boolean foundSocket = fwait.until(new Function<WebDriver, Boolean>()
@@ -137,9 +176,11 @@ public class ChannelsHelper
                     List<WebElement> rowCells = element.findElements(By.tagName("td"));
                     WebElement hostDiv = rowCells.get(1).findElement(By.tagName("div"));
                     WebElement portDiv = rowCells.get(2).findElement(By.tagName("div"));
+                    WebElement enableSslDiv = rowCells.get(3).findElement(By.tagName("div"));
                     
                     //confirm that socket with specified ID and port is there
-                    if (hostDiv.getText().equals(host) && portDiv.getText().equals(port))
+                    if (hostDiv.getText().equals(host) && portDiv.getText().equals(port)
+                            && enableSslDiv.getText().equals(Boolean.toString(ssl.equals(ENABLE_SSL))))
                     {
                         return true;
                     }

@@ -36,7 +36,7 @@
                <f:selectItems value="#{controllerHistHelper.getControllerHistoryList()}"/>
            </p:selectOneMenu>
        </h:panelGrid>
-       <p:commandButton id="quickConnectBtn" value="Connect" styleClass="controllerQuickConnectButton" actionListener="#{channelManager.createSocketChannel(controllerHistHelper.getSelectedControllerHistory().controllerId, controllerHistHelper.getSelectedControllerHistory().hostName, controllerHistHelper.getSelectedControllerHistory().port)}"/>
+       <p:commandButton id="quickConnectBtn" value="Connect" styleClass="controllerQuickConnectButton" actionListener="#{channelManager.createSocketChannel(controllerHistHelper.getSelectedControllerHistory().controllerId, controllerHistHelper.getSelectedControllerHistory().hostName, controllerHistHelper.getSelectedControllerHistory().port, controllerHistHelper.getSelectedControllerHistory().sslEnabled)}"/>
    </div>
    <p:dataList id="controllerList" style="width:100%" var="controllerVar" value="#{controllerFilter.filterList}" 
         paginator="false" type="none">   

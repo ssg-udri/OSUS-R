@@ -197,6 +197,9 @@
         <xs:attribute name="systemId" type="xs:int" use="required">
             <!-- The ID of the remote system which the channel will connect to. -->
         </xs:attribute>
+        <xs:attribute name="ssl" type="xs:boolean" use="optional" default="false">
+            <!-- Flag indicating whether SSL is enabled on the socket. -->
+        </xs:attribute>
     </xs:complexType>
     
     <xs:complexType name="TransportChannelConfig">

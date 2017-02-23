@@ -70,7 +70,7 @@ public class TestServerSocketMessageListener
         
         // mock server socket factory to create the correct server socket
         m_ServerSocket = mock(ServerSocket.class);
-        when(m_Factory.createServerSocket(anyInt())).thenReturn(m_ServerSocket);
+        when(m_Factory.createServerSocket(anyInt(), anyBoolean())).thenReturn(m_ServerSocket);
         
         // mock the server accept method to periodically return a socket
         when(m_ServerSocket.accept()).thenAnswer(new Answer<Socket>()
@@ -132,7 +132,7 @@ public class TestServerSocketMessageListener
         m_SUT.activate(contextNoProp);
         
         // verify server socket created for the correct port
-        verify(m_Factory).createServerSocket(ServerSocketMessageListener.DEFAULT_PORT);
+        verify(m_Factory).createServerSocket(ServerSocketMessageListener.DEFAULT_PORT, false);
         
         // wait long enough to accept 2 sockets, verify at least that many have been accepted
         Thread.sleep(1500);
@@ -153,7 +153,7 @@ public class TestServerSocketMessageListener
         when(context.getProperty(ServerSocketMessageListener.PORT_PROP_KEY)).thenReturn("4500");
         m_SUT.activate(context);
         
-        verify(m_Factory).createServerSocket(4500);
+        verify(m_Factory).createServerSocket(4500, false);
     }
 
     /**

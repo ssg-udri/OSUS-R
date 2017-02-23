@@ -38,7 +38,6 @@ import org.osgi.service.component.ComponentException;
  * Implementation of the {@link ChannelMgr}.
  * 
  * @author callen
- *
  */
 @ManagedBean(name = "channelManager")
 @RequestScoped
@@ -77,7 +76,8 @@ public class ChannelMgrImpl implements ChannelMgr
     }
     
     @Override
-    public void createSocketChannel(final int controllerId, final String hostName, final int portEntered)
+    public void createSocketChannel(final int controllerId, final String hostName, final int portEntered,
+            final boolean sslEnabled)
     {
         // figure out if 0 is the port passed in, if so then use the default port, otherwise the passed value
         final int actualPort = portEntered == 0 ? DEFAULT_PORT : portEntered;
@@ -93,23 +93,23 @@ public class ChannelMgrImpl implements ChannelMgr
         // create the remote socket channel
         try
         {
-            m_RemoteChannelLookup.syncClientSocketChannel(hostName, actualPort, controllerId);
+            m_RemoteChannelLookup.syncClientSocketChannel(hostName, actualPort, controllerId, true, sslEnabled);
         }
         catch (final ComponentException e)
         {
             // TODO: TH-644: Remove catch once IOException is caught by ClientSocketChannel so exception is not thrown
             // here
             m_GrowlUtil.createLocalFacesMessage(FacesMessage.SEVERITY_ERROR, "Failed to connect", 
-                    String.format("Unable to connect to controller at %s:%d", hostName, actualPort), e);
+                    String.format("Unable to connect to controller at %s:%d (or SSL mismatch)", hostName, actualPort),
+                    e);
             return;
         }
     }
-    
+
     @Override
     public void createTransportChannel(final int controllerId, final String transportName, 
             final String localMessageAddress, final String remoteMessageAddress)
-    { 
-        
+    {
         //sync the transport layer as a remote channel
         m_RemoteChannelLookup.syncTransportChannel(transportName, localMessageAddress, 
                 remoteMessageAddress, controllerId);

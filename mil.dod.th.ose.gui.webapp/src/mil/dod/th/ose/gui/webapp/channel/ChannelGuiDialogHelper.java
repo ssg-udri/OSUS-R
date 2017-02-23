@@ -33,6 +33,7 @@ public interface ChannelGuiDialogHelper
     /**
      * Getter function for variable which holds the controller id 
      * to connect to.
+     * 
      * @return
      *  the integer system id (controller id)
      */
@@ -41,6 +42,7 @@ public interface ChannelGuiDialogHelper
     /**
      * Setter function for the variable which holds the controller id
      * to connect to.
+     * 
      * @param controllerId
      *  the integer system id of the controller the user would like
      *  to make a channel for.
@@ -50,15 +52,16 @@ public interface ChannelGuiDialogHelper
     /**
      * Getter function for the variable which holds the host name of the 
      * socket that should be created.
+     * 
      * @return
      *  the host name of the socket that will be created.
      */
     String getNewSocketHost();
-
     
     /**
      * Setter function for the variable which holds the host name of the 
      * socket that should be created.
+     * 
      * @param host
      *  the host name that the socket should have.
      */
@@ -67,6 +70,7 @@ public interface ChannelGuiDialogHelper
     /**
      * Getter function for the variable which holds the port of the socket
      * that should be created.
+     * 
      * @return
      *  the integer port number that the socket should use.
      */
@@ -75,14 +79,32 @@ public interface ChannelGuiDialogHelper
     /**
      * Setter function for the variable which holds the port of the socket
      * that should be created.
+     * 
      * @param port
      *  the integer number that the socket port should be set to.
      */
     void setNewSocketPort(final int port);
-    
+
+    /**
+     * Getter function for whether the new socket should use SSL or not.
+     * 
+     * @return
+     *  true if SSL should be used, false otherwise
+     */
+    boolean isNewSocketSsl();
+
+    /**
+     * Setter function used to enable or disable SSL on the socket.
+     * 
+     * @param ssl
+     *  true if SSL is enabled, false otherwise
+     */
+    void setNewSocketSsl(boolean ssl);
+
     /**
      * Getter function for the variable which holds the name of the transport layer
      * that should be created.
+     * 
      * @return
      *  the name of the transport layer.
      */
@@ -91,6 +113,7 @@ public interface ChannelGuiDialogHelper
     /**
      * Setter function for the variable which holds the name of the transport layer
      * that should be created.
+     * 
      * @param name
      *  the name that the transport layer should be set to.
      */
@@ -99,6 +122,7 @@ public interface ChannelGuiDialogHelper
     /**
      * Getter function for the variable which holds the remote address of the transport 
      * layer that should be created.
+     * 
      * @return
      *  the remote address that the transport layer should use.
      */
@@ -107,6 +131,7 @@ public interface ChannelGuiDialogHelper
     /**
      * Setter function for the variable which holds the remote address of the transport layer
      * that should be created.
+     * 
      * @param address
      *  the remote address that the transport layer should use.
      */
@@ -115,6 +140,7 @@ public interface ChannelGuiDialogHelper
     /**
      * Getter function for the variable which holds the local address of the transport 
      * layer that should be created.
+     * 
      * @return
      *  the local address that the transport layer should use.
      */
@@ -123,6 +149,7 @@ public interface ChannelGuiDialogHelper
     /**
      * Setter function for the variable which holds the local address of the transport layer
      * that should be created.
+     * 
      * @param address
      *  the local address that the transport layer should use.
      */
@@ -132,6 +159,7 @@ public interface ChannelGuiDialogHelper
      * Getter function for the variable which determines which second dialog 
      * fragment to show. I.E. should the dialog be rendered with socket host/port
      * text boxes or transport layer name/address drop downs.
+     * 
      * @return
      *  the type of {@link RemoteChannelTypeEnum} that has been requested.
      */
@@ -140,6 +168,7 @@ public interface ChannelGuiDialogHelper
     /**
      * Setter function for the variable which determines which second dialog fragment
      * to show.
+     * 
      * @param channelChoice
      *  the {@link NewChannelChoice} variable which simply identifies the name and type
      *  of channel to create.
@@ -149,6 +178,7 @@ public interface ChannelGuiDialogHelper
     /**
      * Getter function to return all of the possible channel choices that 
      * a user can create. 
+     * 
      * @return
      *  a list of {@link NewChannelChoice} objects that represent available 
      *  channels to use.
@@ -164,6 +194,7 @@ public interface ChannelGuiDialogHelper
     /**
      * Get all the known transport layers currently being managed by the 
      * custom comms service.
+     * 
      * @return
      *  a list of all known transport layers that the custom comms service has 
      *  a reference to
@@ -172,6 +203,7 @@ public interface ChannelGuiDialogHelper
     
     /**
      * Get all known addresses that are currently in use.
+     * 
      * @return
      *  a list of address strings currently in the {@link mil.dod.th.core.ccomm.AddressManagerService}
      */
@@ -183,7 +215,6 @@ public interface ChannelGuiDialogHelper
      * case of the transport layer, the channel name will be set to the transport layer's name.
      * 
      * @author nickmarcucci
-     *
      */
     class NewChannelChoice
     {
@@ -211,6 +242,7 @@ public interface ChannelGuiDialogHelper
         
         /**
          * Constructor.
+         * 
          * @param name
          *  the name of the channel ("Socket" or transport layer name)
          * @param type
@@ -226,6 +258,7 @@ public interface ChannelGuiDialogHelper
         
         /**
          * Getter function for the channel name.
+         * 
          * @return
          *  the name of the channel that should be created.
          */
@@ -237,6 +270,7 @@ public interface ChannelGuiDialogHelper
         /**
          * Getter function for the type of channel that 
          * this object is representing.
+         * 
          * @return
          *  the {@link RemoteChannelTypeEnum} type that this channel represents.
          */
@@ -248,6 +282,7 @@ public interface ChannelGuiDialogHelper
         /**
          * Function to set the capabilities object if the choice represents 
          * a transport layer.
+         * 
          * @param caps
          *  the capabilities object to set.
          */
@@ -258,7 +293,8 @@ public interface ChannelGuiDialogHelper
         
         /**
          * Function to retrieve the capabilities object. Return value will be null
-         * if object is not a transport layer
+         * if object is not a transport layer.
+         * 
          * @return
          *  the capabilities object if the choice represents a transport layer otherwise
          *  it will return null.
@@ -270,6 +306,7 @@ public interface ChannelGuiDialogHelper
         
         /**
          * Method to get an image for channel.
+         * 
          * @return
          *      the string URL of the image for the channel
          */

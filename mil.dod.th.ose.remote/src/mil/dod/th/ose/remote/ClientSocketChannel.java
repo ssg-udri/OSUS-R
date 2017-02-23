@@ -54,6 +54,11 @@ public class ClientSocketChannel extends AbstractSocketChannel
     public final static String PORT_PROP_KEY = "port";
 
     /**
+     * Key for the property containing the SSL flag for the socket.
+     */
+    public final static String SSL_PROP_KEY = "ssl";
+
+    /**
      * Factory to create {@link Socket}s.
      */
     private ClientSocketFactory m_ClientSocketFactory;
@@ -130,11 +135,13 @@ public class ClientSocketChannel extends AbstractSocketChannel
     {
         final String host = (String)props.get(HOST_PROP_KEY);
         final int port = (Integer)props.get(PORT_PROP_KEY);
-        final Socket socket = m_ClientSocketFactory.createClientSocket(host, port);
+        final boolean useSsl = (Boolean)props.get(SSL_PROP_KEY);
+        final Socket socket = m_ClientSocketFactory.createClientSocket(host, port, useSsl);
         
         final Map<String, Object> matchProps = new HashMap<String, Object>();
         matchProps.put(HOST_PROP_KEY, host);
         matchProps.put(PORT_PROP_KEY, port);
+        matchProps.put(SSL_PROP_KEY, useSsl);
         subActivate(socket, matchProps);
     }
     
@@ -160,5 +167,11 @@ public class ClientSocketChannel extends AbstractSocketChannel
     public int getPort()
     {
         return (Integer)getProperties().get(PORT_PROP_KEY);
+    }
+
+    @Override
+    public boolean isSslEnabled()
+    {
+        return (Boolean)getProperties().get(SSL_PROP_KEY);
     }
 }

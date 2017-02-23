@@ -27,6 +27,7 @@ public class ControllerHistory implements Serializable
     private String m_ControllerName;
     private String m_HostName;
     private int m_Port;
+    private boolean m_SslEnabled;
     private long m_LastConnected;
     
     public Integer getControllerId()
@@ -69,6 +70,16 @@ public class ControllerHistory implements Serializable
         m_Port = port;
     }
     
+    public boolean isSslEnabled()
+    {
+        return m_SslEnabled;
+    }
+
+    public void setSslEnabled(final boolean sslEnabled)
+    {
+        m_SslEnabled = sslEnabled;
+    }
+
     public long getLastConnected()
     {
         return m_LastConnected;

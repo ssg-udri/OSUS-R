@@ -64,8 +64,16 @@
                                 </td>
                             </tr>
                             <tr>
+                                <td style="padding-top:10px">
+                                    <h:outputLabel styleClass="textHeader" for="enableSsl" value="Enable SSL"/>
+                                    <br/>
+                                    <p:selectBooleanButton style="margin-left:10px" value="#{channelGuiDialogHelper.newSocketSsl}" id="enableSsl" onLabel="Yes" offLabel="No" />
+                                    <p:message for="enableSsl"/>
+                                </td>
+                            </tr>
+                            <tr>
                                 <td style="text-align:center;padding-top:10px">
-                                    <p:commandButton value="Create Channel" id="createChanButton" actionListener="#{channelManager.createSocketChannel(controllerManager.getMaxId(), channelGuiDialogHelper.newSocketHost, channelGuiDialogHelper.newSocketPort)}" 
+                                    <p:commandButton value="Create Channel" id="createChanButton" actionListener="#{channelManager.createSocketChannel(controllerManager.getMaxId(), channelGuiDialogHelper.newSocketHost, channelGuiDialogHelper.newSocketPort, channelGuiDialogHelper.newSocketSsl)}" 
                                         update='@([id$="newChannelProps"])' oncomplete="if (!args.validationFailed) newChannelPropsDlg.hide();">
                                         
                                     </p:commandButton>

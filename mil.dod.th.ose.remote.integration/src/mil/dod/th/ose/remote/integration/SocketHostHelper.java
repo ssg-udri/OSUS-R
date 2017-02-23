@@ -15,7 +15,11 @@ package mil.dod.th.ose.remote.integration;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -61,7 +65,7 @@ public class SocketHostHelper
         
         return Integer.parseInt(portStr);
     }
-    
+
     public static Socket connectToController() throws UnknownHostException, IOException
     {
         Socket socket = new Socket(getHost(), getPort());
@@ -69,5 +73,17 @@ public class SocketHostHelper
         // Bouncy castle provider needs to be added to the security manager
         Security.addProvider(new BouncyCastleProvider());
         return socket;
+    }
+
+    public static Socket connectToControllerSsl() throws IOException, NoSuchAlgorithmException
+    {
+        final SSLSocket sslSocket =
+                (SSLSocket)SSLContext.getDefault().getSocketFactory().createSocket(getHost(), getPort());
+
+        // Immediately initiate the handshake process to verify a valid connection before trying to send
+        // real data.
+        sslSocket.startHandshake();
+
+        return sslSocket;
     }
 }

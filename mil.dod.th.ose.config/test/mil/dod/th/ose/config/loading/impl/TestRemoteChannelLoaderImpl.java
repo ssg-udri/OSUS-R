@@ -61,8 +61,8 @@ public class TestRemoteChannelLoaderImpl
     @Test
     public void testProcessSocketChannelConfigs()
     {
-        SocketChannelConfig config1 = new SocketChannelConfig("host1", 1000, m_SystemId1);
-        SocketChannelConfig config2 = new SocketChannelConfig("host2", 2000, m_SystemId2);
+        SocketChannelConfig config1 = new SocketChannelConfig("host1", 1000, m_SystemId1, false);
+        SocketChannelConfig config2 = new SocketChannelConfig("host2", 2000, m_SystemId2, true);
         SocketChannelConfig config3 = new SocketChannelConfig();
         config3.setHost("host3");
         config3.setSystemId(m_SystemId3);
@@ -74,9 +74,9 @@ public class TestRemoteChannelLoaderImpl
         
         m_SUT.processSocketChannels(configsList);
         
-        verify(m_RemoteChannelLookup).syncClientSocketChannel("host1", 1000, m_SystemId1, false);
-        verify(m_RemoteChannelLookup).syncClientSocketChannel("host2", 2000, m_SystemId2, false);
-        verify(m_RemoteChannelLookup).syncClientSocketChannel("host3", 4000, m_SystemId3, false);
+        verify(m_RemoteChannelLookup).syncClientSocketChannel("host1", 1000, m_SystemId1, false, false);
+        verify(m_RemoteChannelLookup).syncClientSocketChannel("host2", 2000, m_SystemId2, false, true);
+        verify(m_RemoteChannelLookup).syncClientSocketChannel("host3", 4000, m_SystemId3, false, false);
     }
     
     /**

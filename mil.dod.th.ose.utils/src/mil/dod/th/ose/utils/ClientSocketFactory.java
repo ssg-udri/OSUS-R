@@ -17,14 +17,32 @@ import java.net.Socket;
 
 /**
  * Create a client socket. This interface supports dependency injection to other components that need a service for
- * creating new client sockets. 
+ * creating new client sockets.
+ * 
  * @author callen
- *
  */
 public interface ClientSocketFactory 
 {
     /**
-     * Create a {@link Socket} bound to a given port based off the specified host. 
+     * Create a {@link Socket} bound to a given port based off the specified host. Optionally enables SSL on the
+     * client socket.
+     * 
+     * @param host
+     *     the host address 
+     * @param port
+     *     port that this socket is bound to
+     * @param useSsl
+     *      flag to enable/disable SSL on the socket
+     * @return
+     *     socket created by this factory
+     * @throws IOException
+     *     thrown in the event that there is an issue creating the socket     
+     */
+    Socket createClientSocket(String host, int port, boolean useSsl) throws IOException;
+
+    /**
+     * Create a {@link Socket} bound to a given port based off the specified host. SSL is not enabled on the
+     * client socket.
      * 
      * @param host
      *     the host address 

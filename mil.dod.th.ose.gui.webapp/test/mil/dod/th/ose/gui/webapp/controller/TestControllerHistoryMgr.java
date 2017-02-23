@@ -369,6 +369,7 @@ public class TestControllerHistoryMgr
                 withSettings().extraInterfaces(SocketChannel.class));
         when(((SocketChannel)remoteChannel).getHost()).thenReturn(hostname);
         when(((SocketChannel)remoteChannel).getPort()).thenReturn(port);
+        when(((SocketChannel)remoteChannel).isSslEnabled()).thenReturn(true);
         
         final Map<String, Object> props = new HashMap<String, Object>();
         props.put(RemoteConstants.EVENT_PROP_SYS_ID, systemId);
@@ -385,6 +386,7 @@ public class TestControllerHistoryMgr
         assertThat(updatedController.getControllerName(), is("test"));
         assertThat(updatedController.getHostName(), is(hostname));
         assertThat(updatedController.getPort(), is(port));
+        assertThat(updatedController.isSslEnabled(), is(true));
         assertThat(updatedController.getLastConnected(), greaterThan(initialTime));
     }
     
@@ -399,6 +401,7 @@ public class TestControllerHistoryMgr
         localhost.setHostName("localhost");
         localhost.setLastConnected(19000);
         localhost.setPort(4000);
+        localhost.setSslEnabled(false);
         
         final ControllerHistory controller1 = new ControllerHistory();
         controller1.setControllerId(5);
@@ -406,6 +409,7 @@ public class TestControllerHistoryMgr
         controller1.setHostName("10.110.7.90");
         controller1.setLastConnected(5000);
         controller1.setPort(3001);
+        controller1.setSslEnabled(true);
         
         final ControllerHistory controller2 = new ControllerHistory();
         controller2.setControllerId(5);
@@ -413,6 +417,7 @@ public class TestControllerHistoryMgr
         controller2.setHostName("192.168.2.1");
         controller2.setLastConnected(75000);
         controller2.setPort(8976);
+        controller2.setSslEnabled(false);
         
         final PersistentData localhostData = new PersistentData(UUID.randomUUID(), localhost.getHostName(), 
                 ControllerHistory.class.getName(), localhost);

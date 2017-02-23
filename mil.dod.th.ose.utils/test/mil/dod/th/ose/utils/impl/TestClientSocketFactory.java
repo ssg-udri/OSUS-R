@@ -39,7 +39,7 @@ public class TestClientSocketFactory
 
     /**
      * Test method for 
-     * {@link mil.dod.th.ose.utils.impl.ClientSocketFactoryImpl#createClientSocket(String, int)}.
+     * {@link mil.dod.th.ose.utils.impl.ClientSocketFactoryImpl#createClientSocket(String, int, boolean)}.
      * Test that a socket created with the factory can in fact connect as expected to another (Server) socket.
      */
     @Test
@@ -51,7 +51,7 @@ public class TestClientSocketFactory
         
         String host = "localhost";
         //connect using the same port as the server socket
-        Socket socket = m_SUT.createClientSocket(host, serverPort);
+        Socket socket = m_SUT.createClientSocket(host, serverPort, false);
         
         assertThat(socket.getPort(), is(serverPort));
         assertThat(socket.getInetAddress().getHostName(), is("localhost"));

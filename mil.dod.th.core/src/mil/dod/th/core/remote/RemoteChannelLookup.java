@@ -181,7 +181,29 @@ public interface RemoteChannelLookup
      * the lookup table.
      * 
      * If the channel is not new, update the associated system id. This method optionally persists the new or updated
-     * socket channel.
+     * socket channel and optionally enables SSL on the socket.
+     * 
+     * @param host
+     *      hostname of the remote system to connect to
+     * @param port
+     *      port that the remote system is listening on
+     * @param systemId
+     *      the {@link mil.dod.th.core.system.TerraHarvestSystem} id
+     * @param persist
+     *      true if the channel should be persisted, false otherwise
+     * @param useSsl
+     *      true if SSL should be enabled on the socket, false otherwise
+     * @return
+     *      channel instance that is associated with the host and port
+     */
+    SocketChannel syncClientSocketChannel(String host, int port, int systemId, boolean persist, boolean useSsl);
+    
+    /**
+     * Add the {@link SocketChannel} to the lookup if new.  Channel is new if the combination of host and port is not in
+     * the lookup table.
+     * 
+     * If the channel is not new, update the associated system id. This method optionally persists the new or updated
+     * socket channel. SSL will be disabled on the socket.
      * 
      * @param host
      *      hostname of the remote system to connect to
@@ -201,7 +223,7 @@ public interface RemoteChannelLookup
      * the lookup table.
      * 
      * If the channel is not new, update the associated system id. This method will always persist the new or
-     * updated socket channel.
+     * updated socket channel. SSL will be disabled on the socket.
      * 
      * @param host
      *      hostname of the remote system to connect to

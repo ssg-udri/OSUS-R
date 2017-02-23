@@ -70,13 +70,11 @@ import org.osgi.service.event.EventHandler;
  * Implementation of the {@link RemoteChannelLookup} interface.
  * 
  * @author Dave Humeniuk
- *
  */
 @Component // NOCHECKSTYLE: Fan out complexity
            // not easily able to reduce complexity, unless persistent data store is simplified
 public class RemoteChannelLookupImpl implements RemoteChannelLookup
 {
-
     /**
      * Map of all channels in the lookup, keyed by the system id of the controller, value is a set of channels for that
      * controller.
@@ -401,7 +399,6 @@ public class RemoteChannelLookupImpl implements RemoteChannelLookup
             // first channel for this id, create the set
             channels = new HashSet<RemoteChannel>();
             m_ChannelMap.put(systemId, channels);
-            
         }
         
         // see if channel is already associated with a system id
@@ -426,27 +423,34 @@ public class RemoteChannelLookupImpl implements RemoteChannelLookup
         // add to list of channels for the new id
         addChannelToSet(channels, channel, systemId, persist);
     }
-    
+
     @Override
     public SocketChannel syncClientSocketChannel(final String host, final int port, final int systemId)
     {
-        return syncClientSocketChannel(host, port, systemId, true);
+        return syncClientSocketChannel(host, port, systemId, true, false);
     }
-    
+
     @Override
     public SocketChannel syncClientSocketChannel(final String host, final int port, final int systemId, 
             final boolean persist)
     {
+        return syncClientSocketChannel(host, port, systemId, persist, false);
+    }
+
+    @Override
+    public SocketChannel syncClientSocketChannel(final String host, final int port, final int systemId, 
+            final boolean persist, final boolean useSsl)
+    {
         final Map<String, Object> properties = new HashMap<String, Object>();
         properties.put(ClientSocketChannel.HOST_PROP_KEY, host);
         properties.put(ClientSocketChannel.PORT_PROP_KEY, port);
-        
+        properties.put(ClientSocketChannel.SSL_PROP_KEY, useSsl);
+
         final SocketChannel channel = 
                 (SocketChannel)syncChannel(systemId, properties, m_ClientSocketChannelFactory, persist);
-        sendInitialConnectionMessage(channel);
         return channel;
     }
-    
+
     @Override
     public synchronized TransportChannel syncTransportChannel(final String transportLayerName,
             final String localMessageAddress, final String remoteMessageAddress, final int systemId)
@@ -473,6 +477,7 @@ public class RemoteChannelLookupImpl implements RemoteChannelLookup
     public synchronized boolean removeChannel(final RemoteChannel channel)
     {
         boolean foundChannelInList = false;
+
         // find the channel in the map
         for (int id : m_ChannelMap.keySet())
         {
@@ -487,6 +492,7 @@ public class RemoteChannelLookupImpl implements RemoteChannelLookup
                 }
             }
         }
+
         // dispose of instance even if not in lookup list, might be in instance list if never synced
         final ComponentInstance instance = m_Instances.remove(channel);
         if (instance != null)
@@ -580,7 +586,8 @@ public class RemoteChannelLookupImpl implements RemoteChannelLookup
             // restore all socket channels
             for (SocketChannelType socketChannel : systemChannels.getSocketChannelList())
             {
-                syncClientSocketChannel(socketChannel.getHost(), socketChannel.getPort(), systemChannels.getSysId());
+                syncClientSocketChannel(socketChannel.getHost(), socketChannel.getPort(), systemChannels.getSysId(),
+                        true, socketChannel.getSslEnabled());
             }
             
             // restore all transport channels
@@ -633,6 +640,7 @@ public class RemoteChannelLookupImpl implements RemoteChannelLookup
             
             m_Logging.debug("Created new channel [%s] for system id 0x%08x", channel, systemId);
             
+            sendInitialConnectionMessage(channel);
             return channel;
         }
         
@@ -739,6 +747,7 @@ public class RemoteChannelLookupImpl implements RemoteChannelLookup
                 builder.addSocketChannel(SocketChannelType.newBuilder()
                         .setHost(clientSocketChannel.getHost())
                         .setPort(clientSocketChannel.getPort())
+                        .setSslEnabled(clientSocketChannel.isSslEnabled())
                         .build());
             }
             else if (channel instanceof TransportChannel)
@@ -817,7 +826,7 @@ public class RemoteChannelLookupImpl implements RemoteChannelLookup
         
         return -1;
     }
-    
+
     /**
      * Sends a controller info response message upon connection of a channel.
      * 
@@ -827,12 +836,12 @@ public class RemoteChannelLookupImpl implements RemoteChannelLookup
     private void sendInitialConnectionMessage(final RemoteChannel channel)
     {
         final int destId = getChannelSystemId(channel);
-        
+
         final EncryptType encryptionType = 
                 EnumConverter.convertEncryptionModeToEncryptType(m_RemoteSettings.getEncryptionMode());
         final GetEncryptionTypeResponseData encryptionInfo = 
                 GetEncryptionTypeResponseData.newBuilder().setType(encryptionType).build();
-        
+
         final EncryptionInfoNamespace namespace = EncryptionInfoNamespace.newBuilder()
                 .setData(encryptionInfo.toByteString())
                 .setType(EncryptionInfoMessageType.GetEncryptionTypeResponse).build();
@@ -842,9 +851,10 @@ public class RemoteChannelLookupImpl implements RemoteChannelLookup
                 .setSourceId(m_TerraHarvestSystem.getId()).setIsResponse(true).setMessageId(Integer.MAX_VALUE)
                 .setVersion(RemoteConstants.SPEC_VERSION).setTerraHarvestPayload(payload.toByteString())
                 .setEncryptType(EncryptType.NONE).build();
+
         channel.queueMessage(message);
     }
-    
+
     /**
      * Handles local events and performs action based on event received.
      *

@@ -221,6 +221,7 @@ public class TestChannelGuiDialogHelper
         
         m_SUT.setNewSocketHost("NewSocketHost");
         m_SUT.setNewSocketPort(1);
+        m_SUT.setNewSocketSsl(true);
         
         m_SUT.clearNewChannelInput();
        
@@ -228,6 +229,7 @@ public class TestChannelGuiDialogHelper
         assertThat(m_SUT.getNewTransportRemoteAddress(), is(""));
         assertThat(m_SUT.getNewTransportLocalAddress(), is(""));
         
+        assertThat(m_SUT.isNewSocketSsl(), is(false));
         assertThat(m_SUT.getNewSocketPort(), is(4000));
         assertThat(m_SUT.getNewSocketHost(), is("localhost"));
         assertThat(m_SUT.getNewChannelControllerId(), is(0));

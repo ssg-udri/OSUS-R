@@ -66,6 +66,10 @@
     <createPolicy>FirstRun</createPolicy>
   </addresses>
   
+  <addresses addressDescription="Example:3">
+    <createPolicy>FirstRun</createPolicy>
+  </addresses>
+  
   <osgiConfigs>
     <pid>example.metatype.XML.ExampleClass</pid>
     <properties key="example.config.value" value="50"/>
@@ -88,7 +92,7 @@
     <eventTopics>mil/dod/th/core/asset/Asset/DATA_CAPTURED</eventTopics>
   </eventRegs>
   
-  <socketChannels host="localhost" port="4001" systemId="2"/>
+  <socketChannels host="localhost" port="4001" systemId="2" ssl="false"/>
   
   <transportChannels transportLayerName="xmlConfigTransportLayer" localAddress="Example:1" remoteAddress="Example:2"
     systemId="300"/>

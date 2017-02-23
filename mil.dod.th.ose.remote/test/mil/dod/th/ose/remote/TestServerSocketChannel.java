@@ -26,6 +26,8 @@ import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.net.ssl.SSLSocket;
+
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.pm.PowerManager;
 import mil.dod.th.core.pm.WakeLock;
@@ -580,7 +582,41 @@ public class TestServerSocketChannel
         
         assertThat(m_SUT.getHost(), is("test-host"));
     }
-    
+
+    /**
+     * Verify SSL flag returned is the one associated with the incoming socket. 
+     */
+    @Test
+    public void testIsSslEnabled()
+    {
+        // mock the socket
+        Socket socket = mock(SSLSocket.class);
+        
+        // activate the component
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put(ServerSocketChannel.SOCKET_PROP_KEY, socket);
+        m_SUT.activate(props);
+        
+        assertThat(m_SUT.isSslEnabled(), is(true));
+    }
+
+    /**
+     * Verify SSL flag returned is the one associated with the incoming socket. 
+     */
+    @Test
+    public void testIsSslDisabled()
+    {
+        // mock the socket
+        Socket socket = mock(Socket.class);
+        
+        // activate the component
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put(ServerSocketChannel.SOCKET_PROP_KEY, socket);
+        m_SUT.activate(props);
+        
+        assertThat(m_SUT.isSslEnabled(), is(false));
+    }
+
     /**
      * Verify toString prints a short readable string.
      */

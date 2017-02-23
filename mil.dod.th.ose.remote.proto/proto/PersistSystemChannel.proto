@@ -33,6 +33,8 @@ message SocketChannelType
     required string host = 1;
     
     required int32 port = 2;
+    
+    required bool sslEnabled = 3;
 }
 
 //Type which contains attributes of a transport channel including the transport name and message destination address.

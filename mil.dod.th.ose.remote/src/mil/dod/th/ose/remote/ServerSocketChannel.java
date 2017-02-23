@@ -16,6 +16,8 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.net.ssl.SSLSocket;
+
 import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
@@ -32,7 +34,6 @@ import org.osgi.service.component.ComponentFactory;
  * using a {@link org.osgi.service.component.ComponentFactory}.
  * 
  * @author Dave Humeniuk
- *
  */
 @Component(factory = ServerSocketChannel.FACTORY_NAME)
 public class ServerSocketChannel extends AbstractSocketChannel
@@ -132,5 +133,11 @@ public class ServerSocketChannel extends AbstractSocketChannel
     public int getPort()
     {
         return getSocket().getPort();
+    }
+
+    @Override
+    public boolean isSslEnabled()
+    {
+        return getSocket() instanceof SSLSocket;
     }
 }

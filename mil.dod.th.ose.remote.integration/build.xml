@@ -24,7 +24,7 @@ Build and execute remote interface integration tests.
     <target name="init" depends="master.init">
         <property name="target.app.dir" value="${workspacedir}/target/generic/controller-app"/>
     </target>
-        
+    
     <target name="setup" depends="init" description="moves example asset and example platform to the controller-app"  >
         <delete failonerror="false">
            <fileset dir="${target-dir}" includes="TEST-*.xml" />
@@ -47,6 +47,9 @@ Build and execute remote interface integration tests.
         <!-- replace the encrypt configuration directory -->
         <copy todir="${target-dir}/deploy/encrypt-conf" overwrite="true" >
             <fileset dir="resources/encrypt-conf" includes="*.properties*" />
+        </copy>
+        <copy todir="${target-dir}/deploy/encrypt-conf" overwrite="true" >
+            <fileset dir="resources/encrypt-conf" includes="*.jks" />
         </copy>
         <!-- Replace configs.xml -->
         <copy todir="${target-dir}/deploy/conf" overwrite="true" >
@@ -102,25 +105,46 @@ Build and execute remote interface integration tests.
         </junit>
     </target>
 
+    <target name="run-ssl-tests" depends="init" description="Just run integration tests that verify SSL">
+        <junit haltonfailure="no" showoutput="false" printsummary="true" failureproperty='stop' errorproperty='stop' 
+                   fork="true" dir="${basedir}" forkmode="once">
+            <formatter type="xml" />
+            <classpath path="${project.buildpath}:${testbin}" />
+            <sysproperty key="javax.net.ssl.keyStore" value="resources/encrypt-conf/keystore.jks" />
+            <sysproperty key="javax.net.ssl.keyStorePassword" value="changeit" />
+            <sysproperty key="javax.net.ssl.trustStore" value="resources/encrypt-conf/cacerts.jks" />
+            <sysproperty key="javax.net.ssl.trustStorePassword" value="changeit" />
+            <batchtest todir="${target-dir}">
+                <fileset dir="${src}">
+                    <include name="**/ssl/Test*.java" />
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
     <!-- 
       this target should only need to be run by an automated tool to start THOSE, run tests then stop THOSE, if running
       test manually, start controller yourself then run tests that need to be run just like unit tests 
     -->
     <target name="test" depends="compile,build,setup" 
         description="Run all integration tests, target is for continuous integration only"> 
-        <test-run runtarget="run-1st-run-tests" />
-        <test-run runtarget="run-2nd-run-tests" />
-        <test-run runtarget="run-encryption-tests" />
+        <test-run runtarget="run-1st-run-tests" enableSsl="false" />
+        <test-run runtarget="run-2nd-run-tests" enableSsl="false" />
+        <test-run runtarget="run-encryption-tests" enableSsl="false" />
+        <test-run runtarget="run-ssl-tests" enableSsl="true" />
         <antcall target="check-for-test-results" />
     </target>
     
     <macrodef name="test-run">
         <attribute name="runTarget" />
+        <attribute name="enableSsl" />
         <sequential>
             <antcall target="try-kill-controller-processes" />
             <!-- change log level to DEBUG for testing to make it easier to debug afterwards -->
             <replace file="${target-dir}/deploy/conf/config.properties">
                 <replacefilter token="mil.dod.th.ose.logging.level=INFO" value="mil.dod.th.ose.logging.level=DEBUG" />
+                <replacefilter token="mil.dod.th.ose.remote.socket.ssl=true" value="mil.dod.th.ose.remote.socket.ssl=false" />
+                <replacefilter token="mil.dod.th.ose.remote.socket.ssl=false" value="mil.dod.th.ose.remote.socket.ssl=@{enableSsl}" />
             </replace>
             <parallel>
                 <!-- run controller as daemon so it stops when Ant is done even if the shutdown command doesn't work -->

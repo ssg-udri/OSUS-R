@@ -622,6 +622,7 @@ public class TestPrepFor2ndRun
         // Remove Addresses to test FirstRun setting
         String address1desc = "Example:1";
         String address2desc = "Example:2";
+        String address3desc = "Example:3";
         AddressManagerService addressManagerService = IntegrationTestRunner.getService(AddressManagerService.class);
         assertThat(addressManagerService, is(notNullValue()));
         if (addressManagerService.checkAddressAlreadyExists(address1desc))
@@ -633,6 +634,11 @@ public class TestPrepFor2ndRun
         {
             Address addr2 = addressManagerService.getOrCreateAddress(address2desc);       
             addr2.delete();
+        }
+        if (addressManagerService.checkAddressAlreadyExists(address3desc))
+        {
+            Address addr3 = addressManagerService.getOrCreateAddress(address3desc);       
+            addr3.delete();
         }
 
         // Remove LinkLayer to test creation.
@@ -651,7 +657,7 @@ public class TestPrepFor2ndRun
         // Remove PhysicalLink to test IfMissing setting
         String testPhysicalLinkName = "xmlConfigPhysicalLink";
         customCommsService.deletePhysicalLink(testPhysicalLinkName);
-                   
+
         // Remove configuration to test OSGi non-factory configuration creation on second run
         String osgiPid = "example.metatype.XML.ExampleClass";
         ConfigurationAdmin configAdmin = IntegrationTestRunner.getService(ConfigurationAdmin.class);     
