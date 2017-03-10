@@ -46,7 +46,7 @@
                                 <table style="width: 100%">
                                     <tr>
                                         <td align="center">
-                                        <p:panelGrid
+                                            <p:panelGrid
                                                 styleClass="tablesNoBorderOnCells"
                                                 style="padding-bottom:10px;padding-top:20px;width:100%"
                                                 rendered="#{newStackModel.selectedTransportLayerType != null and !newStackModel.forceAdd}">
@@ -95,8 +95,9 @@
                                          </td>
                                     </tr>
                                     <tr>
-                                        <td align="center"><p:panelGrid
-                                                styleClass="tablesNoBorderOnCells"
+                                        <td align="center">
+                                            <p:panelGrid
+                                                styleClass="tablesNoBorderOnCells" rendered="#{newStackModel.forceAdd or newStackModel.selectedPhysicalLink != null and !newStackModel.selectedPhysicalLink.isEmpty()}"
                                                 style="padding-bottom:10px;padding-top:20px;width:100%">
                                                 <f:facet name="header">
                                                     <p:row>
@@ -104,7 +105,7 @@
                                                     </p:row>
                                                     <p:row>
                                                         <p:column rendered="#{newStackModel.forceAdd}">Link Name Entered</p:column>
-                                                        <p:column>Link Type</p:column>
+                                                        <p:column rendered="#{newStackModel.selectedPhysicalLink != null}">Link Type</p:column>
                                                     </p:row>
                                                 </f:facet>
                                                 <p:row>
@@ -112,7 +113,7 @@
                                                         #{newStackModel.newPhysicalName}
                                                     </p:column>
                                                     <p:column>
-                                                        <h:outputText rendered="#{!newStackModel.forceAdd}" 
+                                                        <h:outputText rendered="#{newStackModel.selectedPhysicalLink != null and !newStackModel.forceAdd}" 
                                                         value="#{newStackModel.selectedPhysicalLink}"/>
                                                         <h:outputText rendered="#{newStackModel.forceAdd}" 
                                                         value="#{newStackModel.selectedPhysicalType}"/>                                                     

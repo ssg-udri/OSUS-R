@@ -91,7 +91,6 @@ public class AddCommsMessageControllerImpl implements AddCommsMessageController
         }
         else
         {
-            final UUID physUuid = commsMgr.getPhysicalUuidByName(model.getSelectedPhysicalLink(), systemId);
             ResponseHandler handler = null;
             if (model.getSelectedTransportLayerType() != null)
             {                
@@ -103,10 +102,22 @@ public class AddCommsMessageControllerImpl implements AddCommsMessageController
                 Logging.log(LogService.LOG_DEBUG, "Requested to create transport layer with the name: [%s] and of "
                         + "type: [%s]", model.getNewTransportName(), model.getSelectedTransportLayerType());
             }
-            final CreateLinkLayerRequestData linkLayerRequest = CreateLinkLayerRequestData.newBuilder().
-                    setLinkLayerName(model.getNewLinkName()).
-                    setLinkLayerProductType(model.getSelectedLinkLayerType()).
-                    setPhysicalLinkUuid(SharedMessageUtils.convertUUIDToProtoUUID(physUuid)).build();
+
+            final CreateLinkLayerRequestData linkLayerRequest;
+            if (model.getSelectedPhysicalLink() == null || model.getSelectedPhysicalLink().isEmpty())
+            {
+                linkLayerRequest = CreateLinkLayerRequestData.newBuilder().
+                        setLinkLayerName(model.getNewLinkName()).
+                        setLinkLayerProductType(model.getSelectedLinkLayerType()).build();
+            }
+            else
+            {
+                final UUID physUuid = commsMgr.getPhysicalUuidByName(model.getSelectedPhysicalLink(), systemId);
+                linkLayerRequest = CreateLinkLayerRequestData.newBuilder().
+                        setLinkLayerName(model.getNewLinkName()).
+                        setLinkLayerProductType(model.getSelectedLinkLayerType()).
+                        setPhysicalLinkUuid(SharedMessageUtils.convertUUIDToProtoUUID(physUuid)).build();
+            }
 
             m_MessageFactory.createCustomCommsMessage(CustomCommsMessageType.CreateLinkLayerRequest, 
                     linkLayerRequest).queue(systemId, handler); 

@@ -244,7 +244,22 @@ public class CommsLayerTypesMgrImpl implements CommsLayerTypesMgr
         final List<String> types = m_LinkTypes.get(systemId);
         return types == null ? new ArrayList<String>() : types;
     }
-    
+
+    @Override
+    public boolean getLinkLayerRequiresPhysical(final int systemId, final String clazzName)
+    {
+        for (String name : m_LinkTypes.get(systemId))
+        {
+            if (name.equals(clazzName))
+            {
+                final LinkLayerCapabilities linkCaps = (LinkLayerCapabilities)getCapabilities(systemId, name);
+                return linkCaps.isPhysicalLinkRequired();
+            }
+        }
+
+        return true;
+    }
+
     @Override
     public List<String> getPhysicalLinkClasses(final int systemId)
     {

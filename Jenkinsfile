@@ -89,8 +89,25 @@ platforms['linux64'] = {
     }
 }
 
+platforms['linux32'] = {
+    node('linux && 32bit') {
+        deleteDir()
+        unstash 'sources'
+        withEnv([
+            "JAVA_HOME=${tool 'JDK 8'}",
+            "JAVA_INCLUDE=${tool 'JDK 8'}/include",
+            "PATH+ANT=${tool 'Ant 1.8.4'}/bin",
+            "PATH+JAVA_BIN=${tool 'JDK 8'}/bin"
+        ]) {
+            sh 'env'
+            sh 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-standard'
+        }
+        saveOsusResults('linux32-results')
+    }
+}
+
 platforms['docs'] = {
-    node {
+    node('linux') {
         deleteDir()
         unstash 'sources'
         withEnv([
@@ -221,6 +238,9 @@ def extractOsusResults() {
     }
     dir('linux64') {
         unstash 'linux64-results'
+    }
+    dir('linux32') {
+        unstash 'linux32-results'
     }
     dir('docs') {
         unstash 'docs-results'

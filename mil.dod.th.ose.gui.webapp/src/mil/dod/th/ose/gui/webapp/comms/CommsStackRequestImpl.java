@@ -187,10 +187,19 @@ public class CommsStackRequestImpl implements CommsStackRequest
         // try to find physical link, if prop not set, assume no physical link
         final UnmodifiablePropertyModel physicalLinkNameProp = linkLayer.
                 getPropertyAsync(LinkLayerAttributes.CONFIG_PROP_PHYSICAL_LINK_NAME);
-        if (physicalLinkNameProp != null)
+        if (physicalLinkNameProp == null)
+        {
+            stack.setStackComplete();
+        }
+        else
         {
             final String physicalLinkName = (String)physicalLinkNameProp.getValue();
-            
+            if (physicalLinkName.isEmpty())
+            {
+                stack.setStackComplete();
+                return;
+            }
+
             // we have a child, find it in the list of unused link layers
             for (FactoryBaseModel physicalLink : physicalLinks)
             {

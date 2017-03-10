@@ -620,7 +620,53 @@ public class TestCommsLayerTypesMgrImpl
         
         assertThat(m_SUT.getPhysicalLinkClassByType(123, PhysicalLinkTypeEnum.SERIAL_PORT), is("class.name.one"));
     }
-    
+
+    @Test
+    public void testGetLinkLayerRequiresPhysical() throws ObjectConverterException
+    {
+        Event getTypes = mockMessageGetCommsTypesResponse(systemId1, CommType.Linklayer);
+        m_CommsHelper.handleEvent(getTypes);
+
+        CapabilitiesResponseHandler capsHandler = m_SUT.new CapabilitiesResponseHandler("class.name.two");
+        BaseCapabilities baseCaps = BaseCapabilities.newBuilder()
+                .setDescription("fancy description")
+                .setProductName("fancyName")
+                .build();
+        LinkLayerCapabilitiesGen.LinkLayerCapabilities caps = 
+                LinkLayerCapabilitiesGen.LinkLayerCapabilities.newBuilder()
+                .setBase(baseCaps)
+                .setStaticMtu(false)
+                .setPhysicalLinkRequired(false)
+                .setPerformBITSupported(false)
+                .setModality(CustomCommTypesGen.LinkLayerType.Enum.LINE_OF_SIGHT)
+                .setSupportsAddressing(false)
+                .build();
+
+        GetCapabilitiesResponseData response = GetCapabilitiesResponseData.newBuilder().
+                setCommType(CommType.Linklayer).setProductType("class.name.two").
+                setLinkCapabilities(caps).build();
+        CustomCommsNamespace nameResponse = CustomCommsNamespace.newBuilder().
+                setData(response.toByteString()).
+                setType(CustomCommsMessageType.GetCapabilitiesResponse).build();
+        TerraHarvestPayload payload = TerraHarvestPayload.newBuilder().setNamespace(Namespace.CustomComms).
+                setNamespaceMessage(response.toByteString()).build(); 
+
+        TerraHarvestMessage thMessage = TerraHarvestMessageHelper.createTerraHarvestMessage(systemId1, 0,
+                Namespace.CustomComms, 123, nameResponse);
+
+        LinkLayerCapabilities lCaps = mock(LinkLayerCapabilities.class);
+        when(lCaps.isPhysicalLinkRequired()).thenReturn(false);
+        when(m_Converter.convertToJaxb(Mockito.any(Message.class))).thenReturn(lCaps);
+
+        capsHandler.handleResponse(thMessage, payload, nameResponse, response);
+
+        boolean requiresPhy = m_SUT.getLinkLayerRequiresPhysical(systemId1, "class.name.two");
+        assertThat(requiresPhy, is(false));
+
+        requiresPhy = m_SUT.getLinkLayerRequiresPhysical(systemId1, null);
+        assertThat(requiresPhy, is(true));
+    }
+
     /**
      * Mock interaction with SUT to receive capabilities for the test physical link plug-in. 
      */

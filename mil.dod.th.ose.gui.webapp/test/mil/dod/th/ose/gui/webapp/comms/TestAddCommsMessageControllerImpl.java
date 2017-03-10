@@ -271,7 +271,42 @@ public class TestAddCommsMessageControllerImpl
         assertThat(linkRequest.getLinkLayerName(), is("linkyLink"));
         assertThat(linkRequest.getPhysicalLinkUuid(), is(SharedMessageUtils.convertUUIDToProtoUUID(uuid_phys)));
     }
-    
+
+    /**
+     * Verify that a link layer can be created without a physical link.
+     */
+    @Test
+    public void testSubmitNewCommsStackRequestLinkLayerNoPhysical()
+    {
+        //create a model with link layer only
+        CommsStackCreationModel model = new CommsStackCreationModel();
+        model.setNewLinkName("linkyLink");
+        model.setForceAdd(false);
+        model.setSelectedLinkLayerType("example.link.type");
+        
+        m_SUT.submitNewCommsStackRequest(0, model);
+        
+        //capture the message sent and built message for the transport layer
+        ArgumentCaptor<CreateLinkLayerRequestData> linkMessageCap = 
+                ArgumentCaptor.forClass(CreateLinkLayerRequestData.class);
+        verify(m_MessageFactory).createCustomCommsMessage(
+                eq(CustomCommsMessageType.CreateLinkLayerRequest), linkMessageCap.capture());
+        
+        //verify no link handler is created for trans
+        verify(m_CommsMgr, never()).createLinkLayerHandler(Mockito.any(CreateTransportLayerRequestData.Builder.class));
+        
+        //capture handler value, should be null
+        ArgumentCaptor<ResponseHandler> handlerCap = ArgumentCaptor.forClass(ResponseHandler.class);
+        verify(m_MessageWrapper).queue(eq(0), handlerCap.capture());
+        assertThat(handlerCap.getValue(), is(nullValue()));
+        
+        //inspect link layer captured message
+        CreateLinkLayerRequestData linkRequest = linkMessageCap.getValue();
+        assertThat(linkRequest.getLinkLayerProductType(), is("example.link.type"));
+        assertThat(linkRequest.getLinkLayerName(), is("linkyLink"));
+        assertThat(linkRequest.hasPhysicalLinkUuid(), is(false));
+    }
+
     /**
      * Helper method for setting all values for a comms creation model.
      */

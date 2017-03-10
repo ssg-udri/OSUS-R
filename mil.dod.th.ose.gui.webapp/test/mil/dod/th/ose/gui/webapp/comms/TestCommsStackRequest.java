@@ -58,6 +58,7 @@ public class TestCommsStackRequest
     private String pid4 = "FEET";
     private String pid5 = "PURPLE";
     private String pid6 = "POSIES";
+    private String pid7 = "LINKONLY";
     
     //UUIDs
     private UUID uuid1 = UUID.randomUUID();
@@ -66,6 +67,7 @@ public class TestCommsStackRequest
     private UUID uuid4 = UUID.randomUUID();
     private UUID uuid5 = UUID.randomUUID();
     private UUID uuid6 = UUID.randomUUID();
+    private UUID uuid7 = UUID.randomUUID();
 
     @Before
     public void setUp()
@@ -104,7 +106,7 @@ public class TestCommsStackRequest
         when(property9.getValue()).thenReturn("testPhys2");
         
         /*
-         * Create three fake stacks
+         * Create four fake stacks
          */
         //stack 1
         CommsLayerBaseModel transport = new CommsLayerBaseModel(systemId1, uuid1, pid1, "clazz",
@@ -129,13 +131,19 @@ public class TestCommsStackRequest
         CommsLayerBaseModel physical3 = new CommsLayerBaseModel(systemId1, uuid6, pid6, "clazz",
                 CommType.PhysicalLink, m_FactoryMgr, m_TypesMgr, m_ConfigWrapper, m_CommsImageInterface);
         physical3.updateName("testPhys3");
-        
+
+        //stack 4
+        CommsLayerLinkModelImpl link4 = new CommsLayerLinkModelImpl(systemId1, uuid7, pid7,
+                "clazz", m_FactoryMgr, m_TypesMgr, m_ConfigWrapper, m_CommsImageInterface);
+        link4.updateName("testLink4");
+
         List<CommsLayerBaseModel> transports = new ArrayList<CommsLayerBaseModel>();
         transports.add(transport);
         
         List<CommsLayerLinkModelImpl> links = new ArrayList<CommsLayerLinkModelImpl>();
         links.add(link);
         links.add(link2);
+        links.add(link4);
         
         List<CommsLayerBaseModel> physicals = new ArrayList<CommsLayerBaseModel>();
         physicals.add(physical);
@@ -154,19 +162,27 @@ public class TestCommsStackRequest
     public void testGetCommsStacks()
     {
         List<CommsStackModel> stacks = m_SUT.getCommsStacksAsync(systemId1);
-        assertThat(stacks.size(), is(3));   
+        assertThat(stacks.size(), is(4));   
         
         assertThat(stacks.get(0).getTransport().getUuid(), is(uuid1));
         assertThat(stacks.get(0).getLink().getUuid(), is(uuid2));
         assertThat(stacks.get(0).getPhysical().getUuid(), is(uuid3));
+        assertThat(stacks.get(0).isComplete(), is(true));
         
         assertThat(stacks.get(1).getTransport(), is(nullValue()));
         assertThat(stacks.get(1).getLink().getUuid(), is(uuid4));
         assertThat(stacks.get(1).getPhysical().getUuid(), is(uuid5));
+        assertThat(stacks.get(1).isComplete(), is(true));
         
+        assertThat(stacks.get(3).getTransport(), is(nullValue()));
+        assertThat(stacks.get(3).getLink(), is(nullValue()));
+        assertThat(stacks.get(3).getPhysical().getUuid(), is(uuid6));
+        assertThat(stacks.get(3).isComplete(), is(true));
+
         assertThat(stacks.get(2).getTransport(), is(nullValue()));
-        assertThat(stacks.get(2).getLink(), is(nullValue()));
-        assertThat(stacks.get(2).getPhysical().getUuid(), is(uuid6));
+        assertThat(stacks.get(2).getLink().getUuid(), is(uuid7));
+        assertThat(stacks.get(2).getPhysical(), is(nullValue()));
+        assertThat(stacks.get(2).isComplete(), is(true));
     }
     
     /**
@@ -179,7 +195,7 @@ public class TestCommsStackRequest
         List<CommsStackModel> selectedStacks = m_SUT.getSelectedCommsStacksAsync(systemId1, null);
         List<CommsStackModel> stacks = m_SUT.getCommsStacksAsync(systemId1);
         
-        assertThat(selectedStacks.size(), is(3));
+        assertThat(selectedStacks.size(), is(4));
         
         /**
          * Assert that selectedStacks and all stacks are identical since null selected stack was passed in
@@ -195,6 +211,10 @@ public class TestCommsStackRequest
         assertThat(stacks.get(2).getTransport(), is(selectedStacks.get(2).getTransport()));
         assertThat(stacks.get(2).getLink(), is(selectedStacks.get(2).getLink()));
         assertThat(stacks.get(2).getPhysical(), is(selectedStacks.get(2).getPhysical()));
+
+        assertThat(stacks.get(3).getTransport(), is(selectedStacks.get(3).getTransport()));
+        assertThat(stacks.get(3).getLink(), is(selectedStacks.get(3).getLink()));
+        assertThat(stacks.get(3).getPhysical(), is(selectedStacks.get(3).getPhysical()));
     }
     
     /**
@@ -233,7 +253,8 @@ public class TestCommsStackRequest
         
         assertThat(stacks.get(0).getTransport(), is(topLayers.get(0)));
         assertThat(stacks.get(1).getLink(), is(topLayers.get(1)));
-        assertThat(stacks.get(2).getPhysical(), is(topLayers.get(2)));
+        assertThat(stacks.get(2).getLink(), is(topLayers.get(2)));
+        assertThat(stacks.get(3).getPhysical(), is(topLayers.get(3)));
     }
     
     /**
@@ -255,11 +276,16 @@ public class TestCommsStackRequest
         assertThat(model.getLink(), is(stacks.get(1).getLink()));
         assertThat(model.getPhysical(), is(stacks.get(1).getPhysical()));
         
-        model = m_SUT.getCommsStackForBaseModel(systemId1, stacks.get(2).getPhysical());
+        model = m_SUT.getCommsStackForBaseModel(systemId1, stacks.get(2).getLink());
         assertThat(model.getTransport(), is(stacks.get(2).getTransport()));
         assertThat(model.getLink(), is(stacks.get(2).getLink()));
         assertThat(model.getPhysical(), is(stacks.get(2).getPhysical()));
-        
+
+        model = m_SUT.getCommsStackForBaseModel(systemId1, stacks.get(3).getPhysical());
+        assertThat(model.getTransport(), is(stacks.get(3).getTransport()));
+        assertThat(model.getLink(), is(stacks.get(3).getLink()));
+        assertThat(model.getPhysical(), is(stacks.get(3).getPhysical()));
+
         //test null return
         when(m_CommsMgr.getLinksAsync(systemId1)).thenReturn(new ArrayList<CommsLayerLinkModelImpl>());
         when(m_CommsMgr.getTransportsAsync(systemId1)).thenReturn(new ArrayList<CommsLayerBaseModel>());

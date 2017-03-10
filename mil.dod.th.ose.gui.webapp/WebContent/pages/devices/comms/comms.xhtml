@@ -167,7 +167,7 @@
                                                                 </tr>
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{comms.link != null}">
-                                                                <tr class="stackRow">
+                                                                <tr class="#{comms.physical != null ? 'stackRow' : ''}">
                                                                     <td style="padding:1em 0">
                                                                         <h:outputText
                                                                             styleClass="stackText"
@@ -199,39 +199,40 @@
                                                                     </td>
                                                                 </tr>
                                                             </ui:fragment>
-
-                                                            <tr style="border-color:white">
-                                                                <td style="padding:1em 0">
-                                                                    <h:outputText styleClass="stackText"
-                                                                        value="Physical Link">
-                                                                    </h:outputText>
-                                                                </td>
-                                                                <td style="padding:1em 0" colspan="2">
-                                                                    <h:outputText style="font-size:1.1em"
-                                                                        rendered="#{comms.physical != null}"
-                                                                        value="#{comms.physical.name}">
-                                                                    </h:outputText>
-                                                                     
-                                                                    <!-- <p:outputPanel id="physEditPanel" >
-                                                                            <p:inplace style="font-weight:bold;font-size:1em;" editor="true" >
-                                                                                <p:inputText id="physName" value="#{comms.physical.name}" required="true"/>
-                                                                            </p:inplace>
-                                                                            <p:graphicImage style="height:1em"  library="images" name="icons/Pencil.png" alt="Image Not Found"/>
-                                                                        </p:outputPanel>
-                                                                        <p:tooltip for="physEditPanel" value="Click on the layer's name to edit the value." />-->
-                                                                       
-                                                                </td>
-                                                                <td style="padding:1em 0">
-                                                                    <p:commandButton icon="ui-icon-gear"
-                                                                        rendered="#{comms.physical != null}"
-                                                                        id="physicalConfigButton"
-                                                                        update='@([id$="commsEditConfiguration"])' 
-                                                                        oncomplete="commsEditConfigurationDlg.show();" action="#{factoryObjConfigModifierView.setSelectedFactoryModel(comms.physical)}"
-                                                                        disabled="false">
-                                                                        </p:commandButton>
-                                                                    <p:tooltip for="transportConfigButton" value="Configure the physical layer." /> 
-                                                                </td>
-                                                            </tr>
+                                                            <ui:fragment rendered="#{comms.physical != null}">
+                                                                <tr style="border-color:white">
+                                                                    <td style="padding:1em 0">
+                                                                        <h:outputText styleClass="stackText"
+                                                                            value="Physical Link">
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td style="padding:1em 0" colspan="2">
+                                                                        <h:outputText style="font-size:1.1em"
+                                                                            rendered="#{comms.physical != null}"
+                                                                            value="#{comms.physical.name}">
+                                                                        </h:outputText>
+                                                                         
+                                                                        <!-- <p:outputPanel id="physEditPanel" >
+                                                                                <p:inplace style="font-weight:bold;font-size:1em;" editor="true" >
+                                                                                    <p:inputText id="physName" value="#{comms.physical.name}" required="true"/>
+                                                                                </p:inplace>
+                                                                                <p:graphicImage style="height:1em"  library="images" name="icons/Pencil.png" alt="Image Not Found"/>
+                                                                            </p:outputPanel>
+                                                                            <p:tooltip for="physEditPanel" value="Click on the layer's name to edit the value." />-->
+                                                                           
+                                                                    </td>
+                                                                    <td style="padding:1em 0">
+                                                                        <p:commandButton icon="ui-icon-gear"
+                                                                            rendered="#{comms.physical != null}"
+                                                                            id="physicalConfigButton"
+                                                                            update='@([id$="commsEditConfiguration"])' 
+                                                                            oncomplete="commsEditConfigurationDlg.show();" action="#{factoryObjConfigModifierView.setSelectedFactoryModel(comms.physical)}"
+                                                                            disabled="false">
+                                                                            </p:commandButton>
+                                                                        <p:tooltip for="transportConfigButton" value="Configure the physical layer." /> 
+                                                                    </td>
+                                                                </tr>
+                                                            </ui:fragment>
                                                         </table>
                                                     </td>
                                                 </tr>
