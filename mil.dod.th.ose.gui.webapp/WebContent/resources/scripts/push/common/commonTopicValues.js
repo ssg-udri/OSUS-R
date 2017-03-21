@@ -68,6 +68,10 @@ window.thTopic.assetLocationUpdated = window.thTopic.globalPrefixLocal
 window.thTopic.assetObservationUpdated = window.thTopic.globalPrefixLocal
         + "asset/AssetMgr/ASSET_OBSERVATION_UPDATED";
 
+//ASSET_SENSOR_IDS_UPDATED
+window.thTopic.assetSensorIdsUpdated = window.thTopic.globalPrefixLocal
+        + "asset/AssetMgr/ASSET_SENSOR_IDS_UPDATED";
+
 //ASSET_REMOVED
 window.thTopic.assetRemoved = window.thTopic.globalPrefixLocal + "asset/AssetMgr/ASSET_REMOVED";
 

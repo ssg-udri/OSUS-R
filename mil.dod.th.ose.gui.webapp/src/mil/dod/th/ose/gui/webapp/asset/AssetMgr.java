@@ -95,7 +95,17 @@ public interface AssetMgr
      * </ul>
      */
     String TOPIC_ASSET_LOCATION_UPDATED = TOPIC_PREFIX + "ASSET_LOCATION_UPDATED";
-    
+
+    /**
+     * Topic used for when the sensor ID list of an asset has changed.
+     * 
+     * Contains the following properties:
+     * <ul>
+     * <li>{@link AssetModel#EVENT_PROP_UUID} - UUID of the asset</li>
+     * </ul>
+     */
+    String TOPIC_ASSET_SENSOR_IDS_UPDATED = TOPIC_PREFIX + "ASSET_SENSOR_IDS_UPDATED";
+
     /**
      * Topic used for when an observation was created for an asset.
      * 

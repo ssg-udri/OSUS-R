@@ -27,7 +27,6 @@ import mil.dod.th.core.validator.ValidationFailedException;
  * of an {@link Asset} will have a matching context to allow the plug-in to interact with the rest of the system.
  * 
  * @author dhumeniuk
- *
  */
 @ProviderType
 public interface AssetContext extends Asset, FactoryObjectContext
@@ -45,7 +44,23 @@ public interface AssetContext extends Asset, FactoryObjectContext
      * @see #setStatus(Status)
      */
     void setStatus(final SummaryStatusEnum summaryStatus, final String statusMessage);
-    
+
+    /**
+     * Update the current asset status for a specific sensor.  Will post an OSGi event with the topic
+     * {@link Asset#TOPIC_STATUS_CHANGED} and persist an observation containing a {@link Status} object with only the
+     * summary status included plus basic fields (see {@link AssetProxy}).
+     * 
+     * @param sensorId
+     *      sensor identifier for a sensor provided by the asset
+     * @param summaryStatus
+     *      high level summary of the asset's status
+     * @param statusMessage
+     *      descriptive string relating to the summaryStatus
+     *      
+     * @see #setStatus(String, Status)
+     */
+    void setStatus(final String sensorId, final SummaryStatusEnum summaryStatus, final String statusMessage);
+
     /**
      * Update the current asset status.  Will post an OSGi event with the topic {@link Asset#TOPIC_STATUS_CHANGED} and 
      * persist an observation containing the provided {@link Status} object plus basic fields (see {@link AssetProxy}).
@@ -54,10 +69,23 @@ public interface AssetContext extends Asset, FactoryObjectContext
      *      complete details of the asset's status
      * @throws ValidationFailedException
      *      if the status observation contains invalid data
-     * @see #setStatus(SummaryStatusEnum, String)
      */
     void setStatus(final Status status) throws ValidationFailedException;
-    
+
+    /**
+     * Update the current asset status for a specific sensor.  Will post an OSGi event with the topic
+     * {@link Asset#TOPIC_STATUS_CHANGED} and persist an observation containing the provided {@link Status} object plus
+     * basic fields (see {@link AssetProxy}).
+     * 
+     * @param sensorId
+     *      sensor identifier for a sensor provided by the asset
+     * @param status
+     *      complete details of the asset's status
+     * @throws ValidationFailedException
+     *      if the status observation contains invalid data
+     */
+    void setStatus(final String sensorId, final Status status) throws ValidationFailedException;
+
     /**
      * Persist the observation to the {@link mil.dod.th.core.persistence.ObservationStore}.
      * 

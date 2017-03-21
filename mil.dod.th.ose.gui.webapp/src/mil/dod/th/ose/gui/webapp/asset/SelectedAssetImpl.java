@@ -155,11 +155,17 @@ public class SelectedAssetImpl implements SelectedAsset
     public void requestCaptureData(final AssetModel assetModel)
     {
         final int systemId = assetModel.getControllerId();
-        final CaptureDataRequestData performDataCapRequest = CaptureDataRequestData.newBuilder()
-            .setUuid(SharedMessageUtils.convertUUIDToProtoUUID(assetModel.getUuid()))
-            .setObservationFormat(RemoteTypesGen.LexiconFormat.Enum.UUID_ONLY)
-            .build();
-        m_MessageFactory.createAssetMessage(AssetMessageType.CaptureDataRequest, performDataCapRequest).
+        final String sensorId = assetModel.getSensorId();
+
+        final CaptureDataRequestData.Builder performDataCapRequest = CaptureDataRequestData.newBuilder()
+                .setUuid(SharedMessageUtils.convertUUIDToProtoUUID(assetModel.getUuid()))
+                .setObservationFormat(RemoteTypesGen.LexiconFormat.Enum.UUID_ONLY);
+        if (sensorId != null && !sensorId.isEmpty())
+        {
+            performDataCapRequest.setSensorId(assetModel.getSensorId());
+        }
+
+        m_MessageFactory.createAssetMessage(AssetMessageType.CaptureDataRequest, performDataCapRequest.build()).
             queue(systemId, null);
     }
 

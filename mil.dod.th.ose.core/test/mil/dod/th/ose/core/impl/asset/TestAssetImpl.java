@@ -336,7 +336,38 @@ public class TestAssetImpl
 
         Observation observation = m_SUT.getLastStatus();
 
-        assertThat(observation.isSetStatus(), notNullValue());
+        assertThat(observation.isSetStatus(), is(true));
+        assertThat(observation.isSetSensorId(), is(false));
+        assertThat(observation.getStatus().getSummaryStatus().getDescription(), is("Something"));
+        assertThat(observation.getStatus().getSummaryStatus().getSummary(), is(SummaryStatusEnum.DEGRADED));
+    }
+
+    /**
+     * Verify that an OperatingStatus can be given and will be set on the asset for a specific sensor.
+     */
+    @Test
+    public void testSetStatusSummaryWithSensorId()
+    {
+        String sensorId = "testId1";
+        String statusDescription = "Something";
+        SummaryStatusEnum statusSummary = SummaryStatusEnum.DEGRADED;
+
+        m_SUT.setStatus(sensorId, statusSummary, statusDescription);
+
+        ArgumentCaptor<Event> evtCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(m_EventAdmin, atLeastOnce()).postEvent(evtCaptor.capture());
+
+        assertThat(evtCaptor.getValue().getTopic(), is(Asset.TOPIC_STATUS_CHANGED));
+        assertThat((String)evtCaptor.getValue().getProperty(Asset.EVENT_PROP_ASSET_STATUS_DESCRIPTION),
+                is("Something"));
+        assertThat((String)evtCaptor.getValue().getProperty(Asset.EVENT_PROP_ASSET_STATUS_SUMMARY),
+                is(SummaryStatusEnum.DEGRADED.toString()));
+        assertThat(evtCaptor.getValue().getProperty(Asset.EVENT_PROP_ASSET_STATUS_OBSERVATION_UUID), notNullValue());
+
+        Observation observation = m_SUT.getLastStatus();
+
+        assertThat(observation.isSetStatus(), is(true));
+        assertThat(observation.getSensorId(), is(sensorId));
         assertThat(observation.getStatus().getSummaryStatus().getDescription(), is("Something"));
         assertThat(observation.getStatus().getSummaryStatus().getSummary(), is(SummaryStatusEnum.DEGRADED));
     }
@@ -354,6 +385,18 @@ public class TestAssetImpl
     }
 
     /**
+     * Verifies that a null status will not throw an exception (data store will throw exception at runtime due to
+     * validation error).
+     */
+    @Test
+    public void testNullStatusOnSetStatusWithSensorId() throws ValidationFailedException
+    {
+        // null status
+        Status status = null;
+        m_SUT.setStatus("s1", status);
+    }
+
+    /**
      * Verifies that a status with a missing status summary will not throw an exception (data store will throw exception
      * at runtime due to validation error).
      */
@@ -363,6 +406,18 @@ public class TestAssetImpl
         Status status = new Status();
         status.withBatteryChargeLevel(new BatteryChargeLevel().withChargeLevel(ChargeLevelEnum.LOW));
         m_SUT.setStatus(status);
+    }
+
+    /**
+     * Verifies that a status with a missing status summary will not throw an exception (data store will throw exception
+     * at runtime due to validation error).
+     */
+    @Test
+    public void testNullSummaryStatusOnSetStatusWithSensorId() throws ValidationFailedException
+    {
+        Status status = new Status();
+        status.withBatteryChargeLevel(new BatteryChargeLevel().withChargeLevel(ChargeLevelEnum.LOW));
+        m_SUT.setStatus("s1", status);
     }
 
     /**
@@ -388,7 +443,38 @@ public class TestAssetImpl
 
         Observation observation = m_SUT.getLastStatus();
 
-        assertThat(observation.isSetStatus(), notNullValue());
+        assertThat(observation.isSetStatus(), is(true));
+        assertThat(observation.isSetSensorId(), is(false));
+        assertThat(observation.getStatus().getSummaryStatus().getDescription(), is("New description"));
+        assertThat(observation.getStatus().getSummaryStatus().getSummary(), is(SummaryStatusEnum.GOOD));
+    }
+
+    /**
+     * Verify that a Status can be given and will be set on the asset for a given sensor ID.
+     */
+    @Test
+    public void testSetStatusWithSensorId() throws ValidationFailedException
+    {
+        String sensorId = "testId2";
+        Status status = new Status().withSummaryStatus(
+                new OperatingStatus().withDescription("New description").withSummary(SummaryStatusEnum.GOOD));
+
+        m_SUT.setStatus(sensorId, status);
+
+        ArgumentCaptor<Event> evtCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(m_EventAdmin, atLeastOnce()).postEvent(evtCaptor.capture());
+
+        assertThat(evtCaptor.getValue().getTopic(), is(Asset.TOPIC_STATUS_CHANGED));
+        assertThat((String)evtCaptor.getValue().getProperty(Asset.EVENT_PROP_ASSET_STATUS_DESCRIPTION),
+                is("New description"));
+        assertThat((String)evtCaptor.getValue().getProperty(Asset.EVENT_PROP_ASSET_STATUS_SUMMARY),
+                is(SummaryStatusEnum.GOOD.toString()));
+        assertThat(evtCaptor.getValue().getProperty(Asset.EVENT_PROP_ASSET_STATUS_OBSERVATION_UUID), notNullValue());
+
+        Observation observation = m_SUT.getLastStatus();
+
+        assertThat(observation.isSetStatus(), is(true));
+        assertThat(observation.getSensorId(), is(sensorId));
         assertThat(observation.getStatus().getSummaryStatus().getDescription(), is("New description"));
         assertThat(observation.getStatus().getSummaryStatus().getSummary(), is(SummaryStatusEnum.GOOD));
     }

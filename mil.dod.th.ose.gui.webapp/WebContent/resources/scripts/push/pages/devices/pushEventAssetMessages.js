@@ -57,6 +57,10 @@ function handleMessage(message)
      {
          rcUpdateAssetTypes();
      }
+     else if(topic == window.thTopic.assetSensorIdsUpdated)
+     {
+         rcUpdateAssetSensorIds();
+     }
      else if(topic == window.thTopic.assetCommandSynced)
      {
          rcUpdateAssetCommandControl();

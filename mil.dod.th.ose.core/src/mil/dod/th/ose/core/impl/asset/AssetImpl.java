@@ -504,9 +504,15 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
     @Override
     public void setStatus(final SummaryStatusEnum summaryStatus, final String summaryString)
     {
+        setStatus(null, summaryStatus, summaryString);
+    }
+
+    @Override
+    public void setStatus(final String sensorId, final SummaryStatusEnum summaryStatus, final String summaryString)
+    {
         try
         {
-            setStatus(new Status().withSummaryStatus(new OperatingStatus(summaryStatus, summaryString)));
+            setStatus(sensorId, new Status().withSummaryStatus(new OperatingStatus(summaryStatus, summaryString)));
         }
         catch (final ValidationFailedException | PersistenceFailedException ex)
         {
@@ -516,6 +522,12 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
 
     @Override
     public void setStatus(final Status status) throws ValidationFailedException
+    {
+        setStatus(null, status);
+    }
+
+    @Override
+    public void setStatus(final String sensorId, final Status status) throws ValidationFailedException
     {
         if (status == null)
         {
@@ -532,6 +544,10 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
         }
 
         final Observation observation = new Observation();
+        if (sensorId != null)
+        {
+            observation.setSensorId(sensorId);
+        }
         observation.setStatus(status);
         postStatusObservation(observation);
     }

@@ -95,6 +95,20 @@
                             </h:form>
                         </td>
                     </tr>
+                    <tr>
+                        <td style="text-align:center;" colspan="4">
+                            <h:form id="sensorForm" rendered="#{asset.hasSensorId()}">
+                                <p:outputPanel id="assetSensorPanel">
+                                    <p:outputLabel for="sensorIds" value="Sensor ID: " style="vertical-align:middle;" />
+                                    <p:selectOneMenu id="sensorIds" value="#{asset.sensorId}" effect="fold" editable="true" style="width: 25% !important; vertical-align:middle;">
+                                        <f:selectItems value="#{asset.getSensorIds()}" var="sensorId" itemValue="#{sensorId}" />
+                                        <p:ajax update="sensorIdsMsg" />
+                                    </p:selectOneMenu>
+                                </p:outputPanel>
+                                <p:message id="sensorIdsMsg" for="sensorIds" />
+                            </h:form>
+                        </td>
+                    </tr>
                     <!-- Only display orientation / position if the asset supports it -->
                     <tr style="margin-top:5em">
                         <td style="width:100%;text-align:left" colspan="4" >

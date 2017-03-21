@@ -337,8 +337,16 @@ public class AssetMgrImpl implements AssetMgr, FactoryObjMgr //NOPMD:Avoid reall
     {
         final AssetExecuteErrorHandler handler = new AssetExecuteErrorHandler(asset.getName());
         
+        final String sensorId = asset.getSensorId();
+        final Command.Builder base = Command.newBuilder();
+        if (sensorId != null && !sensorId.isEmpty())
+        {
+            sensorIdUpdate(asset);
+            base.setSensorId(sensorId);
+        }
+
         final GetPositionCommandGen.GetPositionCommand getPositionProto = GetPositionCommandGen.
-                GetPositionCommand.newBuilder().setBase(Command.newBuilder().build()).build();
+                GetPositionCommand.newBuilder().setBase(base).build();
         
         final ExecuteCommandRequestData executeCommandRequest = ExecuteCommandRequestData.newBuilder().
                 setUuid(SharedMessageUtils.convertUUIDToProtoUUID(asset.getUuid())).
@@ -400,8 +408,15 @@ public class AssetMgrImpl implements AssetMgr, FactoryObjMgr //NOPMD:Avoid reall
                 build();
         
         //Build the base command required for every command message.
-        final Command baseCommand = Command.newBuilder().build();
-        
+        final Command.Builder baseCommand = Command.newBuilder();
+
+        final String sensorId = asset.getSensorId();
+        if (sensorId != null && !sensorId.isEmpty())
+        {
+            sensorIdUpdate(asset);
+            baseCommand.setSensorId(sensorId);
+        }
+
         //Create a new command to set the position with the new orientation and location
         final SetPositionCommandGen.SetPositionCommand setPositionProto = SetPositionCommandGen.
                 SetPositionCommand.newBuilder().
@@ -418,6 +433,18 @@ public class AssetMgrImpl implements AssetMgr, FactoryObjMgr //NOPMD:Avoid reall
         
         m_MessageFactory.createAssetMessage(AssetMessageType.ExecuteCommandRequest, executeCommandRequest).
             queue(controllerId, handler);
+    }
+
+    /**
+     * Save the model's current sensor ID and generate event to send a push message and update in the browser.
+     * 
+     * @param asset
+     *      the asset to update sensor IDs for
+     */
+    public void sensorIdUpdate(final AssetModel asset)
+    {
+        asset.updateSensorIds();
+        createAssetEvent(TOPIC_ASSET_SENSOR_IDS_UPDATED, asset, new HashMap<String, Object>());
     }
 
     @Override
@@ -677,31 +704,31 @@ public class AssetMgrImpl implements AssetMgr, FactoryObjMgr //NOPMD:Avoid reall
         {
             final GetPositionResponseGen.GetPositionResponse data = GetPositionResponseGen.GetPositionResponse.
                     parseFrom(commandData.getResponse());
-            
-            boolean locationUpdated = false;
-            
+
             if (model == null)
             {
                 return;
             }
-            
+
             if (data.hasLocation())
             {
                 model.setCoordinates(data.getLocation());
-                locationUpdated = true;
             }
-            
+            else
+            {
+                model.setCoordinates(null);
+            }
+
             if (data.hasOrientation())
             {
                 model.setOrientation(data.getOrientation());
-                locationUpdated = true;
             }
-            
-            if (locationUpdated)
+            else
             {
-                createAssetEvent(TOPIC_ASSET_LOCATION_UPDATED, model, new HashMap<String, Object>());
+                model.setOrientation(null);
             }
             
+            createAssetEvent(TOPIC_ASSET_LOCATION_UPDATED, model, new HashMap<String, Object>());
         }
     }
     

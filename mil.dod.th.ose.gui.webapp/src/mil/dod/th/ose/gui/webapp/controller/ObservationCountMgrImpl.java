@@ -16,18 +16,23 @@ import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.inject.Inject;
 
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.persistence.ObservationStore;
 import mil.dod.th.ose.gui.api.SharedPropertyConstants;
+import mil.dod.th.ose.gui.webapp.asset.AssetMgr;
+import mil.dod.th.ose.gui.webapp.asset.AssetMgrImpl;
+import mil.dod.th.ose.gui.webapp.asset.AssetModel;
 import mil.dod.th.ose.gui.webapp.utils.BundleContextUtil;
 
 import org.glassfish.osgicdi.OSGiService;
@@ -58,7 +63,13 @@ public class ObservationCountMgrImpl implements ObservationCountMgr
      */
     @Inject @OSGiService
     private ObservationStore m_ObsStore;
-    
+
+    /**
+     * AssetManager service.
+     */
+    @ManagedProperty(value = "#{assetMgr}")
+    private AssetMgrImpl assetMgr; //NOCHECKSTYLE - Name must match pattern / Breaks ManagedProperty
+
     /**
      * Reference to the bundle context utility.
      */
@@ -124,7 +135,18 @@ public class ObservationCountMgrImpl implements ObservationCountMgr
     {
         m_ObsStore = obsStore;
     }
-    
+
+    /**
+     * Set the asset manager service to use.
+     * 
+     * @param assetManager
+     *     the asset manager service
+     */
+    public void setAssetMgr(final AssetMgrImpl assetManager)
+    {
+        assetMgr = assetManager;
+    }
+
     /**
      * Method that sets the bundle context utility.
      * 
@@ -239,6 +261,24 @@ public class ObservationCountMgrImpl implements ObservationCountMgr
             final Observation obs = m_ObsStore.find(obsUuid);
             final int systemId = obs.getSystemId();
             incrementObsCount(systemId);
+
+            final String sensorId = (String)event.getProperty(ObservationStore.EVENT_PROP_SENSOR_ID);
+            final AssetModel asset = assetMgr.getAssetModelByUuid(obs.getAssetUuid(), systemId);
+            if (sensorId != null && asset != null)
+            {
+                // If the sensor ID does not currently exist, add to the model and send event to update the view
+                final List<String> sensorIdList = asset.getSensorIds();
+                if (!sensorIdList.contains(sensorId))
+                {
+                    sensorIdList.add(sensorId);
+
+                    final Map<String, Object> props = new HashMap<>();
+                    props.put(AssetModel.EVENT_PROP_UUID, obsUuid.toString());
+
+                    final Event assetEvent = new Event(AssetMgr.TOPIC_ASSET_SENSOR_IDS_UPDATED, props);
+                    m_EventAdmin.postEvent(assetEvent);
+                }
+            }
         }
         
         /**

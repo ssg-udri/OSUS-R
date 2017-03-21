@@ -30,6 +30,7 @@ import java.util.UUID;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.persistence.ObservationStore;
 import mil.dod.th.ose.gui.api.SharedPropertyConstants;
+import mil.dod.th.ose.gui.webapp.asset.AssetMgrImpl;
 import mil.dod.th.ose.gui.webapp.controller.ObservationCountMgrImpl.ControllerEventHandler;
 import mil.dod.th.ose.gui.webapp.controller.ObservationCountMgrImpl.ObservationEventHandler;
 import mil.dod.th.ose.gui.webapp.utils.BundleContextUtil;
@@ -59,6 +60,8 @@ public class TestObservationCountMgrImpl
     
     private ObservationStore m_ObsStore;
     
+    private AssetMgrImpl m_AssetMgr;
+
     private BundleContextUtil m_BundleUtil;
     
     private ObservationEventHandler m_ObsEventHandler;
@@ -73,6 +76,7 @@ public class TestObservationCountMgrImpl
     {
         m_EventAdmin = mock(EventAdmin.class);
         m_ObsStore = mock(ObservationStore.class);
+        m_AssetMgr = new AssetMgrImpl();
         m_BundleUtil = mock(BundleContextUtil.class);
         BundleContext bundleContext = mock(BundleContext.class);
         m_Registration = mock(ServiceRegistration.class);
@@ -82,6 +86,7 @@ public class TestObservationCountMgrImpl
         m_SUT.setBundleContextUtil(m_BundleUtil);
         m_SUT.setEventAdmin(m_EventAdmin);
         m_SUT.setObservationStore(m_ObsStore);
+        m_SUT.setAssetMgr(m_AssetMgr);
         
         //mock behavior for event listener
         when(m_BundleUtil.getBundleContext()).thenReturn(bundleContext);

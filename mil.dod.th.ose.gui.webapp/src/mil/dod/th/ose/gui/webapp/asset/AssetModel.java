@@ -12,6 +12,8 @@
 //==============================================================================
 package mil.dod.th.ose.gui.webapp.asset;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import javax.faces.application.FacesMessage;
@@ -96,6 +98,10 @@ public class AssetModel extends AbstractFactoryBaseModel implements StatusCapabl
      * Flag denoting if the represented Asset's location fields are open or close.
      */
     private boolean m_IsLocationCollapsed;
+
+    private List<String> m_SensorIdList;
+
+    private String m_SensorId;
     
     /**
      * Public constructor for creating an asset model. All other values like the feature support
@@ -125,14 +131,15 @@ public class AssetModel extends AbstractFactoryBaseModel implements StatusCapabl
         
         m_AssetTypesMgr = typesMgr;
         m_Type = type;
-        
+
         //widget vars
         m_WidgetVarName = "editNameWid" +  uuid.toString().replace('-', 'R');
 
         m_AssetImage = imageInterface;
+
+        m_SensorIdList = new ArrayList<>();
     }
-    
-    
+
     /**
      * Set whether the asset is editing it's location.
      * @param editing
@@ -214,26 +221,46 @@ public class AssetModel extends AbstractFactoryBaseModel implements StatusCapabl
     
     /**
      * Set the coordinates of the asset.
+     * 
      * @param coords
-     *      the coordinates of the asset
+     *      the coordinates of the asset or <code>null</code> to clear values
      */
     public void setCoordinates(final Coordinates coords)
     {
-        m_Location.setLongitude(coords.getLongitude().getValue());
-        m_Location.setLatitude(coords.getLatitude().getValue());
-        m_Location.setAltitude(coords.getAltitude().getValue());
+        if (coords == null)
+        {
+            m_Location.setLongitude(null);
+            m_Location.setLatitude(null);
+            m_Location.setAltitude(null);
+        }
+        else
+        {
+            m_Location.setLongitude(coords.getLongitude().getValue());
+            m_Location.setLatitude(coords.getLatitude().getValue());
+            m_Location.setAltitude(coords.getAltitude().getValue());
+        }
     }
     
     /**
      * Set the orientation of the asset.
+     * 
      * @param orien
-     *      the orientation of the asset
+     *      the orientation of the asset or <code>null</code> to clear values
      */
     public void setOrientation(final Orientation orien)
     {
-        m_Location.setHeading(orien.getHeading().getValue());
-        m_Location.setElevation(orien.getElevation().getValue());
-        m_Location.setBank(orien.getBank().getValue());
+        if (orien == null)
+        {
+            m_Location.setHeading(null);
+            m_Location.setElevation(null);
+            m_Location.setBank(null);
+        }
+        else
+        {
+            m_Location.setHeading(orien.getHeading().getValue());
+            m_Location.setElevation(orien.getElevation().getValue());
+            m_Location.setBank(orien.getBank().getValue());
+        }
     }
 
     /**
@@ -386,7 +413,55 @@ public class AssetModel extends AbstractFactoryBaseModel implements StatusCapabl
     {
         return m_IsLocationCollapsed;
     }
-    
+
+    /**
+     * Get whether the asset supports sensor IDs.
+     * 
+     * @return
+     *      <code>true</code> if sensor ID is supported, <code>false</code> otherwise
+     */
+    public boolean hasSensorId()
+    {
+        if (!m_SensorIdList.isEmpty())
+        {
+            return true;
+        }
+
+        final CommandCapabilities commands = getAssetFactoryCommandCapabilitiesAsync();
+        if (commands != null)
+        {
+            return commands.isCaptureDataBySensor();
+        }
+
+        return false;
+    }
+
+    public List<String> getSensorIds()
+    {
+        return m_SensorIdList;
+    }
+
+    public String getSensorId()
+    {
+        return m_SensorId;
+    }
+
+    /**
+     * Update the sensor ID list with the current value last set by {@link #setSensorId(String)}.
+     */
+    public void updateSensorIds()
+    {
+        if (m_SensorId != null && !m_SensorIdList.contains(m_SensorId))
+        {
+            m_SensorIdList.add(m_SensorId);
+        }
+    }
+
+    public void setSensorId(final String sensorId)
+    {
+        m_SensorId = sensorId == null ? null : sensorId.trim();
+    }
+
     /**
      * Validate the values for the location fields.
      * @param context
