@@ -45,6 +45,8 @@ import mil.dod.th.remote.lexicon.asset.commands.DetectTargetCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.DetectTargetResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.GetCameraSettingsCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.GetCameraSettingsResponseGen;
+import mil.dod.th.remote.lexicon.asset.commands.GetLiftCommandGen;
+import mil.dod.th.remote.lexicon.asset.commands.GetLiftResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.GetModeCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.GetModeResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.GetPanTiltCommandGen;
@@ -61,6 +63,8 @@ import mil.dod.th.remote.lexicon.asset.commands.GetVersionCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.GetVersionResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.SetCameraSettingsCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.SetCameraSettingsResponseGen;
+import mil.dod.th.remote.lexicon.asset.commands.SetLiftCommandGen;
+import mil.dod.th.remote.lexicon.asset.commands.SetLiftResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.SetModeCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.SetModeResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.SetPanTiltCommandGen;
@@ -308,6 +312,16 @@ public class TestCommandConverterImpl
                         .setBase(BaseTypesGen.Command.getDefaultInstance())
                         .build();
                 break;
+            case GET_LIFT_COMMAND:
+                commandGenProto = GetLiftCommandGen.GetLiftCommand.newBuilder()
+                        .setBase(BaseTypesGen.Command.getDefaultInstance())
+                        .build();
+                break;
+            case SET_LIFT_COMMAND:
+                commandGenProto = SetLiftCommandGen.SetLiftCommand.newBuilder()
+                        .setBase(BaseTypesGen.Command.getDefaultInstance())
+                        .build();
+                break;
             default:
                 fail(String.format("Unit test for Command %s is missing", commandType));
                 return;
@@ -466,6 +480,16 @@ public class TestCommandConverterImpl
                 break;
             case STOP_RECORDING_RESPONSE:
                 commandResponseProto = StopRecordingResponseGen.StopRecordingResponse.newBuilder()
+                        .setBase(BaseTypesGen.Response.getDefaultInstance())
+                        .build();
+                break;
+            case GET_LIFT_RESPONSE:
+                commandResponseProto = GetLiftResponseGen.GetLiftResponse.newBuilder()
+                        .setBase(BaseTypesGen.Response.getDefaultInstance())
+                        .build();
+                break;
+            case SET_LIFT_RESPONSE:
+                commandResponseProto = SetLiftResponseGen.SetLiftResponse.newBuilder()
                         .setBase(BaseTypesGen.Response.getDefaultInstance())
                         .build();
                 break;

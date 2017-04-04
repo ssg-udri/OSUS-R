@@ -299,7 +299,7 @@ public final class ReflectionsUtil
         final Method setMethod = retrieveSetMethod(containingObject, fieldName);
         if (setMethod == null)
         {
-            throw new ReflectionsUtilException(String.format("The method set%s does not exists for thecontaining " 
+            throw new ReflectionsUtilException(String.format("The method set%s does not exist for the containing " 
                     + "object: %s", fieldName, containingObject));
         }
         else

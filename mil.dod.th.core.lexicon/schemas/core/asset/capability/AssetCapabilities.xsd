@@ -118,6 +118,82 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
+  
+    <xs:complexType name="Lift">
+        <xs:annotation>
+            <xs:documentation>
+               Lift capabilities describe the min/max values for a lift device such as a camera mast. If the asset does not
+               support lift functionality, this type should not be included in the capabilities.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="minHeight" type="spatial:DistanceMeters" minOccurs="1" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        Describes the minimum height of the lift in meters, relative to a zero point on the platform.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="maxHeight" type="spatial:DistanceMeters" minOccurs="1" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        Describes the maximum height of the lift in meters, relative to a zero point on the platform.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="heightSupported" type="xs:boolean" use="required" >
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates whether the asset supports the height parameter in the SetLiftCommand
+                    (i.e. whether it can set itself to a new absolute position with respect to its zero point.)
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="heightOffsetSupported" type="xs:boolean" use="required" >
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates whether the asset supports the heightOffset parameter in the SetLiftCommand
+                    (i.e. whether it can set itself to a new position relative to its current position.)
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="upSupported" type="xs:boolean" use="required" >
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates whether the lift is capable of going up (increasing its height.)
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="downSupported" type="xs:boolean" use="required" >
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates whether the lift is capable of going down (decreasing its height.)
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="positionFeedbackSupported" type="xs:boolean" use="required" >
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates whether the lift provides position feedback information in response to a GetLiftCommand.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="highLimitFeedbackSupported" type="xs:boolean" use="required" >
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates whether the lift provides high-limit feedback information in response to a GetLiftCommand.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="lowLimitFeedbackSupported" type="xs:boolean" use="required" >
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates whether the lift provides low-limit feedback information in response to a GetLiftCommand.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
     
     <xs:complexType name="CameraSettingsParameters">        
         <xs:attribute name="minFocus" type="image:FocusType" use="optional" />
@@ -316,6 +392,7 @@
             <xs:element name="detectTarget" type="DetectTargetParameters" minOccurs="0" maxOccurs="1" />
             <xs:element name="tuneSettings" type="TuneSettingsParameters" minOccurs="0" maxOccurs="1" />
             <xs:element name="createActionList" type="CreateActionListParameters" minOccurs="0" maxOccurs="1" />
+            <xs:element name="lift" type="Lift" minOccurs="0" maxOccurs="1" />
         </xs:sequence>
         <xs:attribute name="captureData" type="xs:boolean" use="required">
             <xs:annotation>

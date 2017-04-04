@@ -116,23 +116,13 @@ platforms['docs'] = {
             "PATH+ANT=${tool 'Ant 1.8.4'}/bin",
             "PATH+JAVA_BIN=${tool 'JDK 8'}/bin"
         ]) {
-            success = true
-            try {
+            if (NODE_LABELS.contains('linux')) {
                 sh 'env'
                 sh 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-docs'
             }
-            catch (e) {
-                echo "Shell script fail is because node is not linux, trying windows scripts next"
-                success = false
-            }
-            if(!success) {
-                try {
-                    bat 'set'
-                    bat 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-standard'
-                }
-                catch (e) {
-                    throw (e) //throw exception, neither worked, something went wrong
-                }
+            else {
+                bat 'set'
+                bat 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-docs'
             }
         }
         saveOsusResults('docs-results')

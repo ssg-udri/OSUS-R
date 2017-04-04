@@ -27,6 +27,7 @@
     <xs:include schemaLocation="CreateActionListCommand.xsd"></xs:include>
     <xs:include schemaLocation="DetectTargetCommand.xsd"></xs:include>
     <xs:include schemaLocation="GetCameraSettingsCommand.xsd"></xs:include>
+    <xs:include schemaLocation="GetLiftCommand.xsd"></xs:include>
     <xs:include schemaLocation="GetModeCommand.xsd"></xs:include>
     <xs:include schemaLocation="GetPanTiltCommand.xsd"></xs:include>
     <xs:include schemaLocation="GetPointingLocationCommand.xsd"></xs:include>
@@ -35,6 +36,7 @@
     <xs:include schemaLocation="GetTuneSettingsCommand.xsd"></xs:include>
     <xs:include schemaLocation="GetVersionCommand.xsd"></xs:include>
     <xs:include schemaLocation="SetCameraSettingsCommand.xsd"></xs:include>
+    <xs:include schemaLocation="SetLiftCommand.xsd"></xs:include>
     <xs:include schemaLocation="SetModeCommand.xsd"></xs:include>
     <xs:include schemaLocation="SetPanTiltCommand.xsd"></xs:include>
     <xs:include schemaLocation="SetPointingLocationCommand.xsd"></xs:include>

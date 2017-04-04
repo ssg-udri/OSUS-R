@@ -80,7 +80,7 @@ public class TestAssetSyncableCommandModel
                 CommandTypeEnum.SET_CAMERA_SETTINGS_COMMAND, CommandTypeEnum.CONFIGURE_PROFILE_COMMAND,
                 CommandTypeEnum.SET_MODE_COMMAND, CommandTypeEnum.CREATE_ACTION_LIST_COMMAND, 
                 CommandTypeEnum.TARGET_REFINEMENT_COMMAND, CommandTypeEnum.START_RECORDING_COMMAND,
-                CommandTypeEnum.STOP_RECORDING_COMMAND));
+                CommandTypeEnum.STOP_RECORDING_COMMAND, CommandTypeEnum.SET_LIFT_COMMAND));
     }
     
     /**
@@ -188,6 +188,10 @@ public class TestAssetSyncableCommandModel
         //Verify that set tune settings command has no associated get command. This is a special case that
         //is handled by the constructor.
         assertThat(m_SUT.getCommandSyncTypeByType(CommandTypeEnum.SET_TUNE_SETTINGS_COMMAND), is(nullValue()));
+
+        //Verify that set lift command has no associated get command. This is a special case that
+        //is handled by the constructor.
+        assertThat(m_SUT.getCommandSyncTypeByType(CommandTypeEnum.SET_LIFT_COMMAND), is(nullValue()));
     }
     
     /**
@@ -237,7 +241,7 @@ public class TestAssetSyncableCommandModel
                 CommandTypeEnum.SET_CAMERA_SETTINGS_COMMAND, CommandTypeEnum.CONFIGURE_PROFILE_COMMAND,
                 CommandTypeEnum.SET_MODE_COMMAND, CommandTypeEnum.CREATE_ACTION_LIST_COMMAND, 
                 CommandTypeEnum.TARGET_REFINEMENT_COMMAND, CommandTypeEnum.START_RECORDING_COMMAND,
-                CommandTypeEnum.STOP_RECORDING_COMMAND));
+                CommandTypeEnum.STOP_RECORDING_COMMAND, CommandTypeEnum.SET_LIFT_COMMAND));
         
         List<CommandTypeEnum> supportedCommands = new ArrayList<CommandTypeEnum>();
         supportedCommands.add(CommandTypeEnum.GET_PAN_TILT_COMMAND);

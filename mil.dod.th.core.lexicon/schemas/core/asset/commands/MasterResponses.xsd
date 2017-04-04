@@ -27,6 +27,7 @@
     <xs:include schemaLocation="CreateActionListResponse.xsd"></xs:include>
     <xs:include schemaLocation="DetectTargetResponse.xsd"></xs:include>
     <xs:include schemaLocation="GetCameraSettingsResponse.xsd"></xs:include>
+    <xs:include schemaLocation="GetLiftResponse.xsd"></xs:include>
     <xs:include schemaLocation="GetModeResponse.xsd"></xs:include>
     <xs:include schemaLocation="GetPanTiltResponse.xsd"></xs:include>
     <xs:include schemaLocation="GetPointingLocationResponse.xsd"></xs:include>
@@ -35,6 +36,7 @@
     <xs:include schemaLocation="GetTuneSettingsResponse.xsd"></xs:include>
     <xs:include schemaLocation="GetVersionResponse.xsd"></xs:include>
     <xs:include schemaLocation="SetCameraSettingsResponse.xsd"></xs:include>
+    <xs:include schemaLocation="SetLiftResponse.xsd"></xs:include>
     <xs:include schemaLocation="SetModeResponse.xsd"></xs:include>
     <xs:include schemaLocation="SetPanTiltResponse.xsd"></xs:include>
     <xs:include schemaLocation="SetPointingLocationResponse.xsd"></xs:include>

@@ -27,6 +27,7 @@ import mil.dod.th.core.asset.capability.DetectTargetParameters;
 import mil.dod.th.core.asset.capability.DetectionCapabilities;
 import mil.dod.th.core.asset.capability.DigitalMediaCapabilities;
 import mil.dod.th.core.asset.capability.ImageCapabilities;
+import mil.dod.th.core.asset.capability.Lift;
 import mil.dod.th.core.asset.capability.ObservationCapabilities;
 import mil.dod.th.core.asset.capability.PanTilt;
 import mil.dod.th.core.asset.capability.StatusCapabilities;
@@ -385,7 +386,8 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
     {
         final List<CommandTypeEnum> supportedCommands = makeSupportedCommands();
         final List<Mode> supportedModes = makeSupportedModes();
-        final PanTilt panTilt = makePanTilt();        
+        final PanTilt panTilt = makePanTilt();
+        final Lift lift = makeLift();
         final CameraSettingsParameters cameraSettings = makeCameraSettings();
         final CaptureImageParameters captureImage = makeCaptureImage();        
         final DetectTargetParameters detectTarget = makeDetectTarget();
@@ -395,7 +397,7 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
         final boolean performBIT = false;
         final boolean captureDataBySensor = false;
         return new CommandCapabilities(supportedCommands, supportedModes, panTilt, cameraSettings, captureImage,
-                detectTarget, tuneSettings, createActionList, captureData, performBIT, captureDataBySensor);
+                detectTarget, tuneSettings, createActionList, lift, captureData, performBIT, captureDataBySensor);
     }
 
     /**
@@ -453,6 +455,27 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
 
         return new PanTilt(minAzimuth, maxAzimuth, minElevation, maxElevation, minBank, maxBank, azimuthSupported,
                            elevationSupported, bankSupported);
+    }
+
+    /**
+     * Creates an object that is populated with placeholder values for a Lift object.
+     * @return Lift object
+     */
+    private static Lift makeLift()
+    {
+        final DistanceMeters minHeight = makeDistance();
+        final DistanceMeters maxHeight = makeDistance();
+        final boolean isHeightSupported = false;
+        final boolean isHeightOffsetSupported = false;
+        final boolean isUpSupported = false;
+        final boolean isDownSupported = false;
+        final boolean isPositionFeedbackSupported = false;
+        final boolean isHighLimitFeedbackSupported = false;
+        final boolean isLowLimitFeedbackSupported = false;
+
+        return new Lift(minHeight, maxHeight, isHeightSupported, isHeightOffsetSupported, isUpSupported,
+                isDownSupported, isPositionFeedbackSupported, isHighLimitFeedbackSupported,
+                isLowLimitFeedbackSupported);
     }
 
     /**

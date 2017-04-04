@@ -60,8 +60,8 @@ import org.osgi.service.event.EventHandler;
 
 /**
  * Command manager that handles management of {@link AssetGetCommandModel}s and their command responses.
+ * 
  * @author nickmarcucci
- *
  */
 @ManagedBean(name = "assetGetCommandMgr")
 @ApplicationScoped
@@ -253,12 +253,13 @@ public class AssetGetCommandMgrImpl implements AssetGetCommandMgr
                 {
                     //if can't find set command then want to use it.
                     final CommandTypeEnum command = CommandTypeEnum.valueOf(type);
-                    
-                    if (command.equals(CommandTypeEnum.SET_TUNE_SETTINGS_COMMAND))
+
+                    //include commands that are complex or don't follow the standard get/set command format
+                    if (command.equals(CommandTypeEnum.SET_TUNE_SETTINGS_COMMAND)
+                            || command.equals(CommandTypeEnum.SET_LIFT_COMMAND))
                     {
                         list.add(commandType);
                     }
-                    
                 }
                 catch (final IllegalArgumentException exception)
                 {

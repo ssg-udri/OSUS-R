@@ -261,7 +261,7 @@ public class TestAssetCommandMgrImpl
         Class stuneClazz = Class.forName(PROTO_COMMAND_PACKAGE + "SetTuneSettingsCommandGen$SetTuneSettingsCommand");
         when(m_CommandConverter.retrieveProtoClass(CommandTypeEnum.SET_TUNE_SETTINGS_COMMAND))
             .thenReturn(stuneClazz);
-        
+
         CommandCapabilities cmndCaps = mock(CommandCapabilities.class);
         when(cmndCaps.isSetCameraSettings()).thenReturn(true);
         when(cmndCaps.isSetPanTilt()).thenReturn(true);

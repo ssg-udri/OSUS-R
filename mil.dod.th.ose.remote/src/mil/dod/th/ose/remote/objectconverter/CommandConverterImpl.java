@@ -39,6 +39,8 @@ import mil.dod.th.remote.lexicon.asset.commands.DetectTargetCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.DetectTargetResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.GetCameraSettingsCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.GetCameraSettingsResponseGen;
+import mil.dod.th.remote.lexicon.asset.commands.GetLiftCommandGen;
+import mil.dod.th.remote.lexicon.asset.commands.GetLiftResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.GetModeCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.GetModeResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.GetPanTiltCommandGen;
@@ -55,6 +57,8 @@ import mil.dod.th.remote.lexicon.asset.commands.GetVersionCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.GetVersionResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.SetCameraSettingsCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.SetCameraSettingsResponseGen;
+import mil.dod.th.remote.lexicon.asset.commands.SetLiftCommandGen;
+import mil.dod.th.remote.lexicon.asset.commands.SetLiftResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.SetModeCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.SetModeResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.SetPanTiltCommandGen;
@@ -239,6 +243,12 @@ public class CommandConverterImpl implements CommandConverter
             case TARGET_REFINEMENT_COMMAND:
                 commandProto = TargetRefinementCommandGen.TargetRefinementCommand.parseFrom(commandRequest);
                 break;
+            case GET_LIFT_COMMAND:
+                commandProto = GetLiftCommandGen.GetLiftCommand.parseFrom(commandRequest);
+                break;
+            case SET_LIFT_COMMAND:
+                commandProto = SetLiftCommandGen.SetLiftCommand.parseFrom(commandRequest);
+                break;
             default:
                 throw new IllegalArgumentException(String.format("%s is not a supported command", commandEnum));
         }
@@ -316,6 +326,12 @@ public class CommandConverterImpl implements CommandConverter
                 break;
             case TARGET_REFINEMENT_RESPONSE:
                 responseProto = TargetRefinementResponseGen.TargetRefinementResponse.parseFrom(response);
+                break;
+            case GET_LIFT_RESPONSE:
+                responseProto = GetLiftResponseGen.GetLiftResponse.parseFrom(response);
+                break;
+            case SET_LIFT_RESPONSE:
+                responseProto = SetLiftResponseGen.SetLiftResponse.parseFrom(response);
                 break;
             default: 
                 throw new IllegalArgumentException(String.format("%s is not a supported response", commandEnum));
