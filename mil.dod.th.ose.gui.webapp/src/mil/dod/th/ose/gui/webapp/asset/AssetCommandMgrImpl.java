@@ -350,7 +350,7 @@ public class AssetCommandMgrImpl implements AssetCommandMgr
         {
             final Object jaxbResponse = m_CommandConverterService.getJavaResponseType(responseMessage, responseType);
             
-            for (Field field: jaxbResponse.getClass().getDeclaredFields())
+            for (Field field : jaxbResponse.getClass().getDeclaredFields())
             {
                 if (ReflectionsUtil.hasJaxbAnnotation(field))
                 {
@@ -365,7 +365,7 @@ public class AssetCommandMgrImpl implements AssetCommandMgr
                                 + "See server log for further details.";
                         
                         m_GrowlUtil.createGlobalFacesMessage(FacesMessage.SEVERITY_ERROR, EXCEPTION_TITLE, 
-                                String.format(exceptionMessage, jaxbResponse.getClass().getSimpleName(), exception));
+                                String.format(exceptionMessage, jaxbResponse.getClass().getSimpleName()), exception);
                         return;
                     }
                 }

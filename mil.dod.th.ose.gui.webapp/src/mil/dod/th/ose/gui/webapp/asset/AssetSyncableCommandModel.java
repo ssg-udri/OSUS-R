@@ -121,7 +121,8 @@ public class AssetSyncableCommandModel extends AbstractCommandModel
             }
             //The set tune settings command does not support syncing since it would require a large amount
             //of special handling to support. Therefore null is entered into the map so no get command is associated.
-            else if (commandType.equals(CommandTypeEnum.SET_TUNE_SETTINGS_COMMAND))
+            else if (commandType.equals(CommandTypeEnum.SET_TUNE_SETTINGS_COMMAND)
+                    || commandType.equals(CommandTypeEnum.SET_LIFT_COMMAND))
             {
                 m_CommandMap.put(commandType, AssetCommandUtil.instantiateCommandBasedOnType(commandType));
             } 

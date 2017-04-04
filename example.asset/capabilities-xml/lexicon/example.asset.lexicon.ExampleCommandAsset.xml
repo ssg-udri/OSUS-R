@@ -68,6 +68,8 @@
         <supportedCommands>StartRecordingCommand</supportedCommands>
         <supportedCommands>StopRecordingCommand</supportedCommands>
         <supportedCommands>TargetRefinementCommand</supportedCommands>
+        <supportedCommands>GetLiftCommand</supportedCommands>
+        <supportedCommands>SetLiftCommand</supportedCommands>
         <supportedModes value="Auto" description="Auto description." />
         <panTilt azimuthSupported="true" elevationSupported="true" bankSupported="false">
             <minAzimuth>-50.0</minAzimuth>
@@ -90,5 +92,9 @@
             <supportedPictureTypes>AreaOfInterest</supportedPictureTypes>
             <supportedPictureTypes>FullFieldOfView</supportedPictureTypes>
         </detectTarget>
+        <lift heightSupported="true" heightOffsetSupported="false" upSupported="true" downSupported="true" positionFeedbackSupported="false" highLimitFeedbackSupported="false" lowLimitFeedbackSupported="false">
+            <minHeight>0.0</minHeight>
+            <maxHeight>3.0</maxHeight>
+        </lift>
     </commandCapabilities>
 </AssetCapabilities>

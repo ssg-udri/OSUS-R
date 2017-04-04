@@ -37,6 +37,8 @@ import mil.dod.th.core.asset.commands.DetectTargetCommand;
 import mil.dod.th.core.asset.commands.DetectTargetResponse;
 import mil.dod.th.core.asset.commands.GetCameraSettingsCommand;
 import mil.dod.th.core.asset.commands.GetCameraSettingsResponse;
+import mil.dod.th.core.asset.commands.GetLiftCommand;
+import mil.dod.th.core.asset.commands.GetLiftResponse;
 import mil.dod.th.core.asset.commands.GetModeCommand;
 import mil.dod.th.core.asset.commands.GetModeResponse;
 import mil.dod.th.core.asset.commands.GetPanTiltCommand;
@@ -54,6 +56,8 @@ import mil.dod.th.core.asset.commands.GetVersionResponse;
 import mil.dod.th.core.asset.commands.Response;
 import mil.dod.th.core.asset.commands.SetCameraSettingsCommand;
 import mil.dod.th.core.asset.commands.SetCameraSettingsResponse;
+import mil.dod.th.core.asset.commands.SetLiftCommand;
+import mil.dod.th.core.asset.commands.SetLiftResponse;
 import mil.dod.th.core.asset.commands.SetModeCommand;
 import mil.dod.th.core.asset.commands.SetModeResponse;
 import mil.dod.th.core.asset.commands.SetPanTiltCommand;
@@ -267,6 +271,14 @@ public class ExampleCommandAsset implements AssetProxy
         else if (capabilityCommand instanceof StopRecordingCommand)
         {
             return new StopRecordingResponse();
+        }
+        else if (capabilityCommand instanceof GetLiftCommand)
+        {
+            return new GetLiftResponse().withHeight(new DistanceMeters().withValue(1.0));
+        }
+        else if (capabilityCommand instanceof SetLiftCommand)
+        {
+            return new SetLiftResponse();
         }
         else
         {

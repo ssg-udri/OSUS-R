@@ -47,6 +47,8 @@
       <xs:enumeration value="StartRecordingCommand" />
       <xs:enumeration value="StopRecordingCommand" />
       <xs:enumeration value="TargetRefinementCommand" />
+      <xs:enumeration value="GetLiftCommand" />
+      <xs:enumeration value="SetLiftCommand" />
     </xs:restriction>
   </xs:simpleType>
   
@@ -76,6 +78,8 @@
       <xs:enumeration value="StartRecordingResponse" />
       <xs:enumeration value="StopRecordingResponse" />
       <xs:enumeration value="TargetRefinementResponse" />
+      <xs:enumeration value="GetLiftResponse" />
+      <xs:enumeration value="SetLiftResponse" />
     </xs:restriction>
   </xs:simpleType>
 

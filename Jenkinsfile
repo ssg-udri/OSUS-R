@@ -116,8 +116,14 @@ platforms['docs'] = {
             "PATH+ANT=${tool 'Ant 1.8.4'}/bin",
             "PATH+JAVA_BIN=${tool 'JDK 8'}/bin"
         ]) {
-            sh 'env'
-            sh 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-docs'
+            if (NODE_LABELS.contains('linux')) {
+                sh 'env'
+                sh 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-docs'
+            }
+            else {
+                bat 'set'
+                bat 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-docs'
+            }
         }
         saveOsusResults('docs-results')
         step(
