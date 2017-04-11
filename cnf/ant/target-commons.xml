@@ -22,7 +22,10 @@
     <import file="commons.xml" />
     
     <target name="zip">
-        <zip basedir="${bp.subsystem.deploy.dir}" destfile="${bp.bin.dir}/${bp.archive.name}.zip" />
+        <zip destfile="${bp.bin.dir}/${bp.archive.name}.zip">
+            <zipfileset dir="${bp.subsystem.deploy.dir}" includes="**/*.sh" filemode="755" />
+            <zipfileset dir="${bp.subsystem.deploy.dir}" excludes="**/*.sh" includes="**/*" />
+        </zip>
         <mkdir dir="${bp.report.path}" />
         <!-- write the size of the zip file to a property file that can be used to track size -->
         <length file="${bp.bin.dir}/${bp.archive.name}.zip" property="zip.size" />
