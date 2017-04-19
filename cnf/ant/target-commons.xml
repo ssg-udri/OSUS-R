@@ -23,8 +23,8 @@
     
     <target name="zip">
         <zip destfile="${bp.bin.dir}/${bp.archive.name}.zip">
-            <zipfileset dir="${bp.subsystem.deploy.dir}" includes="**/*.sh" filemode="755" />
-            <zipfileset dir="${bp.subsystem.deploy.dir}" excludes="**/*.sh" includes="**/*" />
+            <zipfileset dir="${bp.subsystem.deploy.dir}" includes="**/*.sh,**/bin/*" filemode="755" />
+            <zipfileset dir="${bp.subsystem.deploy.dir}" excludes="**/*.sh,**/bin/*" includes="**/*" />
         </zip>
         <mkdir dir="${bp.report.path}" />
         <!-- write the size of the zip file to a property file that can be used to track size -->
