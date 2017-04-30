@@ -1052,7 +1052,19 @@ public class TestProgramImpl
         assertThat(program.getExecutionParameters(), hasEntry("asset", (Object)"asset"));
         assertThat(program.getExecutionParameters(), is(not(program.getExecParams())));
     }
-    
+
+    /**
+     * Test the loaded after reset flag for a program.
+     */
+    @Test
+    public void testIsLoadedAfterReset()
+    {
+        ProgramImpl program = createProgram("loaded-test");
+        assertThat(program.isLoadedAfterReset(), is(false));
+        program.setLoadedAfterReset(true);
+        assertThat(program.isLoadedAfterReset(), is(true));
+    }
+
     /**
      * Helper method that creates a mission with the given name.
      * @return 

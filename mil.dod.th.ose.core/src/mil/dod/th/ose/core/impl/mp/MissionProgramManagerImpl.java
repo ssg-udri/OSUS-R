@@ -38,6 +38,7 @@ import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetDirectoryService;
 import mil.dod.th.core.ccomm.AddressManagerService;
@@ -698,6 +699,7 @@ public class MissionProgramManagerImpl implements MissionProgramManager // NOPMD
                 {
                     final ProgramImpl program = new ProgramImpl(this, m_EventAdmin, m_TemplateManager.
                             getTemplate(params.getTemplateName()), params, dataEntity.getUUID());
+                    program.setLoadedAfterReset(true);
                     //add program to set of managed programs
                     m_Programs.add(program);
                 }
@@ -1026,7 +1028,7 @@ public class MissionProgramManagerImpl implements MissionProgramManager // NOPMD
             m_Logging.debug("The program [%s] has already executed, will not run", program.getProgramName());
             return false;
         }
-        
+
         //check if deps are available
         if (program.getProgramStatus() == ProgramStatus.UNSATISFIED)
         {
@@ -1037,7 +1039,16 @@ public class MissionProgramManagerImpl implements MissionProgramManager // NOPMD
         //check if the program is initialized, as deps must be satisfied for this to take place
         if (program.getProgramStatus() == ProgramStatus.WAITING_UNINITIALIZED)
         {
-            scriptInitialization(program);
+            //do not initialize if program should not be executed after a restart
+            if (!program.isLoadedAfterReset()
+                  || (program.isLoadedAfterReset() && program.getScheduleFlag(ScheduleEnum.START_AT_RESTART)))
+            {
+                scriptInitialization(program);
+            }
+            else
+            {
+                m_Logging.debug("Program [%s] will not run after a restart", program.getProgramName());
+            }
         }
 
         // if dependencies are satisfied execute the program

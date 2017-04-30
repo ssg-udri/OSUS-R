@@ -1137,7 +1137,7 @@ public class TestMissionProgramManagerImpl
         setScriptEngineAndActivate();
         
         //five templates are mocked in the 'mockTemplates'
-        assertThat(m_SUT.getActiveProgramTemplateNames().size(), is(5));
+        assertThat(m_SUT.getActiveProgramTemplateNames().size(), is(6));
 
         //program to add
         Map<String, Object> arguments = new HashMap<String, Object>();
@@ -1162,7 +1162,7 @@ public class TestMissionProgramManagerImpl
         //check that the newly added program is returned when all programs are requested
         assertThat(m_SUT.getPrograms(), hasItem(mission));
         //five are already created, and one was added during this test
-        assertThat(m_SUT.getPrograms().size(), is(6));
+        assertThat(m_SUT.getPrograms().size(), is(7));
     }
     
     /**
@@ -1181,7 +1181,7 @@ public class TestMissionProgramManagerImpl
         setScriptEngineAndActivate();
         
         //five templates are mocked in the 'mockTemplates'
-        assertThat(m_SUT.getActiveProgramTemplateNames().size(), is(5));
+        assertThat(m_SUT.getActiveProgramTemplateNames().size(), is(6));
 
         //program to add
         Map<String, Object> arguments = new HashMap<String, Object>();
@@ -1282,7 +1282,7 @@ public class TestMissionProgramManagerImpl
         m_SUT.loadParameters(params);
 
         //five templates are mocked in the 'mockTemplates'
-        assertThat(m_SUT.getPrograms().size(), is(6));
+        assertThat(m_SUT.getPrograms().size(), is(7));
 
         //try to load the same parameters
         try
@@ -1296,7 +1296,7 @@ public class TestMissionProgramManagerImpl
         }
 
         //verify that the program was not recreated
-        assertThat(m_SUT.getPrograms().size(), is(6));
+        assertThat(m_SUT.getPrograms().size(), is(7));
     }
     
     /**
@@ -1332,7 +1332,7 @@ public class TestMissionProgramManagerImpl
         verify(m_ScriptEngine, never()).eval(eq("something"), Mockito.any(Bindings.class));
 
         //five templates are mocked in the 'mockTemplates'
-        assertThat(m_SUT.getPrograms().size(), is(6));
+        assertThat(m_SUT.getPrograms().size(), is(7));
     }
     
     /**
@@ -1372,7 +1372,7 @@ public class TestMissionProgramManagerImpl
         verify(m_ScriptEngine, times(1)).eval(eq("something"), Mockito.any(ScriptContext.class));
 
         //verify that the program was not recreated
-        assertThat(m_SUT.getPrograms().size(), is(6));
+        assertThat(m_SUT.getPrograms().size(), is(7));
     }
     
     /**
@@ -1732,6 +1732,9 @@ public class TestMissionProgramManagerImpl
         //schedule that all the missions use
         MissionProgramSchedule schedule1 = new MissionProgramSchedule().withIndefiniteInterval(false).
             withImmediately(true).withAtReset(true).withActive(true);
+        //schedule for mission that does not run after restart
+        MissionProgramSchedule schedule2 = new MissionProgramSchedule().withIndefiniteInterval(false).
+                withImmediately(true).withAtReset(false).withActive(true);
         
         //create params individually for each template, note that although these values are the same
         //in an actual program they need not be, the key is the name of the variable, the value is the 
@@ -1777,12 +1780,20 @@ public class TestMissionProgramManagerImpl
             withProgramName("saved-program5").withParameters(MapTranslator.translateMap(paramArgs)).
                 withTemplateName("saved-program5");
         
+        paramArgs.clear();
+        paramArgs.putAll(executeArgs);
+        paramArgs.put("saved-program3", "saved-program3");
+        MissionProgramParameters params6 = new MissionProgramParameters().withSchedule(schedule2).
+            withProgramName("saved-program6").withParameters(MapTranslator.translateMap(paramArgs)).
+                withTemplateName("saved-program6");
+        
         //mock the schedule and parameter values
         PersistentData dataParam1 = mock(PersistentData.class);
         PersistentData dataParam2 = mock(PersistentData.class);
         PersistentData dataParam3 = mock(PersistentData.class);
         PersistentData dataParam4 = mock(PersistentData.class);
         PersistentData dataParam5 = mock(PersistentData.class);
+        PersistentData dataParam6 = mock(PersistentData.class);
         
         //mock response from data store when iterating over query results        
         when((byte[])dataParam1.getEntity()).thenReturn(XmlUtils.toXML(params1, true));
@@ -1790,6 +1801,7 @@ public class TestMissionProgramManagerImpl
         when((byte[])dataParam3.getEntity()).thenReturn(XmlUtils.toXML(params3, true));
         when((byte[])dataParam4.getEntity()).thenReturn(XmlUtils.toXML(params4, true));
         when((byte[])dataParam5.getEntity()).thenReturn(XmlUtils.toXML(params5, true));
+        when((byte[])dataParam6.getEntity()).thenReturn(XmlUtils.toXML(params6, true));
         
         //Add the mocked PersistantData to the list
         missionPrograms.add(dataParam1);
@@ -1797,6 +1809,7 @@ public class TestMissionProgramManagerImpl
         missionPrograms.add(dataParam3);
         missionPrograms.add(dataParam4);
         missionPrograms.add(dataParam5);
+        missionPrograms.add(dataParam6);
         
         
         //mocked response when data store is queried 
@@ -1808,6 +1821,7 @@ public class TestMissionProgramManagerImpl
         when(dataParam3.getDescription()).thenReturn("saved-program3");
         when(dataParam4.getDescription()).thenReturn("saved-program4");
         when(dataParam5.getDescription()).thenReturn("saved-program5");
+        when(dataParam6.getDescription()).thenReturn("saved-program6");
     }
     
     /**
@@ -1909,6 +1923,9 @@ public class TestMissionProgramManagerImpl
         MissionProgramTemplate programData5 = new MissionProgramTemplate().withSource("huh").
             withName("saved-program5").withVariableMetaData(varMeta12);
         
+        MissionProgramTemplate programData6 = new MissionProgramTemplate().withSource("huh2").
+                withName("saved-program6").withVariableMetaData(varMeta12);
+            
         //mock out templates
         Set<String> templateNames = new HashSet<String>();
         templateNames.add("saved-program1");
@@ -1916,6 +1933,7 @@ public class TestMissionProgramManagerImpl
         templateNames.add("saved-program3");
         templateNames.add("saved-program4");
         templateNames.add("saved-program5");
+        templateNames.add("saved-program6");
         when(m_TemplateManager.getMissionTemplateNames()).thenReturn(templateNames);
         
         when(m_TemplateManager.getTemplate("saved-program1")).thenReturn(programData1);
@@ -1923,6 +1941,7 @@ public class TestMissionProgramManagerImpl
         when(m_TemplateManager.getTemplate("saved-program3")).thenReturn(programData3);
         when(m_TemplateManager.getTemplate("saved-program4")).thenReturn(programData4);
         when(m_TemplateManager.getTemplate("saved-program5")).thenReturn(programData5);
+        when(m_TemplateManager.getTemplate("saved-program6")).thenReturn(programData6);
     }
 
     /**

@@ -55,7 +55,6 @@ import org.osgi.service.log.LogService;
  * reading the state of the program, in particular for auto execution purposes
  * 
  * @author dhumeniuk
- * 
  */
 public class ProgramImpl implements Program //NOPMD NOCHECKSTYLE - Too many fields, large number of fields needed for 
                                     //wide variety of potential dependency types (Assets, 3 types of ccomm layers, etc)
@@ -155,8 +154,13 @@ public class ProgramImpl implements Program //NOPMD NOCHECKSTYLE - Too many fiel
      * Last execution exception cause.
      */
     private String m_LastExecutionException;
-    
-     /**
+
+    /**
+     * Set to true if program instance was loaded from data store after a reset.
+     */
+    private boolean m_LoadedAfterReset;
+
+    /**
      * This constructor assumes MissionProgramInstance is already validated. 
      * 
      * @param manager
@@ -187,6 +191,7 @@ public class ProgramImpl implements Program //NOPMD NOCHECKSTYLE - Too many fiel
         setFactoryProgramDepencencies();
         m_LastTestException = "";
         m_LastExecutionException = "";
+        m_LoadedAfterReset = false;
     }
     
     @Override
@@ -591,7 +596,29 @@ public class ProgramImpl implements Program //NOPMD NOCHECKSTYLE - Too many fiel
         //if this point is reached all deps were successful reconciled
         changeStatus(ProgramStatus.WAITING_UNINITIALIZED);
     }
-    
+
+    /**
+     * Returns whether the program was loaded after a reset.
+     * 
+     * @return
+     *      <code>true</code> if loaded after a reset, <code>false</code> otherwise
+     */
+    public boolean isLoadedAfterReset()
+    {
+        return m_LoadedAfterReset;
+    }
+
+    /**
+     * Sets the loaded after reset flag.
+     * 
+     * @param loadedAfterReset
+     *      <code>true</code> if loaded after a reset, <code>false</code> otherwise
+     */
+    public void setLoadedAfterReset(final boolean loadedAfterReset)
+    {
+        m_LoadedAfterReset = loadedAfterReset;
+    }
+
     /**
      * Requests the asset dependency value from the {@link MissionProgramManagerImpl}.
      * @param data
