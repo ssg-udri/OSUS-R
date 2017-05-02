@@ -107,7 +107,7 @@ platforms['linux32'] = {
 }
 
 platforms['docs'] = {
-    node('linux') {
+    node {
         deleteDir()
         unstash 'sources'
         withEnv([
@@ -212,7 +212,7 @@ def saveOsusResults(resultName) {
     if (resultName.startsWith("docs")) {
         stash name: resultName, includes: 'mil.dod.th.core.*/generated/*, reports/build.properties'
     } else {
-        stash name: resultName, includes: 'reports/checkstyle-*results.xml, reports/pmd-*results.xml, */generated/*.jar, */generated/*.zip, target/*/*/bin/*.zip, reports/build.properties, mil.dod.th.ose.gui.integration/generated/test-data/**'
+        stash name: resultName, includes: 'reports/checkstyle-*results.xml, reports/pmd-*results.xml, */generated/*.jar, */generated/*.zip, target/*/*/bin/*.zip, reports/build.properties, mil.dod.th.ose.gui.integration/generated/test-data/**, reports/cobertura/coverage.xml'
     }
 
     if (resultName.startsWith("linux64") || resultName.startsWith("gui")) {
@@ -254,11 +254,10 @@ def doOsusReports() {
          unstableTotalAll: '0',
          canComputeNew: true]
     )
-    // Cobertura not compatible with pipeline yet
-    //step(
-    //    [$class: 'CoberturaPublisher',
-    //     coberturaReportFile: 'linux64/reports/cobertura/coverage.xml']
-    //)
+    step(
+        [$class: 'CoberturaPublisher',
+         coberturaReportFile: '*/reports/cobertura/coverage.xml']
+    )
     step(
         [$class: 'hudson.plugins.checkstyle.CheckStylePublisher',
          pattern: '*/reports/checkstyle-*results.xml',
