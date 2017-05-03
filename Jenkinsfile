@@ -256,7 +256,8 @@ def doOsusReports() {
     )
     step(
         [$class: 'CoberturaPublisher',
-         coberturaReportFile: '*/reports/cobertura/coverage.xml']
+         coberturaReportFile: '*/reports/cobertura/coverage.xml',
+         onlyStable: false]
     )
     step(
         [$class: 'hudson.plugins.checkstyle.CheckStylePublisher',
