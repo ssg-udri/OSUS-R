@@ -31,5 +31,5 @@ public interface UrlService
      * @throws IOException
      *      if the data is not complete, contains illegal values, or the connection cannot be opened
      */
-    URLConnection constructUrlConnection(final String urlString) throws IOException;
+    URLConnection constructUrlConnection(String urlString) throws IOException;
 }

@@ -31,7 +31,7 @@ public interface H2DataStore
      * @return
      *      String representing the results
      */
-    String executeSql(final String statement) throws SQLException;
+    String executeSql(String statement) throws SQLException;
     
     /**
      * Get the maximum amount the H2 database can use for caching.  Value is the actual value as queried from the 
@@ -50,5 +50,5 @@ public interface H2DataStore
      * @return
      *      value as a string of the property
      */
-    String getDatabaseProp(final String key);
+    String getDatabaseProp(String key);
 }

@@ -17,6 +17,7 @@ import java.util.Map;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.ose.remote.api.RemoteEventAdmin;
 import mil.dod.th.ose.remote.api.RemoteEventRegistration;
 

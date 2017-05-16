@@ -75,5 +75,5 @@ public interface JdoDataStore<T>
      *          the query used to remove
      * @return the number of items deleted
      */
-    long removeOnJdoQuery(final Query query);
+    long removeOnJdoQuery(Query query);
 }

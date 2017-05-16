@@ -20,6 +20,7 @@ import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.ccomm.CustomCommsService;
 import mil.dod.th.core.ccomm.physical.PhysicalLinkException;
 import mil.dod.th.core.ccomm.physical.SerialPort;

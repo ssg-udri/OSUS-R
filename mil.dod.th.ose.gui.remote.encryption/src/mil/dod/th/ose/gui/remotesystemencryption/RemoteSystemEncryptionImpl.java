@@ -20,14 +20,15 @@ import java.util.Map;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.remote.RemoteChannelLookup;
 import mil.dod.th.core.remote.RemoteSystemEncryption;
 import mil.dod.th.core.remote.proto.RemoteBase.EncryptType;
 
 /**
  * Basic implementation of {@link RemoteSystemEncryption} service.
+ * 
  * @author allenchl
- *
  */
 @Component
 public class RemoteSystemEncryptionImpl implements RemoteSystemEncryption

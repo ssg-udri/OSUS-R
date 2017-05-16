@@ -172,7 +172,7 @@ public class NovatelMessageParserImpl implements NovatelMessageParser
      * @throws NovatelMessageException
      *      if there is a null value, which represents a value which was not able to be parsed
      */
-    private void checkArgsForNull(final String type, final String message, final Object ...objectsToCheck) 
+    private void checkArgsForNull(final String type, final String message, final Object... objectsToCheck) 
             throws NovatelMessageException
     {
         for (int i = 0; i < objectsToCheck.length; i++)

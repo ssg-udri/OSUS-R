@@ -279,7 +279,7 @@
             <pathelement location="${bp.checkstyle.ext.jar.file}" />
             <pathelement location="${bp.core.api.bundle.file}" />
         </path>
-        <taskdef resource="checkstyletask.properties" classpathref="checkstyle.classpath" />
+        <taskdef resource="com/puppycrawl/tools/checkstyle/ant/checkstyle-ant-task.properties" classpathref="checkstyle.classpath" />
         <checkstyle config="${bp.checkstyle.config.file}">
             <fileset refid="those.java.sources" />
             <formatter type="xml" toFile="${bp.report.path}/checkstyle-java-results.xml" />
@@ -370,7 +370,7 @@
                 <include name="**/lib/**"/>
                 <exclude name="**/ant-contrib/**"/>
                 <exclude name="**/apache-ant-1.8.4/**"/>
-                <exclude name="**/checkstyle-6.1.1/**"/>
+                <exclude name="**/checkstyle-7.6.1/**"/>
                 <exclude name="**/cobertura/**"/>
                 <exclude name="**/confluence-cli/**"/>
                 <exclude name="**/eclipse-plug-ins/**"/>

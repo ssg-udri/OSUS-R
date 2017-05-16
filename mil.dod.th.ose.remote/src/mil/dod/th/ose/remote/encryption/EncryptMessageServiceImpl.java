@@ -45,7 +45,6 @@ import mil.dod.th.core.remote.proto.RemoteBase.EncryptInfo;
 import mil.dod.th.core.remote.proto.RemoteBase.EncryptType;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestPayload;
-
 import mil.dod.th.ose.remote.api.EncryptionUtility;
 import mil.dod.th.ose.shared.SystemConfigurationConstants;
 
@@ -212,17 +211,17 @@ public class EncryptMessageServiceImpl implements EncryptMessageService
         m_PropFilePrivate = new File(dir, PROP_FILE_NAME_PRIVATE);
         m_PropPrivate = new Properties();
         
-        try (final FileInputStream inputStreamAuthorized = new FileInputStream(m_PropFileAuthorized))
+        try (FileInputStream inputStreamAuthorized = new FileInputStream(m_PropFileAuthorized))
         {
             m_PropAuthorized.load(inputStreamAuthorized);
         }
         
-        try (final FileInputStream inputStreamPublic = new FileInputStream(m_PropFilePublic))
+        try (FileInputStream inputStreamPublic = new FileInputStream(m_PropFilePublic))
         {
             m_PropPublic.load(inputStreamPublic);
         }
         
-        try (final FileInputStream inputStreamPrivate = new FileInputStream(m_PropFilePrivate))
+        try (FileInputStream inputStreamPrivate = new FileInputStream(m_PropFilePrivate))
         {
             m_PropPrivate.load(inputStreamPrivate);
         }
@@ -464,7 +463,7 @@ public class EncryptMessageServiceImpl implements EncryptMessageService
 
         //Save the string in hexadecimal format in "th.encryption.public.properties"
         m_PropPublic.setProperty("public.key", staticPublicKeyString);
-        try (final FileOutputStream outputStream = new FileOutputStream(m_PropFilePublic))
+        try (FileOutputStream outputStream = new FileOutputStream(m_PropFilePublic))
         {
             m_PropPublic.store(outputStream, "Encryption Properties , last property edited was 'publicStaticKey'");
         }
@@ -476,7 +475,7 @@ public class EncryptMessageServiceImpl implements EncryptMessageService
 
         //Save the string in hexadecimal format in "th.encryption.private.properties"
         m_PropPrivate.setProperty(PRIVATE_KEY, staticPrivateKeyString);
-        try (final FileOutputStream outputStream = new FileOutputStream(m_PropFilePrivate))
+        try (FileOutputStream outputStream = new FileOutputStream(m_PropFilePrivate))
         {
             m_PropPrivate.store(outputStream, "Encryption Properties , last property edited was 'privateStaticKey'");
         }
@@ -499,7 +498,7 @@ public class EncryptMessageServiceImpl implements EncryptMessageService
     {
 
         m_PropAuthorized.setProperty(SYSTEM_ID_KEY + ((Integer)systemId).toString(), authorizedPublicKey);
-        try (final FileOutputStream outputStream = new FileOutputStream(m_PropFileAuthorized))
+        try (FileOutputStream outputStream = new FileOutputStream(m_PropFileAuthorized))
         {
             m_PropAuthorized.store(outputStream, "Encryption Properties , last edited ((Integer)systemId).toString() ");
         }

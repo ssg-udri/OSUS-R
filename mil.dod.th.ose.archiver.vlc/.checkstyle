@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<fileset-config file-format-version="1.2.0" simple-config="false" sync-formatter="false">
+  <local-check-config name="all" location="/cnf/checkstyle/checkstyle-rules-all-files.xml" type="project" description="">
+    <additional-data name="protect-config-file" value="false"/>
+  </local-check-config>
+  <local-check-config name="java" location="/cnf/checkstyle/checkstyle-rules.xml" type="project" description="">
+    <additional-data name="protect-config-file" value="false"/>
+  </local-check-config>
+  <local-check-config name="java-test" location="/cnf/checkstyle/checkstyle-test-rules.xml" type="project" description="">
+    <additional-data name="protect-config-file" value="false"/>
+  </local-check-config>
+  <fileset name="all" enabled="true" check-config-name="java-test" local="true">
+    <file-match-pattern match-pattern="test/.*" include-pattern="true"/>
+  </fileset>
+  <fileset name="all" enabled="true" check-config-name="java" local="true">
+    <file-match-pattern match-pattern="." include-pattern="false"/>
+    <file-match-pattern match-pattern="src" include-pattern="true"/>
+  </fileset>
+  <fileset name="all" enabled="true" check-config-name="all" local="true">
+    <file-match-pattern match-pattern="." include-pattern="true"/>
+    <file-match-pattern match-pattern="generated/|bin/|.settings/" include-pattern="false"/>
+    <file-match-pattern match-pattern=".checkstyle|.classpath|.project|.pmd|.DS_Store" include-pattern="false"/>
+    <file-match-pattern match-pattern=".jar" include-pattern="false"/>
+  </fileset>
+  <filter name="NonSrcDirs" enabled="false"/>
+  <filter name="FilesFromPackage" enabled="true">
+    <filter-data value="src/org"/>
+    <filter-data value="jaxb-gen-source"/>
+    <filter-data value="proto-gen-source"/>
+  </filter>
+</fileset-config>

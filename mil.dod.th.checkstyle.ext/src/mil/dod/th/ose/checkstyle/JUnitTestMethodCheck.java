@@ -12,7 +12,7 @@
 //==============================================================================
 package mil.dod.th.ose.checkstyle;
 
-import com.puppycrawl.tools.checkstyle.api.Check;
+import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
@@ -20,9 +20,8 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  * Class will make sure JUnit methods that start with the word test have the proper annotations.
  * 
  * @author dhumeniuk
- *
  */
-public class JUnitTestMethodCheck extends Check
+public class JUnitTestMethodCheck extends AbstractCheck
 {
     @Override
     public int[] getDefaultTokens()

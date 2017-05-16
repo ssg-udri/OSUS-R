@@ -37,7 +37,7 @@ public interface TerraHarvestMessageConverter
      * @throws InvalidProtocolBufferException
      *      if parsing error occurs
      */
-    RemoteMessage<?> convertMessage(final TerraHarvestMessage message) throws InvalidProtocolBufferException;
+    RemoteMessage<?> convertMessage(TerraHarvestMessage message) throws InvalidProtocolBufferException;
 
     /**
      * Returns whether the given namespace type is supported for message conversion.
@@ -47,5 +47,5 @@ public interface TerraHarvestMessageConverter
      * @return
      *      true if the namespace type is supported, false otherwise
      */
-    boolean isSupported(final Namespace namespace);
+    boolean isSupported(Namespace namespace);
 }

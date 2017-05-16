@@ -46,6 +46,6 @@ public interface ModifiablePropertyModel extends UnmodifiablePropertyModel
      * @throws ValidatorException
      *          Thrown value passed is not valid.
      */
-    void validateValue(final FacesContext context, final UIComponent component, final Object value) 
+    void validateValue(FacesContext context, UIComponent component, Object value) 
             throws ValidatorException;
 }

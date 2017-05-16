@@ -13,7 +13,6 @@
 package mil.dod.th.ose.gui.webapp.observation;
 
 import java.util.Dictionary;
-
 import java.util.Hashtable;
 import java.util.Map;
 

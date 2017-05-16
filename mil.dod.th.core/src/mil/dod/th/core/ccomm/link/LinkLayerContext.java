@@ -35,7 +35,7 @@ public interface LinkLayerContext extends LinkLayer, FactoryObjectContext
      * @param status
      *      New status
      */
-    void setStatus(final LinkStatus status);
+    void setStatus(LinkStatus status);
     
     /**
      * Post the {@link LinkLayer#TOPIC_DATA_RECEIVED} topic to the EventAdmin service.

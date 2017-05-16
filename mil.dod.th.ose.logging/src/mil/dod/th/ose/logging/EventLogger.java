@@ -20,6 +20,7 @@ import java.util.List;
 import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.ose.shared.OSGiEventConstants;
 

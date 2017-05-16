@@ -76,7 +76,7 @@ public interface TerraHarvestControllerProxy
      * @throws UnsupportedOperationException
      *      if the operation is not overridden by the plug-in
      */
-    void setName(final String name) throws UnsupportedOperationException;
+    void setName(String name) throws UnsupportedOperationException;
     
     /**
      * Get the identification number of the controller. This must be the network unique identifier of the controller.
@@ -101,6 +101,6 @@ public interface TerraHarvestControllerProxy
      * @throws UnsupportedOperationException
      *      if the operation is not overridden by the plug-in
      */
-    void setId(final int id) throws UnsupportedOperationException; // NOPMD: short method name: name is descriptive of 
-                                                                   // what is being set, which is an ID
+    void setId(int id) throws UnsupportedOperationException; // NOPMD: short method name: name is descriptive of 
+                                                             // what is being set, which is an ID
 }

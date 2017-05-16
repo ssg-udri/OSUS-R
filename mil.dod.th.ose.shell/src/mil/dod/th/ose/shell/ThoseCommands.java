@@ -17,6 +17,7 @@ import java.io.PrintStream;
 import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.asset.AssetDirectoryService;
 import mil.dod.th.core.asset.AssetFactory;
 import mil.dod.th.core.ccomm.AddressManagerService;

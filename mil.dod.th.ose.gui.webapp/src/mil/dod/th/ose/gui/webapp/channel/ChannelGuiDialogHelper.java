@@ -47,7 +47,7 @@ public interface ChannelGuiDialogHelper
      *  the integer system id of the controller the user would like
      *  to make a channel for.
      */
-    void setNewChannelControllerId(final int controllerId);
+    void setNewChannelControllerId(int controllerId);
     
     /**
      * Getter function for the variable which holds the host name of the 
@@ -65,7 +65,7 @@ public interface ChannelGuiDialogHelper
      * @param host
      *  the host name that the socket should have.
      */
-    void setNewSocketHost(final String host);
+    void setNewSocketHost(String host);
     
     /**
      * Getter function for the variable which holds the port of the socket
@@ -83,7 +83,7 @@ public interface ChannelGuiDialogHelper
      * @param port
      *  the integer number that the socket port should be set to.
      */
-    void setNewSocketPort(final int port);
+    void setNewSocketPort(int port);
 
     /**
      * Getter function for whether the new socket should use SSL or not.
@@ -117,7 +117,7 @@ public interface ChannelGuiDialogHelper
      * @param name
      *  the name that the transport layer should be set to.
      */
-    void setNewTransportName(final String name);
+    void setNewTransportName(String name);
     
     /**
      * Getter function for the variable which holds the remote address of the transport 
@@ -135,7 +135,7 @@ public interface ChannelGuiDialogHelper
      * @param address
      *  the remote address that the transport layer should use.
      */
-    void setNewTransportRemoteAddress(final String address);
+    void setNewTransportRemoteAddress(String address);
     
     /**
      * Getter function for the variable which holds the local address of the transport 
@@ -153,7 +153,7 @@ public interface ChannelGuiDialogHelper
      * @param address
      *  the local address that the transport layer should use.
      */
-    void setNewTransportLocalAddress(final String address);
+    void setNewTransportLocalAddress(String address);
     
     /**
      * Getter function for the variable which determines which second dialog 
@@ -173,7 +173,7 @@ public interface ChannelGuiDialogHelper
      *  the {@link NewChannelChoice} variable which simply identifies the name and type
      *  of channel to create.
      */
-    void setSelectedNewChannelType(final NewChannelChoice channelChoice);
+    void setSelectedNewChannelType(NewChannelChoice channelChoice);
     
     /**
      * Getter function to return all of the possible channel choices that 

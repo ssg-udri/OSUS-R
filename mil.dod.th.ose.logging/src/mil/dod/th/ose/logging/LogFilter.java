@@ -30,7 +30,7 @@ public interface LogFilter
      * @return
      *      true if the given bundle matches, false if not
      */
-    boolean matches(final Bundle bundle);
+    boolean matches(Bundle bundle);
     
     /**
      * Get the lowest severity level this filter will include in logged output.  If the value is {@link 

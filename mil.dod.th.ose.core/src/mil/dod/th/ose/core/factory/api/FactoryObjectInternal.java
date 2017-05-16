@@ -66,8 +66,8 @@ public interface FactoryObjectInternal extends FactoryObject, FactoryObjectConte
      * @throws IllegalStateException
      *  if unable to retrieve attribute metadata interface
      */
-    void initialize(FactoryRegistry<?> registry, FactoryObjectProxy proxy, final FactoryInternal factory, //NOPMD: 
-            final ConfigurationAdmin configAdmin, final EventAdmin eventAdmin, final PowerManagerInternal powerMgr,
+    void initialize(FactoryRegistry<?> registry, FactoryObjectProxy proxy, FactoryInternal factory, //NOPMD: 
+            ConfigurationAdmin configAdmin, EventAdmin eventAdmin, PowerManagerInternal powerMgr,
             UUID uuid, String name, String pid, String baseType) throws IllegalStateException;
             //ExcessiveParameterList, needed to provide this class with access to necessary services.    
     /**
@@ -123,7 +123,7 @@ public interface FactoryObjectInternal extends FactoryObject, FactoryObjectConte
      * @throws ConfigurationException 
      *      if one of the new property values is invalid
      */
-    void configUpdated(final Map<String, Object> props) throws ConfigurationException;
+    void configUpdated(Map<String, Object> props) throws ConfigurationException;
     
     @Override 
     FactoryInternal getFactory();

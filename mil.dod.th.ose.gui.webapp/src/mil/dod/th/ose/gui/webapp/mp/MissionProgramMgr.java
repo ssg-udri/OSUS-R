@@ -59,5 +59,5 @@ public interface MissionProgramMgr
      * @param type
      *     the type of the message    
      */
-    void queueMessage(int controllerId, final Message message, final MissionProgrammingMessageType type);
+    void queueMessage(int controllerId, Message message, MissionProgrammingMessageType type);
 }

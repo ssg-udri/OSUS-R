@@ -13,7 +13,6 @@
 package mil.dod.th.ose.gui.webapp.utils;
 
 import javax.ejb.Singleton;
-
 import javax.ejb.Startup;
 import javax.faces.application.FacesMessage;
 import javax.inject.Inject;

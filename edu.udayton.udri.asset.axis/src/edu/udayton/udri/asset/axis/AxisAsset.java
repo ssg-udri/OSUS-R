@@ -230,8 +230,8 @@ public class AxisAsset implements AssetProxy
                 try
                 {
                     final URLConnection connection = m_UrlService.constructUrlConnection(url);
-                    try (final InputStream inStream = connection.getInputStream();
-                            final Reader reader = new InputStreamReader(inStream))
+                    try (InputStream inStream = connection.getInputStream();
+                            Reader reader = new InputStreamReader(inStream))
                     {
                         int data = reader.read();
                         while (data != -1)

@@ -62,8 +62,8 @@ public interface ConfigurationWrapper
      *          {@link UnmodifiablePropertyModel} that represents the property 
      *          information or null if the property is not found
      */
-    UnmodifiablePropertyModel getConfigurationPropertyAsync(final int controllerId, 
-            final String pid, final String key);
+    UnmodifiablePropertyModel getConfigurationPropertyAsync(int controllerId, 
+            String pid, String key);
     
     /**
      * Method used to set the value of properties for a configuration.
@@ -89,7 +89,7 @@ public interface ConfigurationWrapper
      * @return
      *  the list of changed properties; list will be empty if no properties have been changed
      */
-    List<ModifiablePropertyModel> findChangedPropertiesAsync(final int controllerId, final String pid, 
-            final List<ModifiablePropertyModel> properties);
+    List<ModifiablePropertyModel> findChangedPropertiesAsync(int controllerId, String pid, 
+            List<ModifiablePropertyModel> properties);
     
 }

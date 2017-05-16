@@ -172,7 +172,7 @@ public interface PhysicalLink extends FactoryObject
      * @throws FactoryException
      *             if there is an error in setting the read timeout
      */
-    void setReadTimeout(final int timeoutMS) throws IllegalArgumentException, FactoryException;
+    void setReadTimeout(int timeoutMS) throws IllegalArgumentException, FactoryException;
     
     /**
      * Set the number of bits per transmission cycle.
@@ -184,7 +184,7 @@ public interface PhysicalLink extends FactoryObject
      * @throws FactoryException
      *            if there is an error in setting the data bits value
      */
-    void setDataBits(final int bits) throws IllegalArgumentException, FactoryException;
+    void setDataBits(int bits) throws IllegalArgumentException, FactoryException;
     
     /**
      * Releases exclusive access to the physical link. After this point, the calling module should no longer

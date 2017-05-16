@@ -24,5 +24,5 @@ public interface ChangeSystemTimeWrapper
      * @param timeToSet
      *  the time to set the system to.
      */
-    void setSystemTime(final long timeToSet);
+    void setSystemTime(long timeToSet);
 }

@@ -43,7 +43,7 @@ public interface LoggingService
      * 
      * @see String#format(String, Object...)
      */
-    void log(final int level, final String format, final Object... args);
+    void log(int level, String format, Object... args);
     
     /**
      * Log an exception message through the log service.  Message will be constructed by putting the 
@@ -64,7 +64,7 @@ public interface LoggingService
      * 
      * @see String#format(String, Object...)
      */
-    void log(final int level, final Throwable exception, final String format, final Object... args);
+    void log(int level, Throwable exception, String format, Object... args);
     
     /**
      * Log a message through the log service.  Message will be constructed by putting the <code>args</code> into the
@@ -85,7 +85,7 @@ public interface LoggingService
      * 
      * @see String#format(String, Object...)
      */
-    void log(final ServiceReference<?> reference, final int level, final String format, final Object... args);
+    void log(ServiceReference<?> reference, int level, String format, Object... args);
     
     /**
      * Log an exception message through the log service.  Message will be constructed by putting the 
@@ -108,8 +108,8 @@ public interface LoggingService
      * 
      * @see String#format(String, Object...)
      */
-    void log(final ServiceReference<?> reference, final int level, final Throwable exception, final String format, 
-            final Object... args);
+    void log(ServiceReference<?> reference, int level, Throwable exception, String format, 
+            Object... args);
     
     /**
      * Log a debug message through the log service.  Message will be constructed by putting the <code>args</code> into 
@@ -126,7 +126,7 @@ public interface LoggingService
      * 
      * @see String#format(String, Object...)
      */
-    void debug(final String format, final Object... args);
+    void debug(String format, Object... args);
     
     /**
      * Log an info message through the log service.  Message will be constructed by putting the <code>args</code> into 
@@ -143,7 +143,7 @@ public interface LoggingService
      * 
      * @see String#format(String, Object...)
      */
-    void info(final String format, final Object... args);
+    void info(String format, Object... args);
     
     /**
      * Log a warning message through the log service.  Message will be constructed by putting the <code>args</code> into
@@ -160,7 +160,7 @@ public interface LoggingService
      * 
      * @see String#format(String, Object...)
      */
-    void warning(final String format, final Object... args);
+    void warning(String format, Object... args);
     
     /**
      * Log a warning exception message through the log service.  Message will be constructed by putting the 
@@ -179,7 +179,7 @@ public interface LoggingService
      * 
      * @see String#format(String, Object...)
      */
-    void warning(final Throwable exception, final String format, final Object... args);
+    void warning(Throwable exception, String format, Object... args);
 
     /**
      * Log an error message through the log service.  Message will be constructed by putting the <code>args</code> into 
@@ -196,7 +196,7 @@ public interface LoggingService
      * 
      * @see String#format(String, Object...)
      */
-    void error(final String format, final Object... args);
+    void error(String format, Object... args);
 
     /**
      * Log an error exception message through the log service.  Message will be constructed by putting the 
@@ -215,5 +215,5 @@ public interface LoggingService
      * 
      * @see String#format(String, Object...)
      */
-    void error(final Throwable exception, final String format, final Object... args);
+    void error(Throwable exception, String format, Object... args);
 }

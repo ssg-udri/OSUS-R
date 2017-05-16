@@ -66,7 +66,7 @@ public class MarkupGenerator
     public void generateMarkup(final File outputfile, final List<LexiconBase> types) throws IOException
     {
         
-        try (final PrintStream stream = m_FileService.createPrintStream(outputfile))
+        try (PrintStream stream = m_FileService.createPrintStream(outputfile))
         {
             for (LexiconBase type: types)
             {

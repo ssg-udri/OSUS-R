@@ -64,7 +64,7 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createBaseMessage(final BaseMessageType messageType, final Message dataMessage);
+    MessageWrapper createBaseMessage(BaseMessageType messageType, Message dataMessage);
 
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -81,8 +81,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createBaseErrorMessage(final TerraHarvestMessage request, final ErrorCode errorCode,
-            final String errorDescription);
+    MessageResponseWrapper createBaseErrorMessage(TerraHarvestMessage request, ErrorCode errorCode,
+            String errorDescription);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -103,8 +103,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createBaseErrorResponse(final TerraHarvestMessage request, final Exception exception, 
-            final String errorDescription);
+    MessageResponseWrapper createBaseErrorResponse(TerraHarvestMessage request, Exception exception, 
+            String errorDescription);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -121,8 +121,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createBaseMessageResponse(final TerraHarvestMessage request, 
-         final BaseMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createBaseMessageResponse(TerraHarvestMessage request, 
+         BaseMessageType messageType, Message dataMessage);
 
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -137,8 +137,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createMissionProgrammingMessage(final MissionProgrammingMessageType messageType, 
-        final Message dataMessage);
+    MessageWrapper createMissionProgrammingMessage(MissionProgrammingMessageType messageType, 
+        Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -155,8 +155,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createMissionProgrammingResponseMessage(final TerraHarvestMessage request, 
-            final MissionProgrammingMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createMissionProgrammingResponseMessage(TerraHarvestMessage request, 
+            MissionProgrammingMessageType messageType, Message dataMessage);
 
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -171,7 +171,7 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createEventAdminMessage(final EventAdminMessageType messageType, final Message dataMessage);
+    MessageWrapper createEventAdminMessage(EventAdminMessageType messageType, Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -188,8 +188,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createEventAdminResponseMessage(final TerraHarvestMessage request, 
-            final EventAdminMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createEventAdminResponseMessage(TerraHarvestMessage request, 
+            EventAdminMessageType messageType, Message dataMessage);
 
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -204,7 +204,7 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createConfigAdminMessage(final ConfigAdminMessageType messageType, final Message dataMessage);
+    MessageWrapper createConfigAdminMessage(ConfigAdminMessageType messageType, Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -221,8 +221,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createConfigAdminResponseMessage(final TerraHarvestMessage request, 
-            final ConfigAdminMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createConfigAdminResponseMessage(TerraHarvestMessage request, 
+            ConfigAdminMessageType messageType, Message dataMessage);
 
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -237,7 +237,7 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createMetaTypeMessage(final MetaTypeMessageType messageType, final Message dataMessage);
+    MessageWrapper createMetaTypeMessage(MetaTypeMessageType messageType, Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -254,8 +254,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createMetaTypeResponseMessage(final TerraHarvestMessage request, 
-            final MetaTypeMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createMetaTypeResponseMessage(TerraHarvestMessage request, 
+            MetaTypeMessageType messageType, Message dataMessage);
 
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -270,7 +270,7 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createAssetMessage(final AssetMessageType messageType, final Message dataMessage);
+    MessageWrapper createAssetMessage(AssetMessageType messageType, Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -287,8 +287,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createAssetResponseMessage(final TerraHarvestMessage request, 
-            final AssetMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createAssetResponseMessage(TerraHarvestMessage request, 
+            AssetMessageType messageType, Message dataMessage);
 
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -303,8 +303,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createAssetDirectoryServiceMessage(final AssetDirectoryServiceMessageType messageType, 
-        final Message dataMessage);
+    MessageWrapper createAssetDirectoryServiceMessage(AssetDirectoryServiceMessageType messageType, 
+        Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -321,8 +321,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createAssetDirectoryServiceResponseMessage(final TerraHarvestMessage request, 
-            final AssetDirectoryServiceMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createAssetDirectoryServiceResponseMessage(TerraHarvestMessage request, 
+            AssetDirectoryServiceMessageType messageType, Message dataMessage);
 
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -337,7 +337,7 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createBundleMessage(final BundleMessageType messageType, final Message dataMessage);
+    MessageWrapper createBundleMessage(BundleMessageType messageType, Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -354,8 +354,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createBundleResponseMessage(final TerraHarvestMessage request, 
-            final BundleMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createBundleResponseMessage(TerraHarvestMessage request, 
+            BundleMessageType messageType, Message dataMessage);
 
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -370,7 +370,7 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createCustomCommsMessage(final CustomCommsMessageType messageType, final Message dataMessage);
+    MessageWrapper createCustomCommsMessage(CustomCommsMessageType messageType, Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -387,8 +387,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createCustomCommsResponseMessage(final TerraHarvestMessage request, 
-            final CustomCommsMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createCustomCommsResponseMessage(TerraHarvestMessage request, 
+            CustomCommsMessageType messageType, Message dataMessage);
     
     
     /**
@@ -404,8 +404,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */
-    MessageWrapper createDataStreamServiceMessage(final DataStreamServiceMessageType messageType, 
-            final Message dataMessage);
+    MessageWrapper createDataStreamServiceMessage(DataStreamServiceMessageType messageType, 
+            Message dataMessage);
     
     /**
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -422,8 +422,8 @@ public interface MessageFactory
      * @return
      *      a wrapped partial TerraHarvestMessage
      */
-    MessageResponseWrapper createDataStreamServiceResponseMessage(final TerraHarvestMessage request, 
-            final DataStreamServiceMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createDataStreamServiceResponseMessage(TerraHarvestMessage request, 
+            DataStreamServiceMessageType messageType, Message dataMessage);
     
     /**
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -438,8 +438,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */
-    MessageWrapper createDataStreamStoreMessage(final DataStreamStoreMessageType messageType,
-            final Message dataMessage);
+    MessageWrapper createDataStreamStoreMessage(DataStreamStoreMessageType messageType,
+            Message dataMessage);
     
     /**
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -456,8 +456,8 @@ public interface MessageFactory
      * @return
      *      a wrapped partial TerraHarvestMessage
      */
-    MessageResponseWrapper createDataStreamStoreResponseMessage(final TerraHarvestMessage request,
-            final DataStreamStoreMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createDataStreamStoreResponseMessage(TerraHarvestMessage request,
+            DataStreamStoreMessageType messageType, Message dataMessage);
 
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -472,7 +472,7 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createPhysicalLinkMessage(final PhysicalLinkMessageType messageType, final Message dataMessage);
+    MessageWrapper createPhysicalLinkMessage(PhysicalLinkMessageType messageType, Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -489,8 +489,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createPhysicalLinkResponseMessage(final TerraHarvestMessage request, 
-            final PhysicalLinkMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createPhysicalLinkResponseMessage(TerraHarvestMessage request, 
+            PhysicalLinkMessageType messageType, Message dataMessage);
 
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -505,7 +505,7 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createLinkLayerMessage(final LinkLayerMessageType messageType, final Message dataMessage);
+    MessageWrapper createLinkLayerMessage(LinkLayerMessageType messageType, Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -522,8 +522,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createLinkLayerResponseMessage(final TerraHarvestMessage request, 
-            final LinkLayerMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createLinkLayerResponseMessage(TerraHarvestMessage request, 
+            LinkLayerMessageType messageType, Message dataMessage);
 
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -538,7 +538,7 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createTransportLayerMessage(final TransportLayerMessageType messageType, final Message dataMessage);
+    MessageWrapper createTransportLayerMessage(TransportLayerMessageType messageType, Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -555,8 +555,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createTransportLayerResponseMessage(final TerraHarvestMessage request, 
-            final TransportLayerMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createTransportLayerResponseMessage(TerraHarvestMessage request, 
+            TransportLayerMessageType messageType, Message dataMessage);
 
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -571,8 +571,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createObservationStoreMessage(final ObservationStoreMessageType messageType, 
-        final Message dataMessage);
+    MessageWrapper createObservationStoreMessage(ObservationStoreMessageType messageType, 
+        Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -589,8 +589,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createObservationStoreResponseMessage(final TerraHarvestMessage request, 
-            final ObservationStoreMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createObservationStoreResponseMessage(TerraHarvestMessage request, 
+            ObservationStoreMessageType messageType, Message dataMessage);
    
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -605,8 +605,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageWrapper createRemoteChannelLookupMessage(final RemoteChannelLookupMessageType messageType, 
-        final Message dataMessage);
+    MessageWrapper createRemoteChannelLookupMessage(RemoteChannelLookupMessageType messageType, 
+        Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -623,8 +623,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */ 
-    MessageResponseWrapper createRemoteChannelLookupResponseMessage(final TerraHarvestMessage request, 
-            final RemoteChannelLookupMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createRemoteChannelLookupResponseMessage(TerraHarvestMessage request, 
+            RemoteChannelLookupMessageType messageType, Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageWrapper} containing a partial 
@@ -639,8 +639,8 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */
-    MessageWrapperAutoEncryption createEncryptionInfoMessage(final EncryptionInfoMessageType messageType, 
-            final Message dataMessage);
+    MessageWrapperAutoEncryption createEncryptionInfoMessage(EncryptionInfoMessageType messageType, 
+            Message dataMessage);
     
     /** 
      * Create a {@link mil.dod.th.core.remote.messaging.MessageResponseWrapper} containing a partial 
@@ -657,6 +657,6 @@ public interface MessageFactory
      * @return 
      *      a wrapped partial TerraHarvestMessage
      */
-    MessageResponseWrapper createEncryptionInfoResponseMessage(final TerraHarvestMessage request,
-            final EncryptionInfoMessageType messageType, final Message dataMessage);
+    MessageResponseWrapper createEncryptionInfoResponseMessage(TerraHarvestMessage request,
+            EncryptionInfoMessageType messageType, Message dataMessage);
 }

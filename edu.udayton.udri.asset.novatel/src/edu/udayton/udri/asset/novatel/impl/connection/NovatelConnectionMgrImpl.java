@@ -17,8 +17,10 @@ import java.util.UUID;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import edu.udayton.udri.asset.novatel.NovatelConstants;
 import edu.udayton.udri.asset.novatel.connection.NovatelConnectionMgr;
+
 import mil.dod.th.core.asset.AssetException;
 import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.CustomCommsService;

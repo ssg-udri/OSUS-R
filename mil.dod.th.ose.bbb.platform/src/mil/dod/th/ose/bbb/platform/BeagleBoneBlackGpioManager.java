@@ -62,8 +62,8 @@ public class BeagleBoneBlackGpioManager
                 enablePinAsOutput(pin);
             }
             
-            try (final FileOutputStream fos = m_FileService.createFileOutputStream(gpioValue, false);
-                    final PrintStream printStream = m_FileService.createPrintStream(fos))
+            try (FileOutputStream fos = m_FileService.createFileOutputStream(gpioValue, false);
+                    PrintStream printStream = m_FileService.createPrintStream(fos))
             {
                 printStream.print(state.toValue());
             }
@@ -86,16 +86,16 @@ public class BeagleBoneBlackGpioManager
     private void enablePinAsOutput(final int pin) throws IOException
     {
         final File exportGpio = m_FileService.getFile(GPIO_PATH, "export");
-        try (final FileOutputStream fos = m_FileService.createFileOutputStream(exportGpio, false);
-                final PrintStream printStream = m_FileService.createPrintStream(fos))
+        try (FileOutputStream fos = m_FileService.createFileOutputStream(exportGpio, false);
+                PrintStream printStream = m_FileService.createPrintStream(fos))
         {
             printStream.print(pin);
         }
         
         final String gpioStr = GPIO_PREFIX + pin + "/direction";
         final File gpioDirection = m_FileService.getFile(GPIO_PATH, gpioStr);
-        try (final FileOutputStream fos = m_FileService.createFileOutputStream(gpioDirection, false);
-                final PrintStream printStream = m_FileService.createPrintStream(fos))
+        try (FileOutputStream fos = m_FileService.createFileOutputStream(gpioDirection, false);
+                PrintStream printStream = m_FileService.createPrintStream(fos))
         {
             printStream.print("out");
         }

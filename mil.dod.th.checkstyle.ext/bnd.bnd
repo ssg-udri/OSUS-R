@@ -18,6 +18,6 @@ Bundle-Vendor: UDRI
 Export-Package: mil.dod.th.ose.checkstyle
 
 -buildpath: \
-    ${workspace}/deps/checkstyle/checkstyle-6.1.1-all.jar;version=file,\
+    ${workspace}/deps/checkstyle/checkstyle-7.6.1-all.jar;version=file,\
     biz.aQute.bnd.annotation,\
     mil.dod.th.core.api;version=latest

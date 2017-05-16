@@ -109,7 +109,7 @@ public class VlcArchiver implements ArchiverService
     
     @Override
     public void start(final String processId, final URI sourceUri, final String filePath) throws ArchiverException,
-        IllegalStateException
+            IllegalStateException
     {
         if (m_ProcessMap.containsKey(processId))
         {

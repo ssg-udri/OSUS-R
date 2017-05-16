@@ -30,7 +30,7 @@ public interface TerraHarvestControllerUtil
      * @param name
      *  the name of the current system.
      */
-    void setSystemName(final String name);
+    void setSystemName(String name);
     
     /**
      * Function to retrieve value for the system name of the current system that is displayed
@@ -46,7 +46,7 @@ public interface TerraHarvestControllerUtil
      * @param systemId
      *  the unique identifier for the current system.
      */
-    void setSystemId(final int systemId);
+    void setSystemId(int systemId);
     
     /**
      * Function to retrieve value for the unique identifier of the current system.

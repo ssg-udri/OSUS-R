@@ -174,7 +174,7 @@ public interface FileService
      * @return
      *  true if the given file exists; false otherwise
      */
-    boolean doesFileExist(final File file);
+    boolean doesFileExist(File file);
 
     /**
      * Makes a directory at the given path using {@link File#mkdir()}.

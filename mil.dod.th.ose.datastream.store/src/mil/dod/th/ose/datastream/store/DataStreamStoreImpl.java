@@ -154,8 +154,8 @@ public class DataStreamStoreImpl implements DataStreamStore, ThreadStatusListene
         final DataStreamStoreConfig config = Configurable.createConfigurable(DataStreamStoreConfig.class, props);
         m_FileStoreTopDir = config.filestoreTopDir();
         
-        m_RecordOrdering = new Ordering<PersistentData>() {
-            
+        m_RecordOrdering = new Ordering<PersistentData>()
+        {
             @Override
             public int compare(final PersistentData left, final PersistentData right)
             {
@@ -170,9 +170,7 @@ public class DataStreamStoreImpl implements DataStreamStore, ThreadStatusListene
                 
                 return 0;
             }
-            
         };
-
     }
     
     /**
@@ -267,7 +265,7 @@ public class DataStreamStoreImpl implements DataStreamStore, ThreadStatusListene
 
     @Override
     public void disableArchiving(final StreamProfile streamProfile)
-         throws IllegalArgumentException, IllegalStateException 
+            throws IllegalArgumentException, IllegalStateException 
     {
         final Set<StreamProfile> profiles =  m_DataStreamService.getStreamProfiles();
         

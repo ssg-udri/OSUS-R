@@ -32,7 +32,7 @@ public interface FactoryObjectConfigModifierView
      * @param model
      *  the factory model which is going to be used to display its configuration values
      */
-    void setSelectedFactoryModel(final FactoryBaseModel model);
+    void setSelectedFactoryModel(FactoryBaseModel model);
     
     /**
      * Method to return factory base model. 

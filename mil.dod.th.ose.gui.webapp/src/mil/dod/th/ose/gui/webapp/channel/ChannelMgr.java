@@ -48,7 +48,7 @@ public interface ChannelMgr
      * @param sslEnabled
      *     true is SSL should be enabled on the new socket channel, false otherwise
      */
-    void createSocketChannel(int controllerId, String hostName, int socketPort, final boolean sslEnabled);
+    void createSocketChannel(int controllerId, String hostName, int socketPort, boolean sslEnabled);
 
     /**
      * Create a new {@link TransportChannelModel} type channel.

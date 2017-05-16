@@ -88,7 +88,7 @@ public interface Address extends FactoryObject
      *      string to prepend to each address, if prefix is "source." address property will be "source.addr"
      * @return Map of basic event properties.
      */
-    Map<String, Object> getEventProperties(final String prefix);
+    Map<String, Object> getEventProperties(String prefix);
     
     /**
      * Determine if an Address is equivalent to the properties of another address. Note that
@@ -98,7 +98,7 @@ public interface Address extends FactoryObject
      * @return
      *              Return true if the address properties match
      */
-    boolean equalProperties(final Map<String, Object> properties);
+    boolean equalProperties(Map<String, Object> properties);
     
     /**
      * Method that returns the concatenation of the address prefix and a unique address defined for 

@@ -17,6 +17,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import aQute.bnd.annotation.component.Component;
+
 import mil.dod.th.ose.utils.CoverageIgnore;
 import mil.dod.th.ose.utils.UrlService;
 

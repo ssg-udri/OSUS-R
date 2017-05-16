@@ -30,7 +30,7 @@ public abstract class PushDataMessage
     * @param type
     *  the type of push message
     */
-    public abstract void setType(final PushMessageType type);
+    public abstract void setType(PushMessageType type);
     
     /**
      * Gets the type of message. This method must be defined in the 

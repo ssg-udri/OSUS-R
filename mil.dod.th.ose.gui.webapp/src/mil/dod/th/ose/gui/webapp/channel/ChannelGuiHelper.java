@@ -37,7 +37,7 @@ public interface ChannelGuiHelper
      *  a {@link ControllerOption} option which specifies to display channels 
      *  by type or by controller.
      */
-    void setRenderOption(final ControllerOption option);
+    void setRenderOption(ControllerOption option);
     
     /**
      * Enumeration class which identifies overall format of how channels should be displayed 

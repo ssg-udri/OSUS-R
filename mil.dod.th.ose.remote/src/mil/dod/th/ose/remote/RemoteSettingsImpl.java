@@ -20,6 +20,7 @@ import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.ConfigurationPolicy;
 import aQute.bnd.annotation.component.Modified;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import mil.dod.th.ose.remote.api.RemoteSettings;
 
 import org.osgi.framework.BundleContext;

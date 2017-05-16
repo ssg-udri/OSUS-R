@@ -37,7 +37,7 @@ public interface PropertyRetriever
      *     if there is an error with opening the URL connection or other difficulties with obtaining the resources from
      *     the URL given
      */
-    Properties getPropertiesFromUrl(final URL propertiesURL) throws IOException;
+    Properties getPropertiesFromUrl(URL propertiesURL) throws IOException;
     
     /**
      * Get the properties found at the given file location.
@@ -51,5 +51,5 @@ public interface PropertyRetriever
      *  if there is an error with opening the file or other difficulties with obtaining the resource from
      *  the file path given
      */
-    Properties getPropertiesFromFile(final String fileDirectory, final String fileName) throws IOException;
+    Properties getPropertiesFromFile(String fileDirectory, String fileName) throws IOException;
 }

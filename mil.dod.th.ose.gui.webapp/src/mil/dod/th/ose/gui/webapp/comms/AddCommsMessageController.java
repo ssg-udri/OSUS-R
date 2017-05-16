@@ -26,5 +26,5 @@ public interface AddCommsMessageController
      * @param model
      *      the comms creation model containing the stack information to request
      */
-    void submitNewCommsStackRequest(int systemId, final CommsStackCreationModel model);
+    void submitNewCommsStackRequest(int systemId, CommsStackCreationModel model);
 }

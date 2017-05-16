@@ -89,7 +89,7 @@ public class TestDataStreamStore extends TestCase
         
     @Test
     public void testEnableAndDisableArchiving() throws IllegalArgumentException, StreamProfileException, 
-    InterruptedException
+        InterruptedException
     {
         DataStreamService dataStreamService = ServiceUtils.getService(m_Context, DataStreamService.class);
         assertThat(dataStreamService, is(notNullValue()));

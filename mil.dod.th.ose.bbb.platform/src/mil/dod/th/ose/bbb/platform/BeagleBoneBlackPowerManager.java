@@ -230,8 +230,8 @@ public class BeagleBoneBlackPowerManager implements PlatformPowerManager
         final File wakeupFile = m_FileService.getFile(path);
         
         final String currentState;
-        try (final FileReader fileReader = m_FileService.createFileReader(wakeupFile);
-                final BufferedReader buffReader = m_FileService.createBufferedReader(fileReader))
+        try (FileReader fileReader = m_FileService.createFileReader(wakeupFile);
+                BufferedReader buffReader = m_FileService.createBufferedReader(fileReader))
         {
             currentState = buffReader.readLine();
         }
@@ -247,8 +247,8 @@ public class BeagleBoneBlackPowerManager implements PlatformPowerManager
                     link.getName(), state));
         }
         
-        try (final FileOutputStream fos = m_FileService.createFileOutputStream(wakeupFile, false);
-                final PrintStream printStream = m_FileService.createPrintStream(fos))
+        try (FileOutputStream fos = m_FileService.createFileOutputStream(wakeupFile, false);
+                PrintStream printStream = m_FileService.createPrintStream(fos))
         {
             printStream.print(state);
         }

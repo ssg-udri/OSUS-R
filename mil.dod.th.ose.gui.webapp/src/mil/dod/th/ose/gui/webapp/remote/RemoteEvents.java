@@ -16,7 +16,6 @@ import java.util.List;
 
 import mil.dod.th.core.remote.ResponseHandler;
 import mil.dod.th.core.remote.messaging.MessageFactory;
-
 import mil.dod.th.core.remote.proto.EventMessages.EventAdminNamespace.EventAdminMessageType;
 import mil.dod.th.core.remote.proto.EventMessages.EventRegistrationRequestData;
 

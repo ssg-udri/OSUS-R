@@ -130,7 +130,7 @@ public interface RetrieveDeleteObsHelper
      * @param uuid
      *      the UUID of the currently selected observation
      */
-    void setSelectedObsUuid(final UUID uuid);
+    void setSelectedObsUuid(UUID uuid);
 
     /**
      * Returns the currently selected observation's UUID.
@@ -145,5 +145,5 @@ public interface RetrieveDeleteObsHelper
      * @param event
      *  the event which has been triggered on the PostValidateEvent
      */
-    void validateDates(final ComponentSystemEvent event);
+    void validateDates(ComponentSystemEvent event);
 }

@@ -125,7 +125,7 @@ public interface ObservationMgr
      * @param event
      *  the event which has been triggered on the PostValidateEvent
      */
-    void validateDates(final ComponentSystemEvent event);
+    void validateDates(ComponentSystemEvent event);
 
     /**
      * Returns the filter for the observation query.

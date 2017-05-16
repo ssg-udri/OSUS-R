@@ -15,13 +15,13 @@ package mil.dod.th.ose.utils.impl;
 import java.net.URL;
 
 import aQute.bnd.annotation.component.Component;
+
 import mil.dod.th.ose.utils.ClassService;
 
 /**
  * Implements {@link ClassService}.
  * 
  * @author dhumeniuk
- *
  */
 @Component
 public class ClassServiceImpl implements ClassService

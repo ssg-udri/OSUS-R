@@ -48,7 +48,7 @@ public interface FactoryObjectContext extends FactoryObject
      * @param props
      *      additional properties to add to the event or null if there are none
      */
-    void postEvent(final String topic, final Map<String, Object> props);
+    void postEvent(String topic, Map<String, Object> props);
     
     /**
      * Create a unique {@link WakeLock} through the {@link mil.dod.th.core.pm.PowerManager} service. This method does 
@@ -61,5 +61,5 @@ public interface FactoryObjectContext extends FactoryObject
      * @throws IllegalArgumentException
      *      if the lockId is in use by an existing lock
      */
-    WakeLock createPowerManagerWakeLock(final String lockId) throws IllegalArgumentException;
+    WakeLock createPowerManagerWakeLock(String lockId) throws IllegalArgumentException;
 }

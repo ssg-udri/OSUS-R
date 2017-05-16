@@ -61,7 +61,7 @@ public interface TerraHarvestSystem
      * @param name
      *     Sets a String to represent the meaningful name of the system.
      */
-    void setName(final String name);
+    void setName(String name);
     
     /**
      * Get the identification number of the software system.
@@ -96,5 +96,5 @@ public interface TerraHarvestSystem
      * @param id
      *     Sets given integer as the ID
      */
-    void setId(final int id); //NOPMD: short method name, name is descriptive of what is being set, which is an ID
+    void setId(int id); //NOPMD: short method name, name is descriptive of what is being set, which is an ID
 }

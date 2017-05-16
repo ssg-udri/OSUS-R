@@ -48,5 +48,5 @@ public interface CommandModel
      * @return
      *      A string that represents the display name for the specified command type.
      */
-    String getCommandDisplayName(final CommandTypeEnum commandType);
+    String getCommandDisplayName(CommandTypeEnum commandType);
 }

@@ -90,7 +90,7 @@ public class TimeChangeServiceThread implements Runnable
         {
             if (!madeConnection)
             {
-                try (final InputStream clientInputStream = makeConnection())
+                try (InputStream clientInputStream = makeConnection())
                 {
                     if (clientInputStream != null)
                     {
@@ -211,7 +211,7 @@ public class TimeChangeServiceThread implements Runnable
     private InputStream makeConnection() throws IOException
     {
         InputStream clientInputStream = null;
-        try (final Socket clientSocket = getClientSocket())
+        try (Socket clientSocket = getClientSocket())
         {
             if (clientSocket != null)
             {

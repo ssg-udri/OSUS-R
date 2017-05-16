@@ -109,6 +109,6 @@ public interface CommsMgr
      * @param systemId the system id
      * @return the class name, or null if not found.
      */
-    String getPhysicalClazzByName(final String name, final int systemId);
+    String getPhysicalClazzByName(String name, int systemId);
 
 }

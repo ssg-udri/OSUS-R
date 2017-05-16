@@ -23,8 +23,10 @@ import java.util.concurrent.TimeUnit;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import edu.udayton.udri.asset.novatel.StatusHandler;
 import edu.udayton.udri.asset.novatel.timechanger.TimeChange;
+
 import mil.dod.th.core.asset.AssetException;
 import mil.dod.th.core.log.Logging;
 import mil.dod.th.core.types.ComponentType;

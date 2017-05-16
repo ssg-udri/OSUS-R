@@ -33,7 +33,7 @@ public interface CommandProcessor
      * @throws CommandExecutionException
      *      if the data is not complete, or contains illegal values
      */
-    String processSetPanTilt(final SetPanTiltCommand command, final String ipAddr) 
+    String processSetPanTilt(SetPanTiltCommand command, String ipAddr) 
             throws CommandExecutionException;
     
     /**
@@ -43,7 +43,7 @@ public interface CommandProcessor
      * @return
      *      string representing a URL to send to perform the desired action
      */
-    String processStillImageRequest(final String ipAddr);
+    String processStillImageRequest(String ipAddr);
     
     /**
      * Process a command requesting the current pan/tilt aspects of the cameras orientation.
@@ -52,5 +52,5 @@ public interface CommandProcessor
      * @return
      *      string representing a URL to send to perform the desired action
      */
-    String processGetPanTilt(final String ipAddr);
+    String processGetPanTilt(String ipAddr);
 }

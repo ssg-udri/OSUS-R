@@ -57,7 +57,7 @@ public final class XMLTestRunner
      *      Error writing to file or creating a file
      */
     public static void run(final File dir, final String suffix, final boolean printStackTrace, 
-            final Class<?> ... classes) throws IOException
+            final Class<?>... classes) throws IOException
     {
         for (Class<?> klass : classes)
         {

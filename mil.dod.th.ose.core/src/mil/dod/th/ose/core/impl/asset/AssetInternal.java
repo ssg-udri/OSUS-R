@@ -44,7 +44,7 @@ public interface AssetInternal extends AssetContext, FactoryObjectInternal
      * @param status
      *            The status of the Asset
      */
-    void setActiveStatus(final AssetActiveStatus status);
+    void setActiveStatus(AssetActiveStatus status);
     
     /**
      * Method used to internally invoke activation of an asset.
@@ -73,5 +73,5 @@ public interface AssetInternal extends AssetContext, FactoryObjectInternal
      * @return
      *      Thread that has the {@link Deactivator} running
      */
-    Thread internalDeactivate(final AssetActivationListener[] listeners);
+    Thread internalDeactivate(AssetActivationListener[] listeners);
 }

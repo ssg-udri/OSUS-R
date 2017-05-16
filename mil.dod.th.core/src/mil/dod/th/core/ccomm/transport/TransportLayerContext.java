@@ -43,5 +43,5 @@ public interface TransportLayerContext extends TransportLayer, FactoryObjectCont
      * @param destAddress
      *      Destination address of the packet
      */
-    void endReceiving(final TransportPacket pkt, final Address sourceAddress, final Address destAddress);
+    void endReceiving(TransportPacket pkt, Address sourceAddress, Address destAddress);
 }

@@ -51,7 +51,7 @@ public interface TemplateProgramManager
      * @throws IllegalArgumentException
      *     thrown in the event that the template fails validation before being persisted
      */
-    void loadMissionTemplate(final MissionProgramTemplate template) throws PersistenceFailedException, 
+    void loadMissionTemplate(MissionProgramTemplate template) throws PersistenceFailedException, 
             IllegalArgumentException;
     
     /**
@@ -73,7 +73,7 @@ public interface TemplateProgramManager
      * @exception IllegalArgumentException
      *     thrown in the event that the template requested is not known to the manager   
      */
-    MissionProgramTemplate getTemplate(final String name) throws IllegalArgumentException;
+    MissionProgramTemplate getTemplate(String name) throws IllegalArgumentException;
     
     /**
      * This will remove the template with the given name. It is important to know that multiple missions may depend on
@@ -85,7 +85,7 @@ public interface TemplateProgramManager
      * @exception IllegalArgumentException
      *     if the template specified is already removed, or otherwise unknown 
      */
-    void removeTemplate(final String name) throws IllegalArgumentException;
+    void removeTemplate(String name) throws IllegalArgumentException;
     
     /**
      * Get a set of all templates known to this system. The templates returned are all copies, changes made to these

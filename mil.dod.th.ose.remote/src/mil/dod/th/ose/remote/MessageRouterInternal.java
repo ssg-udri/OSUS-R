@@ -48,7 +48,7 @@ public interface MessageRouterInternal
      * @param lookup
      *      remote channel lookup service to be bound
      */
-    void bindRemoteChannelLookup(final RemoteChannelLookup lookup);
+    void bindRemoteChannelLookup(RemoteChannelLookup lookup);
     
     /**
      * Unbinds the remote channel lookup with the router for sending messages. Router will no longer attempt to foward
@@ -57,5 +57,5 @@ public interface MessageRouterInternal
      * @param lookup
      *      remote channel lookup service to be unbound
      */
-    void unbindRemoteChannelLookup(final RemoteChannelLookup lookup);
+    void unbindRemoteChannelLookup(RemoteChannelLookup lookup);
 }

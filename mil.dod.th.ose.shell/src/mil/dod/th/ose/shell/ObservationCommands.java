@@ -21,11 +21,13 @@ import javax.xml.bind.MarshalException;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.persistence.ObservationStore;
 import mil.dod.th.core.xml.XmlMarshalService;
 import mil.dod.th.ose.utils.FileService;
+
 import org.apache.felix.service.command.CommandSession;
 import org.apache.felix.service.command.Descriptor;
 
@@ -177,7 +179,7 @@ public class ObservationCommands
         }
         
         final File xmlFile = m_FileService.getFile(exportDir, obsUuid + ".xml");
-        try (final FileOutputStream fileOut = m_FileService.createFileOutputStream(xmlFile))
+        try (FileOutputStream fileOut = m_FileService.createFileOutputStream(xmlFile))
         {
             fileOut.write(obsXmlBytes);
             fileOut.flush();

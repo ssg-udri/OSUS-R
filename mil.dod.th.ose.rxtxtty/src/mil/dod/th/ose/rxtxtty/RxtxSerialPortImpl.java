@@ -35,6 +35,7 @@ import gnu.io.CommPortIdentifier;
 import gnu.io.NoSuchPortException;
 import gnu.io.PortInUseException;
 import gnu.io.UnsupportedCommOperationException;
+
 import mil.dod.th.core.ccomm.physical.PhysicalLink;
 import mil.dod.th.core.ccomm.physical.PhysicalLinkContext;
 import mil.dod.th.core.ccomm.physical.PhysicalLinkException;

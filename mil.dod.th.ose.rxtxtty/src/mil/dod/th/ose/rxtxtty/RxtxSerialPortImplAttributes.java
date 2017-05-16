@@ -13,6 +13,7 @@
 package mil.dod.th.ose.rxtxtty;
 
 import aQute.bnd.annotation.metatype.Meta.OCD;
+
 import mil.dod.th.core.ConfigurationConstants;
 import mil.dod.th.core.ccomm.physical.SerialPortAttributes;
 

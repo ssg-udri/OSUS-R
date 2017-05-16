@@ -15,6 +15,7 @@ package edu.udayton.udri.asset.novatel.timechanger;
 import java.io.IOException;
 
 import edu.udayton.udri.asset.novatel.StatusHandler;
+
 import mil.dod.th.core.asset.AssetException;
 import mil.dod.th.core.types.status.ComponentStatus;
 
@@ -38,7 +39,7 @@ public interface TimeChange
      * @throws IllegalStateException
      *  if the time service has already been connected to and is currently still running
      */
-    void connectTimeService(final StatusHandler handler, final int port) throws IllegalStateException;
+    void connectTimeService(StatusHandler handler, int port) throws IllegalStateException;
     
     /**
      * Disconnects connections to the time service and stops processing.
@@ -62,7 +63,7 @@ public interface TimeChange
      *  if a time cannot be sent over a socket
      *  
      */
-    void changeTime(final long milliseconds) throws AssetException;
+    void changeTime(long milliseconds) throws AssetException;
     
     /**
      * Get the current status of this component.

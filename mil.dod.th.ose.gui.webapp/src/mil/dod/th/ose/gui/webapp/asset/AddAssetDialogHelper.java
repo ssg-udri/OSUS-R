@@ -58,7 +58,7 @@ public interface AddAssetDialogHelper
      * @param name
      *     the name to assign to the newly created asset
      */
-    void setNewAssetName(final String name);
+    void setNewAssetName(String name);
     
     /**
      * Clear all fields that may have been previously set.

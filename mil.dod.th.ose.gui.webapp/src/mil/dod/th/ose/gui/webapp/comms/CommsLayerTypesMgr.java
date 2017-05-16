@@ -92,7 +92,7 @@ public interface CommsLayerTypesMgr
      *      the capabilities object that matches the system id and the class name; if 
      *      no match exists then null is returned
      */
-    Object getCapabilities(final int systemId, final String clazzName);
+    Object getCapabilities(int systemId, String clazzName);
     
     /**
      * Send request for new layer types belonging to a particular controller.  
@@ -123,5 +123,5 @@ public interface CommsLayerTypesMgr
      * @return
      *      fully qualified class name of the plug-in providing the given link type 
      */
-    String getPhysicalLinkClassByType(final int systemId, final PhysicalLinkTypeEnum type);
+    String getPhysicalLinkClassByType(int systemId, PhysicalLinkTypeEnum type);
 }

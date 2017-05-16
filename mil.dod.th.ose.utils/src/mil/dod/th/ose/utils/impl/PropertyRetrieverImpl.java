@@ -21,6 +21,7 @@ import java.net.URLConnection;
 import java.util.Properties;
 
 import aQute.bnd.annotation.component.Component;
+
 import mil.dod.th.ose.utils.PropertyRetriever;
 
 /**

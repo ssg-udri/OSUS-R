@@ -21,6 +21,7 @@ import javax.xml.bind.Marshaller;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.xml.XmlMarshalService;
 import mil.dod.th.ose.core.xml.JAXBContextFactory;
 

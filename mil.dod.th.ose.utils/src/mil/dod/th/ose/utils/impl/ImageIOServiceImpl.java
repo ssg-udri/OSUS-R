@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import javax.imageio.ImageIO;
 
 import aQute.bnd.annotation.component.Component;
+
 import mil.dod.th.ose.utils.ImageIOService;
 
 /**

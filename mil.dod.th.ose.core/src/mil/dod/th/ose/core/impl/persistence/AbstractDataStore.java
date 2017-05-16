@@ -287,7 +287,7 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
      * @return
      *  the collection of objects that satisfy the given query criteria
      */
-    protected Collection<DataType> queryOnFilter(final String filterString, final Object ... args)
+    protected Collection<DataType> queryOnFilter(final String filterString, final Object... args)
     {
         synchronized (this)
         {
@@ -306,11 +306,11 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
         {
             final JDOConnection conn = getPersistenceManager().getDataStoreConnection();
             
-            try (final java.sql.Connection sqlConn = (java.sql.Connection)conn)
+            try (java.sql.Connection sqlConn = (java.sql.Connection)conn)
             {
                 m_WakeLock.activate();
 
-                try (final Statement statement = sqlConn.createStatement())
+                try (Statement statement = sqlConn.createStatement())
                 {
                     // shutdown will close the connection so need to do so explicitly
                     statement.execute("SHUTDOWN COMPACT");
@@ -541,7 +541,7 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
      *          the specified JDOQL filter string arguments
      * @return the number of items deleted
      */
-    protected long removeOnFilter(final String filterString, final Object ... args)
+    protected long removeOnFilter(final String filterString, final Object... args)
     {
         final Query newQuery = newJdoQuery();
         newQuery.setFilter(String.format(filterString, args));
@@ -680,7 +680,7 @@ abstract class AbstractDataStore<DataType> implements DataStore<DataType>, JdoDa
                 @SuppressWarnings("resource") // compiler thinks sqlConn is not closed but it is by conn defined above
                 final java.sql.Connection sqlConn = (java.sql.Connection)conn;
                 
-                try (final Statement statement = sqlConn.createStatement())
+                try (Statement statement = sqlConn.createStatement())
                 {
                     final boolean result = statement.execute(statementText);
                     if (handler == null)

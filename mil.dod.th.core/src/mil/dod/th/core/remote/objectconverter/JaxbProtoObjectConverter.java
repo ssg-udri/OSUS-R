@@ -36,7 +36,7 @@ public interface JaxbProtoObjectConverter
      * @throws ObjectConverterException
      *          When the object is unable to be converted to a proto message.
      */
-    Message convertToProto(final Object object) throws ObjectConverterException;
+    Message convertToProto(Object object) throws ObjectConverterException;
     
     /**
      * Method responsible for converting a proto message into the corresponding JAXB object.
@@ -48,5 +48,5 @@ public interface JaxbProtoObjectConverter
      * @throws ObjectConverterException
      *          When the message cannot be converted into an object.
      */
-    Object convertToJaxb(final Message message) throws ObjectConverterException;
+    Object convertToJaxb(Message message) throws ObjectConverterException;
 }

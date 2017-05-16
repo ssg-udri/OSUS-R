@@ -17,6 +17,7 @@ import java.util.Map;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import mil.dod.th.core.ccomm.physical.PhysicalLinkException;
 import mil.dod.th.core.ccomm.physical.SerialPort;
 import mil.dod.th.core.ccomm.physical.SerialPortAttributes;

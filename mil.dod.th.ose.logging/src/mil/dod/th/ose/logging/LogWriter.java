@@ -32,6 +32,7 @@ import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Modified;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import mil.dod.th.core.log.Logging;
 import mil.dod.th.ose.shared.LogLevel;
 import mil.dod.th.ose.utils.ConfigurationUtils;
@@ -681,7 +682,9 @@ public class LogWriter implements LogListener
     private File[] getAllLogFiles()
     {
         return m_LogFileDir.listFiles((dir, name) -> //NOCHECKSTYLE: Variables can't be final in lambda
-            { return name.startsWith(LOG_FILE_PREFIX) && name.endsWith(LOG_FILE_EXTENSION) ? true : false; });
+        {
+            return name.startsWith(LOG_FILE_PREFIX) && name.endsWith(LOG_FILE_EXTENSION) ? true : false;
+        });
     }
     
     /**

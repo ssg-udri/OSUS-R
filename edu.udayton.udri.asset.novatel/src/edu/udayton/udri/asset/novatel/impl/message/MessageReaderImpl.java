@@ -14,9 +14,11 @@ package edu.udayton.udri.asset.novatel.impl.message;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import edu.udayton.udri.asset.novatel.connection.NovatelConnectionMgr;
 import edu.udayton.udri.asset.novatel.message.MessageReader;
 import edu.udayton.udri.asset.novatel.message.MessageReceiver;
+
 import mil.dod.th.core.log.Logging;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
 

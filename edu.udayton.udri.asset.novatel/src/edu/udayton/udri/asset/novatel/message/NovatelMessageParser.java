@@ -46,7 +46,7 @@ public interface NovatelMessageParser
      * @throws NovatelMessageException
      *      if the message is malformed, or a value is missing
      */
-    void evaluateTimeMessage(final String data) throws NovatelMessageException;
+    void evaluateTimeMessage(String data) throws NovatelMessageException;
 
     /**
      * Check if the parser has the UTC time offset available.

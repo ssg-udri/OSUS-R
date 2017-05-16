@@ -43,7 +43,7 @@ public interface AssetContext extends Asset, FactoryObjectContext
      *      
      * @see #setStatus(Status)
      */
-    void setStatus(final SummaryStatusEnum summaryStatus, final String statusMessage);
+    void setStatus(SummaryStatusEnum summaryStatus, String statusMessage);
 
     /**
      * Update the current asset status for a specific sensor.  Will post an OSGi event with the topic
@@ -59,7 +59,7 @@ public interface AssetContext extends Asset, FactoryObjectContext
      *      
      * @see #setStatus(String, Status)
      */
-    void setStatus(final String sensorId, final SummaryStatusEnum summaryStatus, final String statusMessage);
+    void setStatus(String sensorId, SummaryStatusEnum summaryStatus, String statusMessage);
 
     /**
      * Update the current asset status.  Will post an OSGi event with the topic {@link Asset#TOPIC_STATUS_CHANGED} and 
@@ -70,7 +70,7 @@ public interface AssetContext extends Asset, FactoryObjectContext
      * @throws ValidationFailedException
      *      if the status observation contains invalid data
      */
-    void setStatus(final Status status) throws ValidationFailedException;
+    void setStatus(Status status) throws ValidationFailedException;
 
     /**
      * Update the current asset status for a specific sensor.  Will post an OSGi event with the topic
@@ -84,7 +84,7 @@ public interface AssetContext extends Asset, FactoryObjectContext
      * @throws ValidationFailedException
      *      if the status observation contains invalid data
      */
-    void setStatus(final String sensorId, final Status status) throws ValidationFailedException;
+    void setStatus(String sensorId, Status status) throws ValidationFailedException;
 
     /**
      * Persist the observation to the {@link mil.dod.th.core.persistence.ObservationStore}.
@@ -109,5 +109,5 @@ public interface AssetContext extends Asset, FactoryObjectContext
      * @param response
      *      response data to use for the update post
      */
-    void postResponseUpdate(final Response response);
+    void postResponseUpdate(Response response);
 }

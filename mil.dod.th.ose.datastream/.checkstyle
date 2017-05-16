@@ -16,19 +16,11 @@
   <fileset name="all" enabled="true" check-config-name="java" local="true">
     <file-match-pattern match-pattern="." include-pattern="false"/>
     <file-match-pattern match-pattern="src" include-pattern="true"/>
-    <file-match-pattern match-pattern=".properties" include-pattern="true"/>
-    <file-match-pattern match-pattern="src/.*jdo" include-pattern="false"/>
-    <file-match-pattern match-pattern="src/mil/dod/th/ose/test/" include-pattern="false"/>
   </fileset>
   <fileset name="all" enabled="true" check-config-name="all" local="true">
     <file-match-pattern match-pattern="." include-pattern="true"/>
     <file-match-pattern match-pattern="generated/|bin/|.settings/" include-pattern="false"/>
     <file-match-pattern match-pattern=".checkstyle|.classpath|.project|.pmd|.DS_Store" include-pattern="false"/>
-    <file-match-pattern match-pattern="TH-standard-template_files" include-pattern="false"/>
-    <file-match-pattern match-pattern="proto-gen/" include-pattern="false"/>
-    <file-match-pattern match-pattern=".jar" include-pattern="false"/>
-    <file-match-pattern match-pattern="TH-standard-template.htm" include-pattern="false"/>
-    <file-match-pattern match-pattern="TH-standard.xsl" include-pattern="false"/>
   </fileset>
   <filter name="NonSrcDirs" enabled="false"/>
   <filter name="FilesFromPackage" enabled="true">

@@ -69,7 +69,7 @@ public interface SystemMetaTypeMgr
      *          {@link MetaTypeModel} that represents the meta type information for the specified configuration. May
      *          return null with the meta type model with the specified PID does not exist.
      */
-    MetaTypeModel getConfigInformationAsync(final int controllerId, final String pid);
+    MetaTypeModel getConfigInformationAsync(int controllerId, String pid);
     
     /**
      * Method that returns meta type information for a single factory with the specified factory PID. May return
@@ -83,5 +83,5 @@ public interface SystemMetaTypeMgr
      *          {@link MetaTypeModel} that represents the meta type information for the specified factory. May return
      *          null if the meta type model with the specified factory PID does not exist.
      */
-    MetaTypeModel getFactoryInformationAsync(final int controllerId, final String factoryPid);
+    MetaTypeModel getFactoryInformationAsync(int controllerId, String factoryPid);
 }

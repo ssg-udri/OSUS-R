@@ -63,8 +63,8 @@ public class ProtoFileParser
 
                 if (fileName.endsWith("proto"))
                 {
-                    try (final FileReader fr = new FileReader(file); 
-                            final BufferedReader br = new BufferedReader(fr))
+                    try (FileReader fr = new FileReader(file); 
+                            BufferedReader br = new BufferedReader(fr))
                     {
                         String line;
                     

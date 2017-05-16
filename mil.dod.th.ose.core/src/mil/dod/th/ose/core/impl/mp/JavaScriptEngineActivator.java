@@ -22,6 +22,7 @@ import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.ose.mp.runtime.MissionProgramRuntime;
 
 import org.osgi.framework.BundleContext;

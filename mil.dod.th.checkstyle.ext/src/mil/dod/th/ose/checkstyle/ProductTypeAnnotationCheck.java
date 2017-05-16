@@ -12,7 +12,7 @@
 //==============================================================================
 package mil.dod.th.ose.checkstyle;
 
-import com.puppycrawl.tools.checkstyle.api.Check;
+import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
@@ -23,9 +23,8 @@ import mil.dod.th.core.ccomm.AddressTranslator;
  * Class will make sure all AssetScanner implementation classes have ProductType annotations.
  * 
  * @author tkuck
- *
  */
-public class ProductTypeAnnotationCheck extends Check
+public class ProductTypeAnnotationCheck extends AbstractCheck
 {
     @Override
     public int[] getDefaultTokens()

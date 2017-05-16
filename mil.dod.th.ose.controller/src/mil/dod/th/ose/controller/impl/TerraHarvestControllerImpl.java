@@ -301,7 +301,7 @@ public class TerraHarvestControllerImpl implements TerraHarvestController, Terra
         {
             final String identification = String.format("0x%08x", id);
             m_Prop.setProperty(ID_KEY, identification);
-            try (final FileOutputStream outputStream = m_FileService.createFileOutputStream(m_PropFile))
+            try (FileOutputStream outputStream = m_FileService.createFileOutputStream(m_PropFile))
             {
                 m_Prop.store(outputStream, "Terra Harvest Controller Properties, last property edit was 'id'");
             }
@@ -325,7 +325,7 @@ public class TerraHarvestControllerImpl implements TerraHarvestController, Terra
     public void setOperationMode(final OperationMode operationMode)
     {
         m_Prop.setProperty(OPERATION_MODE_KEY, operationMode.value());
-        try (final FileOutputStream outputStream = m_FileService.createFileOutputStream(m_PropFile))
+        try (FileOutputStream outputStream = m_FileService.createFileOutputStream(m_PropFile))
         {
             m_Prop.store(outputStream, "Terra Harvest Controller Properties, last property edit was 'operation.mode'");
             

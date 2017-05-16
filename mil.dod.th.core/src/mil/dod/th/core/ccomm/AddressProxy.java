@@ -56,7 +56,7 @@ public interface AddressProxy extends FactoryObjectProxy
      *      The properties of the desired address
      * @return true if the address properties match
      */
-    boolean equalProperties(final Map<String, Object> properties);
+    boolean equalProperties(Map<String, Object> properties);
     
     /**
      * Returns the string representation of the address without the factory specific prefix.

@@ -28,6 +28,7 @@ import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Modified;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.persistence.ObservationStore;

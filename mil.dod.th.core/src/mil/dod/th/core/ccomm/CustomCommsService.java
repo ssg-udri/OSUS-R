@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import aQute.bnd.annotation.ProviderType;
+
 import mil.dod.th.core.ccomm.link.LinkLayer;
 import mil.dod.th.core.ccomm.link.LinkLayerFactory;
 import mil.dod.th.core.ccomm.physical.PhysicalLink;
@@ -152,7 +153,7 @@ public interface CustomCommsService
      * @throws IllegalStateException
      *     if the {@link PhysicalLink} is currently in use or open, and therefore cannot be removed
      */
-    void deletePhysicalLink(final String phyLinkName) throws CCommException, IllegalArgumentException, 
+    void deletePhysicalLink(String phyLinkName) throws CCommException, IllegalArgumentException, 
             IllegalStateException;
 
     /**
