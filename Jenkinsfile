@@ -15,23 +15,52 @@
 // Only keep the 50 most recent builds
 properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', numToKeepStr: '50']]])
 
-env.ENABLE_GUI_BUILDS = "false"
+// Individual build flags
+env.ENABLE_LINUX64_BUILD = "true"
+env.ENABLE_LINUX32_BUILD = "false"
+env.ENABLE_WINDOWS_BUILD = "false"
+env.ENABLE_GUI_ASSET_BUILD = "false"
+env.ENABLE_GUI_OTHER_BUILD = "false"
+env.ENABLE_DOCS_BUILD = "false"
+
 if (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "development" || env.BRANCH_NAME.startsWith("release/")) {                                          
-    env.ENABLE_GUI_BUILDS = "true"
+    env.ENABLE_LINUX64_BUILD = "true"
+    env.ENABLE_LINUX32_BUILD = "true"
+    env.ENABLE_WINDOWS_BUILD = "true"
+    env.ENABLE_GUI_ASSET_BUILD = "true"
+    env.ENABLE_GUI_OTHER_BUILD = "true"
+    env.ENABLE_DOCS_BUILD = "true"
 } else {
     try {
-        timeout(time: 45, unit: 'SECONDS') {
-            env.ENABLE_GUI_BUILDS = input(
-              id: 'GUI', message: 'Enable GUI Builds?', parameters: [
-                [$class: 'BooleanParameterDefinition', defaultValue: false, description: '', name: 'Enable checkbox to confirm']
-              ]).toString()
+        timeout(time: 60, unit: 'SECONDS') {
+            def userInput = input(
+              id: 'userInput', message: 'Enable Builds', parameters: [
+                [$class: 'BooleanParameterDefinition', defaultValue: true,  description: '', name: 'linux64'],
+                [$class: 'BooleanParameterDefinition', defaultValue: false, description: '', name: 'linux32'],
+                [$class: 'BooleanParameterDefinition', defaultValue: false, description: '', name: 'windows'],
+                [$class: 'BooleanParameterDefinition', defaultValue: false, description: '', name: 'gui-asset'],
+                [$class: 'BooleanParameterDefinition', defaultValue: false, description: '', name: 'gui-other'],
+                [$class: 'BooleanParameterDefinition', defaultValue: false, description: '', name: 'docs']
+            ])
+
+            env.ENABLE_LINUX64_BUILD = userInput['linux64']
+            env.ENABLE_LINUX32_BUILD = userInput['linux32']
+            env.ENABLE_WINDOWS_BUILD = userInput['windows']
+            env.ENABLE_GUI_ASSET_BUILD = userInput['gui-asset']
+            env.ENABLE_GUI_OTHER_BUILD = userInput['gui-other']
+            env.ENABLE_DOCS_BUILD = userInput['docs']
         }
     } catch(err) { // timeout reached or input false
-        echo "No input received for GUI builds"
+        echo "No input received for build options"
     }
 }
 
-echo "GUI builds enabled: ${env.ENABLE_GUI_BUILDS}"
+echo "Linux64 build enabled:   ${env.ENABLE_LINUX64_BUILD}"
+echo "Linux32 build enabled:   ${env.ENABLE_LINUX32_BUILD}"
+echo "Windows build enabled:   ${env.ENABLE_WINDOWS_BUILD}"
+echo "GUI Asset build enabled: ${env.ENABLE_GUI_ASSET_BUILD}"
+echo "GUI Other build enabled: ${env.ENABLE_GUI_OTHER_BUILD}"
+echo "Docs build enabled:      ${env.ENABLE_DOCS_BUILD}"
 
 // Get source code and stash it for use on each platform build
 node('linux') {
@@ -45,103 +74,101 @@ node('linux') {
 // Define the different platform builds to execute in parallel
 Map platforms = [:]
 
-platforms['windows'] = {
-    node('windows') {
-        deleteDir()
-        unstash 'sources'
-        withEnv([
-            "JAVA_HOME=${tool 'JDK 8'}",
-            "JAVA_INCLUDE=${tool 'JDK 8'}/include",
-            "PATH+ANT=${tool 'Ant 1.8.4'}/bin",
-            "PATH+JAVA_BIN=${tool 'JDK 8'}/bin"
-        ]) {
-            bat 'set'
-            bat 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-standard'
-        }
-        saveOsusResults('windows-results')
-    }
-}
-
-platforms['linux64'] = {
-    node('linux && 64bit') {
-        deleteDir()
-        unstash 'sources'
-        withEnv([
-            "JAVA_HOME=${tool 'JDK 8'}",
-            "JAVA_INCLUDE=${tool 'JDK 8'}/include",
-            "PATH+ANT=${tool 'Ant 1.8.4'}/bin",
-            "PATH+JAVA_BIN=${tool 'JDK 8'}/bin"
-        ]) {
-            sh 'env'
-            sh 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-standard'
-        }
-        saveOsusResults('linux64-results')
-        step(
-            [$class: 'TasksPublisher',
-             pattern: '**/*',
-             excludePattern: 'Jenkinsfile, deps/**, */generated/**, **/*.epf, **/*.jar, **/*.zip, **/.settings/**, **/*.class, target/*/*/deploy/**, **/*.exe, **/*.png',
-             high: 'FIXME, XXX',
-             normal: 'TODO',
-             low: 'TD',
-             unstableTotalHigh: '0',
-             canComputeNew: true]
-        )
-    }
-}
-
-platforms['linux32'] = {
-    node('linux && 32bit') {
-        deleteDir()
-        unstash 'sources'
-        withEnv([
-            "JAVA_HOME=${tool 'JDK 8'}",
-            "JAVA_INCLUDE=${tool 'JDK 8'}/include",
-            "PATH+ANT=${tool 'Ant 1.8.4'}/bin",
-            "PATH+JAVA_BIN=${tool 'JDK 8'}/bin"
-        ]) {
-            sh 'env'
-            sh 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-standard'
-        }
-        saveOsusResults('linux32-results')
-    }
-}
-
-platforms['docs'] = {
-    node {
-        deleteDir()
-        unstash 'sources'
-        withEnv([
-            "JAVA_HOME=${tool 'JDK 8'}",
-            "JAVA_INCLUDE=${tool 'JDK 8'}/include",
-            "PATH+ANT=${tool 'Ant 1.8.4'}/bin",
-            "PATH+JAVA_BIN=${tool 'JDK 8'}/bin"
-        ]) {
-            if (NODE_LABELS.contains('linux')) {
-                sh 'env'
-                sh 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-docs'
-            }
-            else {
+if (env.ENABLE_WINDOWS_BUILD == "true") {
+    platforms['windows'] = {
+        node('windows') {
+            deleteDir()
+            unstash 'sources'
+            withEnv([
+                "JAVA_HOME=${tool 'JDK 8'}",
+                "JAVA_INCLUDE=${tool 'JDK 8'}/include",
+                "PATH+ANT=${tool 'Ant 1.8.4'}/bin",
+                "PATH+JAVA_BIN=${tool 'JDK 8'}/bin"
+            ]) {
                 bat 'set'
-                bat 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-docs'
+                bat 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-standard'
             }
+            saveOsusResults('windows-results')
         }
-        saveOsusResults('docs-results')
-        step(
-            [$class: 'WarningsPublisher',
-             //consoleParsers: [[parserName: 'JavaDoc Tool'], [parserName: 'Javadoc Compiler Warning']],
-             consoleParsers: [[parserName: 'Javadoc Compiler Warning']],
-             unstableTotalAll: '0',
-             canComputeNew: true]
-        )
-        step(
-            [$class: 'JavadocArchiver',
-             javadocDir: 'mil.dod.th.core/generated/javadoc',
-             keepAll: false]
-        )
     }
 }
 
-if (env.ENABLE_GUI_BUILDS == "true") {
+if (env.ENABLE_LINUX64_BUILD == "true") {
+    platforms['linux64'] = {
+        node('linux && 64bit') {
+            deleteDir()
+            unstash 'sources'
+            withEnv([
+                "JAVA_HOME=${tool 'JDK 8'}",
+                "JAVA_INCLUDE=${tool 'JDK 8'}/include",
+                "PATH+ANT=${tool 'Ant 1.8.4'}/bin",
+                "PATH+JAVA_BIN=${tool 'JDK 8'}/bin"
+            ]) {
+                sh 'env'
+                sh 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-standard'
+            }
+            saveOsusResults('linux64-results')
+        }
+    }
+}
+
+if (env.ENABLE_LINUX32_BUILD == "true") {
+    platforms['linux32'] = {
+        node('linux && 32bit') {
+            deleteDir()
+            unstash 'sources'
+            withEnv([
+                "JAVA_HOME=${tool 'JDK 8'}",
+                "JAVA_INCLUDE=${tool 'JDK 8'}/include",
+                "PATH+ANT=${tool 'Ant 1.8.4'}/bin",
+                "PATH+JAVA_BIN=${tool 'JDK 8'}/bin"
+            ]) {
+                sh 'env'
+                sh 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-standard'
+            }
+            saveOsusResults('linux32-results')
+        }
+    }
+}
+
+if (env.ENABLE_DOCS_BUILD == "true") {
+    platforms['docs'] = {
+        node {
+            deleteDir()
+            unstash 'sources'
+            withEnv([
+                "JAVA_HOME=${tool 'JDK 8'}",
+                "JAVA_INCLUDE=${tool 'JDK 8'}/include",
+                "PATH+ANT=${tool 'Ant 1.8.4'}/bin",
+                "PATH+JAVA_BIN=${tool 'JDK 8'}/bin"
+            ]) {
+                if (NODE_LABELS.contains('linux')) {
+                    sh 'env'
+                    sh 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-docs'
+                }
+                else {
+                    bat 'set'
+                    bat 'ant -logger org.apache.tools.ant.listener.BigProjectLogger ci-docs'
+                }
+            }
+            saveOsusResults('docs-results')
+            step(
+                [$class: 'WarningsPublisher',
+                 //consoleParsers: [[parserName: 'JavaDoc Tool'], [parserName: 'Javadoc Compiler Warning']],
+                 consoleParsers: [[parserName: 'Javadoc Compiler Warning']],
+                 unstableTotalAll: '0',
+                 canComputeNew: true]
+            )
+            step(
+                [$class: 'JavadocArchiver',
+                 javadocDir: 'mil.dod.th.core/generated/javadoc',
+                 keepAll: false]
+            )
+        }
+    }
+}
+
+if (env.ENABLE_GUI_ASSET_BUILD == "true") {
     platforms['gui-asset'] = {
         node('linux && 64bit') {
             deleteDir()
@@ -160,7 +187,9 @@ if (env.ENABLE_GUI_BUILDS == "true") {
             saveOsusResults('gui-asset-results')
         }
     }
+}
 
+if (env.ENABLE_GUI_OTHER_BUILD == "true") {
     platforms['gui-other'] = {
         node('linux && 64bit') {
             deleteDir()
@@ -202,6 +231,8 @@ try {
             archiveArtifacts '*/*/generated/*.jar, */*/generated/*.zip, */target/*/*/bin/*.zip, */reports/build.properties, */mil.dod.th.ose.gui.integration/generated/test-data/**, docs/mil.dod.th.core.*/generated/*'
         }
     }
+} catch(Exception err) {
+    currentBuild.result = 'FAILURE'
 } finally {
     node {
         step([$class: 'StashNotifier'])
@@ -215,31 +246,92 @@ def saveOsusResults(resultName) {
         stash name: resultName, includes: 'reports/checkstyle-*results.xml, reports/pmd-*results.xml, */generated/*.jar, */generated/*.zip, target/*/*/bin/*.zip, reports/build.properties, mil.dod.th.ose.gui.integration/generated/test-data/**, reports/cobertura/coverage.xml'
     }
 
-    if (resultName.startsWith("linux64") || resultName.startsWith("gui")) {
+    // Publish test results based on which builds are enabled
+    def windowsTestsPublished = false
+    if (env.ENABLE_LINUX64_BUILD == "true") {
+        if (resultName.startsWith("linux64")) {
+            junit testResults: '*/generated/**/TEST-*.xml', keepLongStdio: true
+            step(
+                [$class: 'TasksPublisher',
+                 pattern: '**/*',
+                 excludePattern: 'Jenkinsfile, deps/**, */generated/**, **/*.epf, **/*.jar, **/*.zip, **/.settings/**, **/*.class, target/*/*/deploy/**, **/*.exe, **/*.png, */lib/**/*.so, */obj/**/*.o',
+                 high: 'FIXME, XXX',
+                 normal: 'TODO',
+                 low: 'TD',
+                 unstableTotalHigh: '0',
+                 canComputeNew: true]
+            )
+        }
+    } else if (env.ENABLE_LINUX32_BUILD == "true") {
+        if (resultName.startsWith("linux32")) {
+            junit testResults: '*/generated/**/TEST-*.xml', keepLongStdio: true
+            step(
+                [$class: 'TasksPublisher',
+                 pattern: '**/*',
+                 excludePattern: 'Jenkinsfile, deps/**, */generated/**, **/*.epf, **/*.jar, **/*.zip, **/.settings/**, **/*.class, target/*/*/deploy/**, **/*.exe, **/*.png, */lib/**/*.so, */obj/**/*.o',
+                 high: 'FIXME, XXX',
+                 normal: 'TODO',
+                 low: 'TD',
+                 unstableTotalHigh: '0',
+                 canComputeNew: true]
+            )
+        }
+    } else if (env.ENABLE_WINDOWS_BUILD == "true") {
+        if (resultName.startsWith("windows")) {
+            windowsTestsPublished = true
+            junit testResults: '*/generated/**/TEST-*.xml', keepLongStdio: true
+            step(
+                [$class: 'TasksPublisher',
+                 pattern: '**/*',
+                 excludePattern: 'Jenkinsfile, deps/**, */generated/**, **/*.epf, **/*.jar, **/*.zip, **/.settings/**, **/*.class, target/*/*/deploy/**, **/*.exe, **/*.png, */lib/**/*.so, */obj/**/*.o',
+                 high: 'FIXME, XXX',
+                 normal: 'TODO',
+                 low: 'TD',
+                 unstableTotalHigh: '0',
+                 canComputeNew: true]
+            )
+        }
+    }
+
+    if (resultName.startsWith("gui")) {
         junit testResults: '*/generated/**/TEST-*.xml', keepLongStdio: true
-    } else if (resultName.startsWith("windows")) {
+    } else if (!windowsTestsPublished && resultName.startsWith("windows")) {
         junit testResults: 'mil.dod.th.ose.rxtxtty.integration/generated/**/TEST-*.xml, mil.dod.th.ose.sdk.integration/generated/**/TEST-*.xml', keepLongStdio: true
     }
 }
 
 def extractOsusResults() {
-    dir('windows') {
-        unstash 'windows-results'
-    }
-    dir('linux64') {
-        unstash 'linux64-results'
-    }
-    dir('linux32') {
-        unstash 'linux32-results'
-    }
-    dir('docs') {
-        unstash 'docs-results'
+    if (env.ENABLE_WINDOWS_BUILD == "true") {
+        dir('windows') {
+            unstash 'windows-results'
+        }
     }
 
-    if (env.ENABLE_GUI_BUILDS == "true") {
+    if (env.ENABLE_LINUX64_BUILD == "true") {
+        dir('linux64') {
+            unstash 'linux64-results'
+        }
+    }
+
+    if (env.ENABLE_LINUX32_BUILD == "true") {
+        dir('linux32') {
+            unstash 'linux32-results'
+        }
+    }
+
+    if (env.ENABLE_DOCS_BUILD == "true") {
+        dir('docs') {
+            unstash 'docs-results'
+        }
+    }
+
+    if (env.ENABLE_GUI_ASSET_BUILD == "true") {
         dir('gui-asset') {
             unstash 'gui-asset-results'
         }
+    }
+
+    if (env.ENABLE_GUI_OTHER_BUILD == "true") {
         dir('gui-other') {
             unstash 'gui-other-results'
         }
