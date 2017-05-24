@@ -192,7 +192,8 @@ public class TestCommandHandlerMgrImpl
         SetPanTiltCommand panTiltCmd = new SetPanTiltCommand(null, null, panTilt);
         DetectTargetCommand detectTargetCmnd = new DetectTargetCommand(null, null, null, null, null, null, null,
                 5, 5, 6, null);
-        CaptureImageCommand captureImageCmd = new CaptureImageCommand(null, null, null, null, null, null, null);
+        CaptureImageCommand captureImageCmd = new CaptureImageCommand(null, null, null, null, null, null, null, null,
+                null);
         
         //Mock converter behavior.
         when(m_Converter.convertToProto(Mockito.any(Command.class))).thenReturn(testMessage);

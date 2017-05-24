@@ -18,8 +18,10 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
     xmlns:image="http://th.dod.mil/core/types/image"
+    xmlns:spatial="http://th.dod.mil/core/types/spatial"
     elementFormDefault="qualified" jaxb:version="2.1">
     <xs:import namespace="http://th.dod.mil/core/types/image" schemaLocation="../../types/image/ImageTypes.xsd" />
+    <xs:import namespace="http://th.dod.mil/core/types/spatial" schemaLocation="../../types/spatial/SpatialTypes.xsd" />
     <xs:include schemaLocation="BaseTypes.xsd"></xs:include>
 
     <xs:element name="captureImageCommand" type="CaptureImageCommand"/>
@@ -63,6 +65,29 @@
                             </xs:documentation>
                         </xs:annotation>
                     </xs:element>
+                    <xs:choice minOccurs="0">
+                        <xs:element name="location" type="spatial:Coordinates" minOccurs="1" maxOccurs="1">
+                            <xs:annotation>
+                                <!-- Override the generated proto index. -->
+                                <xs:appinfo>index=6</xs:appinfo>
+                                <xs:documentation>
+                                    Coordinates of the location that the camera should point at.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="panTilt" type="spatial:OrientationOffset"  minOccurs="1" maxOccurs="1" >
+                            <xs:annotation>
+                                <!-- Override the generated proto index. -->
+                                <xs:appinfo>index=7</xs:appinfo>
+                                <xs:documentation>
+                                    The orientation that the camera should assume before capturing the image, values set should not be relative to the current
+                                    position, but rather new values in respect to constraints on the given types, relative to the platform. The orientation offset 
+                                    structure contains Azimuth (pan), Elevation (tilt),  and Bank (roll).  All fields are optional, therefore not all fields 
+                                    must be used, values which are not present (null) should be ignored by the camera.
+                                </xs:documentation>
+                           </xs:annotation>
+                        </xs:element>
+                    </xs:choice>
                 </xs:sequence>
                 <xs:attribute name="pictureType" type="image:PictureTypeEnum" use="optional">
                     <xs:annotation>
