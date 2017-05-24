@@ -27,6 +27,7 @@ import mil.dod.th.core.ccomm.AddressManagerService;
 import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.CustomCommsService;
 import mil.dod.th.core.ccomm.transport.TransportLayer;
+import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.remote.RemoteChannel;
 import mil.dod.th.core.remote.messaging.MessageFactory;
@@ -43,6 +44,7 @@ import mil.dod.th.core.remote.proto.TransportLayerMessages.IsReceivingRequestDat
 import mil.dod.th.core.remote.proto.TransportLayerMessages.IsReceivingResponseData;
 import mil.dod.th.core.remote.proto.TransportLayerMessages.IsTransmittingRequestData;
 import mil.dod.th.core.remote.proto.TransportLayerMessages.IsTransmittingResponseData;
+import mil.dod.th.core.remote.proto.TransportLayerMessages.SetPropertyRequestData;
 import mil.dod.th.core.remote.proto.TransportLayerMessages.ShutdownRequestData;
 import mil.dod.th.core.remote.proto.TransportLayerMessages.TransportLayerNamespace;
 import mil.dod.th.core.remote.proto.TransportLayerMessages.TransportLayerNamespace.TransportLayerMessageType;
@@ -230,6 +232,12 @@ public class TransportLayerMessageService implements MessageService
                 dataMessage = removeTransportLayer(transportLayerMessage, message, channel);
                 break;
             case DeleteResponse:
+                dataMessage = null;
+                break;
+            case SetPropertyRequest:
+                dataMessage = setTransportLayerProperty(transportLayerMessage, message, channel);
+                break;
+            case SetPropertyResponse:
                 dataMessage = null;
                 break;
             default:
@@ -438,5 +446,46 @@ public class TransportLayerMessageService implements MessageService
 
         
         return removeTransportLayer;
+    }
+
+    /**
+     * Method responsible for setting property(ies) on a transport layer based on the UUID.
+     * 
+     * @param message
+     *  the set transport layer property request message containing the UUID of the transport layer and the 
+     *  properties that are to be set
+     * @param request
+     *  the entire remote message for the request
+     * @param channel
+     *  the channel that was used to send the request
+     * @return
+     *  the data message for this request
+     * @throws IOException
+     *  if message cannot be parsed or if response message cannot be sent
+     */
+    private Message setTransportLayerProperty(final TransportLayerNamespace message, 
+            final TerraHarvestMessage request, final RemoteChannel channel) throws IOException
+    {
+        final SetPropertyRequestData propRequest = SetPropertyRequestData.parseFrom(message.getData());
+        final TransportLayer transportLayer =
+                CustomCommUtility.getTransportLayerByUuid(m_CommsService, propRequest.getUuid());
+        try
+        {
+            transportLayer.setProperties(SharedMessageUtils.convertListSimpleTypesMapEntrytoMapStringObject(
+                                    propRequest.getPropertiesList()));
+        }
+        catch (final FactoryException exception)
+        {
+            final String errorDesc =
+                    String.format("A transport layer with UUID [%s] could not update properties because: %s.",
+                    SharedMessageUtils.convertProtoUUIDtoUUID(propRequest.getUuid()), exception.getMessage());
+            m_Logging.error(exception, "Failed to set properties for transport layer %s.", transportLayer.getName());
+            m_MessageFactory.createBaseErrorMessage(request, ErrorCode.CCOMM_ERROR, errorDesc).queue(channel);
+        }
+
+        m_MessageFactory.createTransportLayerResponseMessage(request, 
+                TransportLayerMessageType.SetPropertyResponse, null).queue(channel);
+
+        return propRequest;
     }
 }

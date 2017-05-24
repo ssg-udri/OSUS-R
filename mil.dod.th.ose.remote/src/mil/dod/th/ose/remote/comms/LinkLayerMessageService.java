@@ -28,11 +28,12 @@ import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.CustomCommsService;
 import mil.dod.th.core.ccomm.link.LinkLayer;
 import mil.dod.th.core.ccomm.physical.PhysicalLink;
+import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.remote.RemoteChannel;
 import mil.dod.th.core.remote.messaging.MessageFactory;
 import mil.dod.th.core.remote.proto.BaseMessages.ErrorCode;
-import mil.dod.th.core.remote.proto.LinkLayerMessages;
+import mil.dod.th.core.remote.proto.CustomCommsTypes;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.ActivateRequestData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.DeactivateRequestData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.DeleteRequestData;
@@ -50,6 +51,7 @@ import mil.dod.th.core.remote.proto.LinkLayerMessages.LinkLayerNamespace;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.LinkLayerNamespace.LinkLayerMessageType;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.PerformBITRequestData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.PerformBITResponseData;
+import mil.dod.th.core.remote.proto.LinkLayerMessages.SetPropertyRequestData;
 import mil.dod.th.core.remote.proto.RemoteBase.Namespace;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestPayload;
@@ -259,6 +261,12 @@ public class LinkLayerMessageService implements MessageService
             case DeleteResponse:
                 dataMessage = null;
                 break;
+            case SetPropertyRequest:
+                dataMessage = setLinkLayerProperty(linkLayerMessage, message, channel);
+                break;
+            case SetPropertyResponse:
+                dataMessage = null;
+                break;
             default:
                 throw new UnsupportedOperationException(
                         String.format("Message type: %s is not a supported type for"
@@ -432,7 +440,7 @@ public class LinkLayerMessageService implements MessageService
         final LinkLayer requestedLinkLayer = CustomCommUtility.getLinkLayerByUuid(
                 m_CommsService, getStatusRequest.getUuid());
 
-        final LinkLayerMessages.LinkStatus status = 
+        final CustomCommsTypes.LinkStatus status = 
                 EnumConverter.convertJavaLinkStatusToProto(requestedLinkLayer.getLinkStatus());
 
         final GetStatusResponseData response = GetStatusResponseData.newBuilder().setLinkStatus(status).setUuid(
@@ -528,7 +536,7 @@ public class LinkLayerMessageService implements MessageService
             final LinkLayer link = CustomCommUtility.getLinkLayerByUuid(m_CommsService, request.getLinkUuid());
             
             //request link to perform its BIT
-            final LinkLayerMessages.LinkStatus status = 
+            final CustomCommsTypes.LinkStatus status = 
                     EnumConverter.convertJavaLinkStatusToProto(link.performBit());
             response.setLinkUuid(request.getLinkUuid()).setPerformBitStatus(status);
         }
@@ -577,5 +585,45 @@ public class LinkLayerMessageService implements MessageService
                 LinkLayerMessageType.DeleteResponse, 
                 null).queue(channel);
         return deleteLinkLayer;
+    }
+
+    /**
+     * Method responsible for setting property(ies) on a link layer based on the UUID.
+     * 
+     * @param message
+     *  the set link layer property request message containing the UUID of the link layer and the 
+     *  properties that are to be set
+     * @param request
+     *  the entire remote message for the request
+     * @param channel
+     *  the channel that was used to send the request
+     * @return
+     *  the data message for this request
+     * @throws IOException
+     *  if message cannot be parsed or if response message cannot be sent
+     */
+    private Message setLinkLayerProperty(final LinkLayerNamespace message, 
+            final TerraHarvestMessage request, final RemoteChannel channel) throws IOException
+    {
+        final SetPropertyRequestData propRequest = SetPropertyRequestData.parseFrom(message.getData());
+        final LinkLayer linkLayer = CustomCommUtility.getLinkLayerByUuid(m_CommsService, propRequest.getUuid());
+        try
+        {
+            linkLayer.setProperties(SharedMessageUtils.convertListSimpleTypesMapEntrytoMapStringObject(
+                                    propRequest.getPropertiesList()));
+        }
+        catch (final FactoryException exception)
+        {
+            final String errorDesc =
+                    String.format("A link layer with UUID [%s] could not update properties because: %s.",
+                    SharedMessageUtils.convertProtoUUIDtoUUID(propRequest.getUuid()), exception.getMessage());
+            m_Logging.error(exception, "Failed to set properties for link layer %s.", linkLayer.getName());
+            m_MessageFactory.createBaseErrorMessage(request, ErrorCode.CCOMM_ERROR, errorDesc).queue(channel);
+        }
+
+        m_MessageFactory.createLinkLayerResponseMessage(request, 
+                LinkLayerMessageType.SetPropertyResponse, null).queue(channel);
+
+        return propRequest;
     }
 }

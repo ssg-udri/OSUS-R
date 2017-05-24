@@ -26,7 +26,7 @@ import mil.dod.th.core.mp.Program.ProgramStatus;
 import mil.dod.th.core.persistence.ObservationQuery;
 import mil.dod.th.core.remote.proto.AssetMessages;
 import mil.dod.th.core.remote.proto.BaseMessages;
-import mil.dod.th.core.remote.proto.LinkLayerMessages;
+import mil.dod.th.core.remote.proto.CustomCommsTypes;
 import mil.dod.th.core.remote.proto.MissionProgramMessages.MissionStatus;
 import mil.dod.th.core.remote.proto.MissionProgramMessages.MissionTestResult;
 import mil.dod.th.core.remote.proto.ObservationStoreMessages.SortField;
@@ -100,7 +100,7 @@ public class TestEnumConverter
     @Test
     public void testConvertProtoLinkStatusToJava()
     {
-        for (LinkLayerMessages.LinkStatus status: LinkLayerMessages.LinkStatus.values())
+        for (CustomCommsTypes.LinkStatus status: CustomCommsTypes.LinkStatus.values())
         {
             assertThat(EnumConverter.convertProtoLinkStatusToJava(status),
                     is(notNullValue()));

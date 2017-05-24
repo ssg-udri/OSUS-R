@@ -46,7 +46,6 @@
             </p:outputPanel>
             <div style="width:100%; margin-top:1em; text-align:center">
                 <p:commandButton id="saveConfig" value="Save"
-                    rendered="#{factoryObjConfigModifierView.getSelectedFactoryModel() != comms.physical.toString()}"
                     action="#{factoryObjConfigModifierView.updateAllPropertiesAsync()}"
                     oncomplete="if (!args.validationFailed) #{cc.attrs.execSave}">
                 </p:commandButton>

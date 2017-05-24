@@ -49,16 +49,23 @@ import mil.dod.th.core.remote.proto.CustomCommsMessages.GetLayerNameRequestData;
 import mil.dod.th.core.remote.proto.CustomCommsMessages.GetLayerNameResponseData;
 import mil.dod.th.core.remote.proto.CustomCommsMessages.GetLayersRequestData;
 import mil.dod.th.core.remote.proto.CustomCommsMessages.GetLayersResponseData;
+import mil.dod.th.core.remote.proto.LinkLayerMessages;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.GetStatusRequestData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.GetStatusResponseData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.IsActivatedRequestData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.IsActivatedResponseData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.LinkLayerNamespace.LinkLayerMessageType;
+import mil.dod.th.core.remote.proto.MapTypes.SimpleTypesMapEntry;
+import mil.dod.th.core.remote.proto.PhysicalLinkMessages;
+import mil.dod.th.core.remote.proto.PhysicalLinkMessages.PhysicalLinkNamespace.PhysicalLinkMessageType;
 import mil.dod.th.core.remote.proto.RemoteBase.Namespace;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestPayload;
 import mil.dod.th.core.remote.proto.SharedMessages;
 import mil.dod.th.core.remote.proto.SharedMessages.FactoryObjectInfo;
+import mil.dod.th.core.remote.proto.SharedMessages.Multitype;
+import mil.dod.th.core.remote.proto.TransportLayerMessages;
+import mil.dod.th.core.remote.proto.TransportLayerMessages.TransportLayerNamespace.TransportLayerMessageType;
 import mil.dod.th.ose.gui.api.SharedPropertyConstants;
 import mil.dod.th.ose.gui.webapp.advanced.configuration.ConfigurationWrapper;
 import mil.dod.th.ose.gui.webapp.advanced.configuration.ModifiablePropertyModel;
@@ -637,6 +644,7 @@ public class CommsMgrImpl implements CommsMgr, FactoryObjMgr //NOPMD - excessive
         
     /**
      * Request to get comms events.
+     * 
      * @param systemId
      *     the system to which to send the request
      */
@@ -658,6 +666,8 @@ public class CommsMgrImpl implements CommsMgr, FactoryObjMgr //NOPMD - excessive
         topics.add(FactoryDescriptor.TOPIC_FACTORY_OBJ_CREATED);
         topics.add(FactoryDescriptor.TOPIC_FACTORY_OBJ_DELETED);
         topics.add(FactoryDescriptor.TOPIC_FACTORY_OBJ_NAME_UPDATED);
+        topics.add(FactoryDescriptor.TOPIC_FACTORY_OBJ_PID_CREATED);
+        topics.add(FactoryDescriptor.TOPIC_FACTORY_OBJ_PID_REMOVED);
         
         final String filterString = String.format("(|(%s=%s)(%s=%s)(%s=%s))", 
                 FactoryDescriptor.EVENT_PROP_OBJ_BASE_TYPE, LinkLayer.class.getSimpleName(),
@@ -666,7 +676,6 @@ public class CommsMgrImpl implements CommsMgr, FactoryObjMgr //NOPMD - excessive
         
         //send request for factory descriptor registrations
         RemoteEvents.sendEventRegistration(m_MessageFactory, topics, filterString, false, systemId, m_RemoteHandler);
-        
     }
     
     /**
@@ -709,6 +718,17 @@ public class CommsMgrImpl implements CommsMgr, FactoryObjMgr //NOPMD - excessive
             //pull out the uuid and update layer name
             final UUID uuid = UUID.fromString((String)event.getProperty(FactoryDescriptor.EVENT_PROP_OBJ_UUID)); 
             updateLayerName(convertBaseTypeToCommType(baseType), uuid, systemId, name); 
+        }
+        else if (topic.contains(FactoryDescriptor.TOPIC_FACTORY_OBJ_PID_CREATED))
+        {
+            final String pid = (String)event.getProperty(FactoryDescriptor.EVENT_PROP_OBJ_PID);
+            final UUID uuid = UUID.fromString((String)event.getProperty(FactoryDescriptor.EVENT_PROP_OBJ_UUID)); 
+            findLayer(uuid, findListByType(convertBaseTypeToCommType(baseType), systemId)).setPid(pid);
+        }
+        else if (topic.contains(FactoryDescriptor.TOPIC_FACTORY_OBJ_PID_REMOVED))
+        {
+            final UUID uuid = UUID.fromString((String)event.getProperty(FactoryDescriptor.EVENT_PROP_OBJ_UUID)); 
+            findLayer(uuid, findListByType(convertBaseTypeToCommType(baseType), systemId)).setPid("");
         }
     }
     
@@ -1167,15 +1187,74 @@ public class CommsMgrImpl implements CommsMgr, FactoryObjMgr //NOPMD - excessive
     {
         return new RemoteCreateLinkLayerHandler(transportBuild);
     }
-    
-    
+
     @Override
     public void createConfiguration(final int systemId, 
             final FactoryBaseModel model, final List<ModifiablePropertyModel> properties)
     {
-        throw new UnsupportedOperationException("CommsMgr does not support creating configurations.");
+        if (model instanceof CommsLayerLinkModelImpl)
+        {
+            final LinkLayerMessages.SetPropertyRequestData.Builder builder1 =
+                LinkLayerMessages.SetPropertyRequestData.newBuilder()
+                    .setUuid(SharedMessageUtils.convertUUIDToProtoUUID(model.getUuid()));
+            for (ModifiablePropertyModel prop : properties)
+            {
+                final Multitype multi = SharedMessageUtils.convertObjectToMultitype(prop.getValue());
+                final SimpleTypesMapEntry type =
+                        SimpleTypesMapEntry.newBuilder()
+                        .setKey(prop.getKey()).setValue(multi)
+                        .build();
+                builder1.addProperties(type);
+            }
+
+            m_MessageFactory.createLinkLayerMessage(LinkLayerMessageType.SetPropertyRequest, builder1.build())
+                    .queue(systemId, null);
+            return;
+        }
+
+        final CommsLayerBaseModel commsModel = (CommsLayerBaseModel)model;
+        switch (commsModel.getType())
+        {
+            case PhysicalLink:
+                final PhysicalLinkMessages.SetPropertyRequestData.Builder builder2 =
+                    PhysicalLinkMessages.SetPropertyRequestData.newBuilder()
+                        .setUuid(SharedMessageUtils.convertUUIDToProtoUUID(model.getUuid()));
+                for (ModifiablePropertyModel prop : properties)
+                {
+                    final Multitype multi = SharedMessageUtils.convertObjectToMultitype(prop.getValue());
+                    final SimpleTypesMapEntry type =
+                            SimpleTypesMapEntry.newBuilder()
+                            .setKey(prop.getKey()).setValue(multi)
+                            .build();
+                    builder2.addProperties(type);
+                }
+    
+                m_MessageFactory.createPhysicalLinkMessage(PhysicalLinkMessageType.SetPropertyRequest, builder2.build())
+                        .queue(systemId, null);
+                break;
+            case TransportLayer:
+                final TransportLayerMessages.SetPropertyRequestData.Builder builder3 =
+                    TransportLayerMessages.SetPropertyRequestData.newBuilder()
+                        .setUuid(SharedMessageUtils.convertUUIDToProtoUUID(model.getUuid()));
+                for (ModifiablePropertyModel prop : properties)
+                {
+                    final Multitype multi = SharedMessageUtils.convertObjectToMultitype(prop.getValue());
+                    final SimpleTypesMapEntry type =
+                            SimpleTypesMapEntry.newBuilder()
+                            .setKey(prop.getKey()).setValue(multi)
+                            .build();
+                    builder3.addProperties(type);
+                }
+    
+                m_MessageFactory.createTransportLayerMessage(TransportLayerMessageType.SetPropertyRequest,
+                        builder3.build()).queue(systemId, null);
+                break;
+            default:
+                throw new UnsupportedOperationException("CommsMgr does not support creating configurations for "
+                        + commsModel.getType());
+        }
     }
-     
+
     /*
      *!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      *!!! EVENT HELPERS and INNER CLASSES ARE BELOW !!!
@@ -1473,5 +1552,4 @@ public class CommsMgrImpl implements CommsMgr, FactoryObjMgr //NOPMD - excessive
                     CreateTransportLayerRequest, request).queue(systemId, null);
         }
     }
-
 }

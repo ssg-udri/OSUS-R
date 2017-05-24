@@ -12,17 +12,10 @@
 //==============================================================================
 
 option java_package = "mil.dod.th.core.remote.proto";
+
+import "customCommsTypes.proto";
+import "mapTypes.proto";
 import "shared.proto";
-
-// Enum for link layer statuses corresponding to mil.dod.th.core.ccomm.link.LinkLayer.LinkStatus
-enum LinkStatus
-{
-    // Lost link layer status
-    LOST = 1;
-
-    // Ok link layer status
-    OK = 2;
-}
 
 // Namespace which gives access to link layer operations
 message LinkLayerNamespace
@@ -85,6 +78,12 @@ message LinkLayerNamespace
 
         // Response for DeleteRequest.
         DeleteResponse = 18;
+
+        //Request to set property(ies) for a given link layer.
+        SetPropertyRequest = 19;
+        
+        //Response for SetPropertyRequest
+        SetPropertyResponse = 20;       
     }
 
     // This is the custom comms message type.
@@ -218,4 +217,14 @@ message DeleteRequestData
 {
     // UUID of the link layer you want to remove.
     required UUID linkLayerUuid = 1;
+}
+
+//This message requests that a property(ies) be set on a given link layer.
+message SetPropertyRequestData
+{
+    //UUID of the link layer that the property is to be set on.
+    required UUID uuid = 1;
+    
+    //map of properties that need to be set for this link layer.
+    repeated SimpleTypesMapEntry properties = 2; 
 }

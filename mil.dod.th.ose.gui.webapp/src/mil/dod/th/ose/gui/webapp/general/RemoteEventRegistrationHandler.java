@@ -59,7 +59,6 @@ public class RemoteEventRegistrationHandler implements ResponseHandler
         final Message dataMessage)
     {
         final EventRegistrationResponseData regResponse = (EventRegistrationResponseData) dataMessage;
-
         final int systemId = thMessage.getSourceId();
          
         if (m_RemoteRegistrations.containsKey(systemId))

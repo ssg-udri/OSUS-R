@@ -14,17 +14,18 @@ package mil.dod.th.ose.remote.comms;
 
 import mil.dod.th.core.ccomm.CustomCommsService;
 import mil.dod.th.core.ccomm.link.LinkLayer;
+import mil.dod.th.core.ccomm.physical.PhysicalLink;
 import mil.dod.th.core.ccomm.transport.TransportLayer;
 import mil.dod.th.core.remote.proto.SharedMessages.UUID;
 import mil.dod.th.ose.shared.SharedMessageUtils;
 
 /**
  * Custom comms utility class for various operations on the custom comms service.
+ * 
  * @author matt
  */
 public final class CustomCommUtility
 {
-    
     /**
      * Constructor is declared to prevent instantiation of the class.
      */
@@ -35,6 +36,7 @@ public final class CustomCommUtility
     
     /**
      * Get a {@link mil.dod.th.core.ccomm.link.LinkLayer} from the {@link mil.dod.th.core.ccomm.CustomCommsService}.
+     * 
      * @param ccommService
      *      custom comms service to find the link layer from
      * @param uuid
@@ -62,6 +64,7 @@ public final class CustomCommUtility
     /**
      * Get a {@link mil.dod.th.core.ccomm.transport.TransportLayer} from the 
      * {@link mil.dod.th.core.ccomm.CustomCommsService}.
+     * 
      * @param ccommService
      *      custom comms service to find the transport layer from
      * @param uuid
@@ -85,5 +88,34 @@ public final class CustomCommUtility
         }
         throw new IllegalArgumentException(String.format("Cannot find the Transport Layer with uuid: [%s]", 
                 transportUuid));
+    }
+
+    /**
+     * Get a {@link mil.dod.th.core.ccomm.physical.PhysicalLink} from the 
+     * {@link mil.dod.th.core.ccomm.CustomCommsService}.
+     * 
+     * @param ccommService
+     *      custom comms service to find the physical link from
+     * @param uuid
+     *      protocol buffer UUID of the physical link to find
+     * @return
+     *      physical link that was found in the service
+     * @throws IllegalArgumentException
+     *      if physical link cannot be found with given UUID
+     */
+    public static PhysicalLink getPhysicalLinkByUuid(final CustomCommsService ccommService, final UUID uuid) throws
+            IllegalArgumentException
+    {
+        final java.util.UUID phyLinkUuid = SharedMessageUtils.convertProtoUUIDtoUUID(uuid);
+        for (PhysicalLink phyLink : ccommService.getPhysicalLinks())
+        {
+            if (phyLink.getUuid().equals(phyLinkUuid))
+            {
+                return phyLink;
+            }
+        }
+
+        throw new IllegalArgumentException(String.format("Cannot find the Physical Link with uuid: [%s]", 
+                phyLinkUuid));
     }
 }

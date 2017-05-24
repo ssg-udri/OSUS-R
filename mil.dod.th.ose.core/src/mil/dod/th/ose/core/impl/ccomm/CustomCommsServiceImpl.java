@@ -384,7 +384,14 @@ public class CustomCommsServiceImpl extends DirectoryService implements CustomCo
     {
         return m_PhysLinkFactContext.getRegistry().getObjectNames();
     }
-    
+
+    @Override
+    public List<PhysicalLink> getPhysicalLinks()
+    {
+        return Collections.unmodifiableList(new ArrayList<PhysicalLink>(
+                m_PhysLinkFactContext.getRegistry().getObjects()));
+    }
+
     @Override
     public LinkLayer getLinkLayer(final String name)
     {

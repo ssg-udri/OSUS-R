@@ -647,7 +647,7 @@ public class TestAssetMgrImpl
     @Test
     public void testCreateConfiguration()
     {
-      //load assets for one system
+        //load assets for one system
         Event getAssetsReponse = mockGetAssetsResponse(1);
         
         //this should render two assets for the system id

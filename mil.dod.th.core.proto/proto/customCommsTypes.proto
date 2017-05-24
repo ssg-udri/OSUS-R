@@ -1,0 +1,24 @@
+//==============================================================================
+// This software is part of the Open Standard for Unattended Sensors (OSUS)
+// reference implementation (OSUS-R).
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
+//==============================================================================
+
+option java_package = "mil.dod.th.core.remote.proto";
+
+// Enum for link layer statuses corresponding to mil.dod.th.core.ccomm.link.LinkLayer.LinkStatus
+enum LinkStatus
+{
+    // Lost link layer status
+    LOST = 1;
+
+    // Ok link layer status
+    OK = 2;
+}

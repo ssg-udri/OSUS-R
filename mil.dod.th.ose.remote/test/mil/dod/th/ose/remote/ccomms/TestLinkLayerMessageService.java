@@ -20,7 +20,9 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import mil.dod.th.core.ccomm.Address;
@@ -36,7 +38,7 @@ import mil.dod.th.core.remote.RemoteChannel;
 import mil.dod.th.core.remote.RemoteConstants;
 import mil.dod.th.core.remote.messaging.MessageFactory;
 import mil.dod.th.core.remote.messaging.MessageResponseWrapper;
-import mil.dod.th.core.remote.proto.LinkLayerMessages;
+import mil.dod.th.core.remote.proto.CustomCommsTypes;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.ActivateRequestData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.DeactivateRequestData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.DeleteRequestData;
@@ -53,10 +55,14 @@ import mil.dod.th.core.remote.proto.LinkLayerMessages.IsAvailableResponseData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.LinkLayerNamespace;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.PerformBITRequestData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.PerformBITResponseData;
+import mil.dod.th.core.remote.proto.LinkLayerMessages.SetPropertyRequestData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.LinkLayerNamespace.LinkLayerMessageType;
+import mil.dod.th.core.remote.proto.MapTypes.SimpleTypesMapEntry;
 import mil.dod.th.core.remote.proto.RemoteBase.Namespace;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestPayload;
+import mil.dod.th.core.remote.proto.SharedMessages.Multitype;
+import mil.dod.th.core.remote.proto.SharedMessages.Multitype.Type;
 import mil.dod.th.core.remote.proto.BaseMessages.ErrorCode;
 import mil.dod.th.ose.remote.MessageRouterInternal;
 import mil.dod.th.ose.remote.TerraHarvestMessageHelper;
@@ -76,6 +82,7 @@ import com.google.protobuf.Message;
 /**
  * Testing for the link layer message service, which includes testing to make sure all requests and responses
  * are sending correctly for all link layer message types.
+ * 
  * @author matt
  */
 public class TestLinkLayerMessageService
@@ -627,7 +634,7 @@ public class TestLinkLayerMessageService
         
         GetStatusResponseData response = messageCaptor.getValue();
  
-        assertThat(response.getLinkStatus(), is(LinkLayerMessages.LinkStatus.OK));
+        assertThat(response.getLinkStatus(), is(CustomCommsTypes.LinkStatus.OK));
         
         //-----testing lost status-----
         testStatus = LinkStatus.LOST;
@@ -645,7 +652,7 @@ public class TestLinkLayerMessageService
         
         response = messageCaptor.getValue();
  
-        assertThat(response.getLinkStatus(), is(LinkLayerMessages.LinkStatus.LOST));
+        assertThat(response.getLinkStatus(), is(CustomCommsTypes.LinkStatus.LOST));
         assertThat(response.getUuid(), is(SharedMessageUtils.convertUUIDToProtoUUID(testUuid)));
     }
     
@@ -658,7 +665,7 @@ public class TestLinkLayerMessageService
     {
         // build the terra harvest message
         Message response = GetStatusResponseData.newBuilder()
-                .setLinkStatus(LinkLayerMessages.LinkStatus.OK)
+                .setLinkStatus(CustomCommsTypes.LinkStatus.OK)
                 .setUuid(SharedMessageUtils.convertUUIDToProtoUUID(UUID.randomUUID()))
                 .build();
         
@@ -880,7 +887,7 @@ public class TestLinkLayerMessageService
         //verify response
         PerformBITResponseData response = captor.getValue();
         assertThat(response.getLinkUuid(), is(SharedMessageUtils.convertUUIDToProtoUUID(testUuid)));
-        assertThat(response.getPerformBitStatus(), is(LinkLayerMessages.LinkStatus.LOST));
+        assertThat(response.getPerformBitStatus(), is(CustomCommsTypes.LinkStatus.LOST));
     }
 
     /**
@@ -929,7 +936,7 @@ public class TestLinkLayerMessageService
         // create request
         PerformBITResponseData request = PerformBITResponseData.newBuilder()
                 .setLinkUuid(SharedMessageUtils.convertUUIDToProtoUUID(testUuid))
-                .setPerformBitStatus(LinkLayerMessages.LinkStatus.OK)
+                .setPerformBitStatus(CustomCommsTypes.LinkStatus.OK)
                 .build();
         
         LinkLayerNamespace llMessage = LinkLayerNamespace.newBuilder()
@@ -1028,6 +1035,79 @@ public class TestLinkLayerMessageService
                 is(LinkLayerMessageType.DeleteResponse.toString()));
     }
     
+    /**
+     * Verify that a property request is properly handled
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Test
+    public void testSetPropertyRequest() throws IOException, 
+        IllegalArgumentException, IllegalStateException, FactoryException
+    {
+        UUID uuid = UUID.randomUUID();
+        // build request
+        Multitype multi = Multitype.newBuilder().setStringValue("valueA").setType(Type.STRING).build();
+        SimpleTypesMapEntry type = SimpleTypesMapEntry.newBuilder().setKey("AKey").setValue(multi).build();
+        SetPropertyRequestData request = SetPropertyRequestData.newBuilder().
+                setUuid(SharedMessageUtils.convertUUIDToProtoUUID(uuid)).addProperties(type).build();
+        LinkLayerNamespace linkLayerMessage = LinkLayerNamespace.newBuilder().
+                setType(LinkLayerMessageType.SetPropertyRequest).
+                setData(request.toByteString()).build();
+        TerraHarvestPayload payload = createPayload(linkLayerMessage);
+        TerraHarvestMessage message = createLinkLayerMessage(linkLayerMessage);
+        
+        //mock necessary objects/actions
+        LinkLayer linkLayer = mock(LinkLayer.class);
+        when(linkLayer.getUuid()).thenReturn(uuid);
+        
+        Map<String, Object> propsToSet = new HashMap<>();
+        propsToSet.put("AKey", "");
+        
+        when(linkLayer.getProperties()).thenReturn(propsToSet);
+        
+        List<LinkLayer> linkLayerList = new ArrayList<LinkLayer>();
+        linkLayerList.add(linkLayer);
+        when(m_CustomCommsService.getLinkLayers()).thenReturn(linkLayerList);
+        
+        // mock the channel the message came from
+        RemoteChannel channel = mock(RemoteChannel.class);
+        
+        m_SUT.handleMessage(message, payload, channel);
+        
+        verify(m_MessageFactory, times(1)).createLinkLayerResponseMessage(eq(message), 
+                eq(LinkLayerMessageType.SetPropertyResponse), eq((Message)null));
+        
+        ArgumentCaptor<Map> dictCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(linkLayer, times(1)).setProperties(dictCaptor.capture());
+        
+        Map<String, Object> capDict = dictCaptor.getValue();
+        assertThat(capDict.size(), is(1));
+        
+        assertThat((String)capDict.get("AKey"), is("valueA"));
+    }
+
+    /**
+     * Verify set property response message when handled will set the data event property.
+     */
+    @Test
+    public void testSetPropertyResponse() throws IOException
+    {
+        Message response = null;
+        LinkLayerNamespace linkLayerMessage = LinkLayerNamespace.newBuilder().
+                setType(LinkLayerMessageType.SetPropertyResponse).build();
+        TerraHarvestPayload payload = createPayload(linkLayerMessage);
+        TerraHarvestMessage message = createLinkLayerMessage(linkLayerMessage);
+
+        RemoteChannel channel = mock(RemoteChannel.class);
+
+        m_SUT.handleMessage(message, payload, channel);
+
+        // verify event is posted
+        ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(m_EventAdmin).postEvent(eventCaptor.capture());
+        Event postedEvent = eventCaptor.getValue();
+        assertThat((Message)postedEvent.getProperty(RemoteConstants.EVENT_PROP_DATA_MESSAGE), is(response));
+    }
+
     private TerraHarvestMessage createLinkLayerMessage(LinkLayerNamespace namespaceMessage)
     {
         return TerraHarvestMessageHelper.createTerraHarvestMessage(0, 1, Namespace.LinkLayer, 100, namespaceMessage);

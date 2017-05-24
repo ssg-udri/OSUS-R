@@ -47,9 +47,9 @@ import mil.dod.th.core.remote.RemoteConstants;
 import mil.dod.th.core.remote.ResponseHandler;
 import mil.dod.th.core.remote.messaging.MessageFactory;
 import mil.dod.th.core.remote.messaging.MessageWrapper;
-import mil.dod.th.core.remote.proto.LinkLayerMessages;
 import mil.dod.th.core.remote.proto.CustomCommsMessages.CustomCommsNamespace;
 import mil.dod.th.core.remote.proto.EventMessages.EventAdminNamespace.EventAdminMessageType;
+import mil.dod.th.core.remote.proto.LinkLayerMessages;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.GetStatusResponseData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.IsActivatedResponseData;
 import mil.dod.th.core.remote.proto.CustomCommsMessages.CommType;
@@ -57,16 +57,24 @@ import mil.dod.th.core.remote.proto.CustomCommsMessages.CreateLinkLayerResponseD
 import mil.dod.th.core.remote.proto.CustomCommsMessages.CreateTransportLayerRequestData;
 import mil.dod.th.core.remote.proto.CustomCommsMessages.GetLayerNameResponseData;
 import mil.dod.th.core.remote.proto.CustomCommsMessages.GetLayersResponseData;
+import mil.dod.th.core.remote.proto.CustomCommsTypes;
 import mil.dod.th.core.remote.proto.CustomCommsMessages.CustomCommsNamespace.CustomCommsMessageType;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.LinkLayerNamespace.LinkLayerMessageType;
+import mil.dod.th.core.remote.proto.MapTypes.SimpleTypesMapEntry;
+import mil.dod.th.core.remote.proto.PhysicalLinkMessages;
+import mil.dod.th.core.remote.proto.PhysicalLinkMessages.PhysicalLinkNamespace.PhysicalLinkMessageType;
 import mil.dod.th.core.remote.proto.RemoteBase.Namespace;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestPayload;
 import mil.dod.th.core.remote.proto.SharedMessages.FactoryObjectInfo;
+import mil.dod.th.core.remote.proto.TransportLayerMessages;
+import mil.dod.th.core.remote.proto.TransportLayerMessages.TransportLayerNamespace.TransportLayerMessageType;
 import mil.dod.th.ose.gui.api.SharedPropertyConstants;
 import mil.dod.th.ose.gui.webapp.TerraHarvestMessageHelper;
 import mil.dod.th.ose.gui.webapp.advanced.configuration.ModifiablePropertyModel;
+import mil.dod.th.ose.gui.webapp.advanced.configuration.ConfigPropModelImpl;
 import mil.dod.th.ose.gui.webapp.advanced.configuration.ConfigurationWrapper;
+import mil.dod.th.ose.gui.webapp.advanced.configuration.ModelFactory;
 import mil.dod.th.ose.gui.webapp.comms.CommsMgrImpl.RemoteCreateLinkLayerHandler;
 import mil.dod.th.ose.gui.webapp.comms.CommsMgrImpl.EventHelperEventAdminNamespace;
 import mil.dod.th.ose.gui.webapp.comms.CommsMgrImpl.EventHelperControllerEvent;
@@ -79,7 +87,8 @@ import mil.dod.th.ose.gui.webapp.utils.GrowlMessageUtil;
 import mil.dod.th.ose.shared.SharedMessageUtils;
 
 /**
- * Test class for the comms manager implementation. 
+ * Test class for the comms manager implementation.
+ * 
  * @author bachmakm
  */
 public class TestCommsMgrImpl
@@ -155,6 +164,12 @@ public class TestCommsMgrImpl
         when(m_MessageFactory.createLinkLayerMessage(Mockito.any(LinkLayerMessageType.class), 
                 Mockito.any(Message.class))).thenReturn(m_MessageWrapper);
         when(m_MessageFactory.createEventAdminMessage(Mockito.any(EventAdminMessageType.class), 
+                Mockito.any(Message.class))).thenReturn(m_MessageWrapper);
+        when(m_MessageFactory.createPhysicalLinkMessage(Mockito.any(PhysicalLinkMessageType.class), 
+                Mockito.any(Message.class))).thenReturn(m_MessageWrapper);
+        when(m_MessageFactory.createLinkLayerMessage(Mockito.any(LinkLayerMessageType.class), 
+                Mockito.any(Message.class))).thenReturn(m_MessageWrapper);
+        when(m_MessageFactory.createTransportLayerMessage(Mockito.any(TransportLayerMessageType.class), 
                 Mockito.any(Message.class))).thenReturn(m_MessageWrapper);
         
         //register helper
@@ -390,13 +405,13 @@ public class TestCommsMgrImpl
         m_EventHelperComms.handleEvent(physical);
 
         //mock status event after set up
-        Event event = mockGetStatusResponse(systemId1, LinkLayerMessages.LinkStatus.OK);
+        Event event = mockGetStatusResponse(systemId1, CustomCommsTypes.LinkStatus.OK);
         m_EventHelperLink.handleEvent(event);
         
         List<CommsLayerLinkModelImpl> links = m_SUT.getLinksAsync(systemId1);
         assertThat(links.get(0).getStatusString(), is("OK"));   
         
-        event = mockGetStatusResponse(systemId1, LinkLayerMessages.LinkStatus.LOST);
+        event = mockGetStatusResponse(systemId1, CustomCommsTypes.LinkStatus.LOST);
         m_EventHelperLink.handleEvent(event);
         
         links = m_SUT.getLinksAsync(systemId1);
@@ -603,26 +618,124 @@ public class TestCommsMgrImpl
         m_EventHelper.handleEvent(badBase);
         assertThat(transports.size(), is(1)); //layer should not have been successfully deleted  
     }
-    
+
     /**
-     * Verify that create configuration currently throw an unsupported exception. 
+     * Verify request is not sent out when no model exists.
+     * Verify set custom comms property request is sent out for a model that is found.
      */
     @Test
-    public void testCreateConfiguration()
+    public void testCreatePhysLinkConfiguration()
     {
-        FactoryBaseModel model = mock(FactoryBaseModel.class);
+        //load layers for one system
+        Event getLayersReponse = mockGetLayersResponse(1, "physical");
         
-        try
-        {
-            m_SUT.createConfiguration(1, model, new ArrayList<ModifiablePropertyModel>());
-            fail("Expecting unsupported operation exception");
-        }
-        catch (UnsupportedOperationException exception)
-        {
-            
-        }
+        //this should render layers for the system id
+        m_EventHelperComms.handleEvent(getLayersReponse);
+        
+        //verify layers added
+        assertThat(m_SUT.getPhysicalsAsync(1).size(), is(3));
+        
+        List<ModifiablePropertyModel> configProps = new ArrayList<ModifiablePropertyModel>();
+        
+        ConfigPropModelImpl model = ModelFactory.createPropModel("id", "football");
+        configProps.add(model);
+        FactoryBaseModel commsModel = m_SUT.getPhysicalsAsync(1).get(0);
+        m_SUT.createConfiguration(1, commsModel, configProps);
+        
+        ArgumentCaptor<Message> msgCaptor = ArgumentCaptor.forClass(Message.class);
+        verify(m_MessageFactory).createPhysicalLinkMessage(
+                eq(PhysicalLinkMessageType.SetPropertyRequest), msgCaptor.capture());
+        
+        PhysicalLinkMessages.SetPropertyRequestData data = 
+                (PhysicalLinkMessages.SetPropertyRequestData)msgCaptor.getValue();
+        assertThat(data, notNullValue());
+        assertThat(data.getUuid(), is(SharedMessageUtils.convertUUIDToProtoUUID(uuid3)));
+        assertThat(data.getPropertiesCount(), is(1));
+        
+        SimpleTypesMapEntry type = data.getProperties(0);
+        
+        assertThat(type.getKey(), is("id"));
+        assertThat(type.getValue().getStringValue(), is("football"));
     }
-    
+
+    /**
+     * Verify request is not sent out when no model exists.
+     * Verify set custom comms property request is sent out for a model that is found.
+     */
+    @Test
+    public void testCreateLinkLayerConfiguration()
+    {
+        //load layers for one system
+        Event getLayersReponse = mockGetLayersResponse(1, "link");
+        
+        //this should render layers for the system id
+        m_EventHelperComms.handleEvent(getLayersReponse);
+        
+        //verify layers added
+        assertThat(m_SUT.getLinksAsync(1).size(), is(2));
+        
+        List<ModifiablePropertyModel> configProps = new ArrayList<ModifiablePropertyModel>();
+        
+        ConfigPropModelImpl model = ModelFactory.createPropModel("id", "football");
+        configProps.add(model);
+        FactoryBaseModel commsModel = m_SUT.getLinksAsync(1).get(0);
+        m_SUT.createConfiguration(1, commsModel, configProps);
+        
+        ArgumentCaptor<Message> msgCaptor = ArgumentCaptor.forClass(Message.class);
+        verify(m_MessageFactory).createLinkLayerMessage(
+                eq(LinkLayerMessageType.SetPropertyRequest), msgCaptor.capture());
+        
+        LinkLayerMessages.SetPropertyRequestData data = 
+                (LinkLayerMessages.SetPropertyRequestData)msgCaptor.getValue();
+        assertThat(data, notNullValue());
+        assertThat(data.getUuid(), is(SharedMessageUtils.convertUUIDToProtoUUID(uuid2)));
+        assertThat(data.getPropertiesCount(), is(1));
+        
+        SimpleTypesMapEntry type = data.getProperties(0);
+        
+        assertThat(type.getKey(), is("id"));
+        assertThat(type.getValue().getStringValue(), is("football"));
+    }
+
+    /**
+     * Verify request is not sent out when no model exists.
+     * Verify set custom comms property request is sent out for a model that is found.
+     */
+    @Test
+    public void testCreateTransportLayerConfiguration()
+    {
+        //load layers for one system
+        Event getLayersReponse = mockGetLayersResponse(1, "transport");
+        
+        //this should render layers for the system id
+        m_EventHelperComms.handleEvent(getLayersReponse);
+        
+        //verify layers added
+        assertThat(m_SUT.getTransportsAsync(1).size(), is(1));
+        
+        List<ModifiablePropertyModel> configProps = new ArrayList<ModifiablePropertyModel>();
+        
+        ConfigPropModelImpl model = ModelFactory.createPropModel("id", "football");
+        configProps.add(model);
+        FactoryBaseModel commsModel = m_SUT.getTransportsAsync(1).get(0);
+        m_SUT.createConfiguration(1, commsModel, configProps);
+        
+        ArgumentCaptor<Message> msgCaptor = ArgumentCaptor.forClass(Message.class);
+        verify(m_MessageFactory).createTransportLayerMessage(
+                eq(TransportLayerMessageType.SetPropertyRequest), msgCaptor.capture());
+        
+        TransportLayerMessages.SetPropertyRequestData data = 
+                (TransportLayerMessages.SetPropertyRequestData)msgCaptor.getValue();
+        assertThat(data, notNullValue());
+        assertThat(data.getUuid(), is(SharedMessageUtils.convertUUIDToProtoUUID(uuid1)));
+        assertThat(data.getPropertiesCount(), is(1));
+        
+        SimpleTypesMapEntry type = data.getProperties(0);
+        
+        assertThat(type.getKey(), is("id"));
+        assertThat(type.getValue().getStringValue(), is("football"));
+    }
+
     /**
      * Verify proper handling of remote link activated event.
      */
@@ -719,7 +832,7 @@ public class TestCommsMgrImpl
         
         m_EventHelperComms.handleEvent(link);
         
-        Event layerStatusEvent = mockGetStatusResponse(systemId1, LinkLayerMessages.LinkStatus.OK);
+        Event layerStatusEvent = mockGetStatusResponse(systemId1, CustomCommsTypes.LinkStatus.OK);
         Event remoteLayerStatusChanged = mockEventLinkStatusChanged(systemId1, LinkStatus.LOST);
 
         m_EventHelperLink.handleEvent(layerStatusEvent);
@@ -1191,12 +1304,12 @@ public class TestCommsMgrImpl
     /**
      * Helper method for mocking a GetStatusResponse from the controller.
      */
-    private Event mockGetStatusResponse(final int systemId, LinkLayerMessages.LinkStatus status)
+    private Event mockGetStatusResponse(final int systemId, CustomCommsTypes.LinkStatus status)
     {
         Message response = null;
         if (status == null)
         {
-            response = GetStatusResponseData.newBuilder().setLinkStatus(LinkLayerMessages.LinkStatus.LOST).
+            response = GetStatusResponseData.newBuilder().setLinkStatus(CustomCommsTypes.LinkStatus.LOST).
                     setUuid(SharedMessageUtils.convertUUIDToProtoUUID(uuid1)).build();//should not be a valid link uuid
         }
         else

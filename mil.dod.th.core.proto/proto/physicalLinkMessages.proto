@@ -12,6 +12,8 @@
 //==============================================================================
 
 option java_package = "mil.dod.th.core.remote.proto";
+
+import "mapTypes.proto";
 import "shared.proto";
 
 // Namespace which gives access to physical link operations
@@ -37,6 +39,12 @@ message PhysicalLinkNamespace
 
         // Response for DeleteRequest.
         DeleteResponse = 6;
+
+        //Request to set property(ies) for a given physical link.
+        SetPropertyRequest = 7;
+        
+        //Response for SetPropertyRequest
+        SetPropertyResponse = 8;       
     }
 
     // This is the physical link message type
@@ -81,4 +89,14 @@ message DeleteRequestData
 {
     // UUID of the physical link you want to remove.
     required UUID physicalLinkUuid = 1;
+}
+
+//This message requests that a property(ies) be set on a given physical link.
+message SetPropertyRequestData
+{
+    //UUID of the physical link that the property is to be set on.
+    required UUID uuid = 1;
+    
+    //map of properties that need to be set for this physical link.
+    repeated SimpleTypesMapEntry properties = 2; 
 }

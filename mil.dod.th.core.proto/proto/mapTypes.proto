@@ -20,7 +20,7 @@ option java_package = "mil.dod.th.core.remote.proto";
 option java_outer_classname = "MapTypes";
 
 import "observation/types/Observation.proto";
-import "linkLayerMessages.proto";
+import "customCommsTypes.proto";
 import "missionProgramMessages.proto";
 import "shared.proto";
 import "types/status/StatusTypes.proto";

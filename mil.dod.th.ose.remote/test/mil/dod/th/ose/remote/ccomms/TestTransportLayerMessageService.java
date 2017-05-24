@@ -20,15 +20,17 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import mil.dod.th.core.ccomm.Address;
 import mil.dod.th.core.ccomm.AddressManagerService;
 import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.CustomCommsService;
-import mil.dod.th.core.ccomm.CCommException.FormatProblem;
 import mil.dod.th.core.ccomm.link.LinkLayer;
+import mil.dod.th.core.ccomm.CCommException.FormatProblem;
 import mil.dod.th.core.ccomm.transport.TransportLayer;
 import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.log.LoggingService;
@@ -39,7 +41,10 @@ import mil.dod.th.core.remote.messaging.MessageResponseWrapper;
 import mil.dod.th.core.remote.proto.RemoteBase.Namespace;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestPayload;
+import mil.dod.th.core.remote.proto.SharedMessages.Multitype;
+import mil.dod.th.core.remote.proto.SharedMessages.Multitype.Type;
 import mil.dod.th.core.remote.proto.BaseMessages.ErrorCode;
+import mil.dod.th.core.remote.proto.MapTypes.SimpleTypesMapEntry;
 import mil.dod.th.core.remote.proto.TransportLayerMessages.DeleteRequestData;
 import mil.dod.th.core.remote.proto.TransportLayerMessages.GetLinkLayerRequestData;
 import mil.dod.th.core.remote.proto.TransportLayerMessages.GetLinkLayerResponseData;
@@ -49,6 +54,7 @@ import mil.dod.th.core.remote.proto.TransportLayerMessages.IsReceivingRequestDat
 import mil.dod.th.core.remote.proto.TransportLayerMessages.IsReceivingResponseData;
 import mil.dod.th.core.remote.proto.TransportLayerMessages.IsTransmittingRequestData;
 import mil.dod.th.core.remote.proto.TransportLayerMessages.IsTransmittingResponseData;
+import mil.dod.th.core.remote.proto.TransportLayerMessages.SetPropertyRequestData;
 import mil.dod.th.core.remote.proto.TransportLayerMessages.ShutdownRequestData;
 import mil.dod.th.core.remote.proto.TransportLayerMessages.TransportLayerNamespace;
 import mil.dod.th.core.remote.proto.TransportLayerMessages.TransportLayerNamespace.TransportLayerMessageType;
@@ -678,5 +684,78 @@ public class TestTransportLayerMessageService
                 is(nullValue()));
         assertThat((String)event.getProperty(RemoteConstants.EVENT_PROP_MESSAGE_TYPE), 
                 is(TransportLayerMessageType.DeleteResponse.toString()));
+    }
+
+    /**
+     * Verify that a property request is properly handled
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Test
+    public void testSetPropertyRequest() throws IOException, 
+        IllegalArgumentException, IllegalStateException, FactoryException
+    {
+        UUID uuid = UUID.randomUUID();
+        // build request
+        Multitype multi = Multitype.newBuilder().setStringValue("valueA").setType(Type.STRING).build();
+        SimpleTypesMapEntry type = SimpleTypesMapEntry.newBuilder().setKey("AKey").setValue(multi).build();
+        SetPropertyRequestData request = SetPropertyRequestData.newBuilder().
+                setUuid(SharedMessageUtils.convertUUIDToProtoUUID(uuid)).addProperties(type).build();
+        TransportLayerNamespace transportLayerMessage = TransportLayerNamespace.newBuilder().
+                setType(TransportLayerMessageType.SetPropertyRequest).
+                setData(request.toByteString()).build();
+        TerraHarvestPayload payload = createPayload(transportLayerMessage);
+        TerraHarvestMessage message = createTransportLayerMessage(transportLayerMessage);
+        
+        //mock necessary objects/actions
+        TransportLayer transportLayer = mock(TransportLayer.class);
+        when(transportLayer.getUuid()).thenReturn(uuid);
+        
+        Map<String, Object> propsToSet = new HashMap<>();
+        propsToSet.put("AKey", "");
+        
+        when(transportLayer.getProperties()).thenReturn(propsToSet);
+        
+        List<TransportLayer> transportLayerList = new ArrayList<TransportLayer>();
+        transportLayerList.add(transportLayer);
+        when(m_CustomCommsService.getTransportLayers()).thenReturn(transportLayerList);
+        
+        // mock the channel the message came from
+        RemoteChannel channel = mock(RemoteChannel.class);
+        
+        m_SUT.handleMessage(message, payload, channel);
+        
+        verify(m_MessageFactory, times(1)).createTransportLayerResponseMessage(eq(message), 
+                eq(TransportLayerMessageType.SetPropertyResponse), eq((Message)null));
+        
+        ArgumentCaptor<Map> dictCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(transportLayer, times(1)).setProperties(dictCaptor.capture());
+        
+        Map<String, Object> capDict = dictCaptor.getValue();
+        assertThat(capDict.size(), is(1));
+        
+        assertThat((String)capDict.get("AKey"), is("valueA"));
+    }
+
+    /**
+     * Verify set property response message when handled will set the data event property.
+     */
+    @Test
+    public void testSetPropertyResponse() throws IOException
+    {
+        Message response = null;
+        TransportLayerNamespace transportLayerMessage = TransportLayerNamespace.newBuilder().
+                setType(TransportLayerMessageType.SetPropertyResponse).build();
+        TerraHarvestPayload payload = createPayload(transportLayerMessage);
+        TerraHarvestMessage message = createTransportLayerMessage(transportLayerMessage);
+
+        RemoteChannel channel = mock(RemoteChannel.class);
+
+        m_SUT.handleMessage(message, payload, channel);
+
+        // verify event is posted
+        ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(m_EventAdmin).postEvent(eventCaptor.capture());
+        Event postedEvent = eventCaptor.getValue();
+        assertThat((Message)postedEvent.getProperty(RemoteConstants.EVENT_PROP_DATA_MESSAGE), is(response));
     }
 }

@@ -26,6 +26,7 @@ import mil.dod.th.core.ccomm.link.LinkLayer;
 import mil.dod.th.core.remote.proto.BaseMessages.ErrorCode;
 import mil.dod.th.core.remote.proto.CustomCommsMessages.GetCapabilitiesRequestData;
 import mil.dod.th.core.remote.proto.CustomCommsMessages.GetCapabilitiesResponseData;
+import mil.dod.th.core.remote.proto.CustomCommsTypes;
 import mil.dod.th.core.remote.proto.EventMessages.EventAdminNamespace;
 import mil.dod.th.core.remote.proto.EventMessages.SendEventData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.GetMtuRequestData;
@@ -43,7 +44,6 @@ import mil.dod.th.core.remote.proto.LinkLayerMessages.LinkLayerNamespace.LinkLay
 import mil.dod.th.core.remote.proto.LinkLayerMessages.PerformBITRequestData;
 import mil.dod.th.core.remote.proto.LinkLayerMessages.PerformBITResponseData;
 import mil.dod.th.core.remote.proto.MapTypes.ComplexTypesMapEntry;
-import mil.dod.th.core.remote.proto.LinkLayerMessages;
 import mil.dod.th.core.remote.proto.SharedMessages;
 import mil.dod.th.core.remote.proto.BaseMessages.BaseNamespace;
 import mil.dod.th.core.remote.proto.BaseMessages.BaseNamespace.BaseMessageType;
@@ -398,7 +398,7 @@ public class TestLinkLayerNamespace
         GetStatusResponseData dataResponse = GetStatusResponseData.parseFrom(response.getData());
         
         //example link layer will always return lost
-        assertThat(dataResponse.getLinkStatus(), is(LinkLayerMessages.LinkStatus.LOST));
+        assertThat(dataResponse.getLinkStatus(), is(CustomCommsTypes.LinkStatus.LOST));
         assertThat(dataResponse.getUuid(), is(linkUuid));
     }
 
@@ -431,7 +431,7 @@ public class TestLinkLayerNamespace
         PerformBITResponseData dataResponse = PerformBITResponseData.parseFrom(response.getData());
         
         //example link layer will always return ok for the perform bit status
-        assertThat(dataResponse.getPerformBitStatus(), is(LinkLayerMessages.LinkStatus.OK));
+        assertThat(dataResponse.getPerformBitStatus(), is(CustomCommsTypes.LinkStatus.OK));
         assertThat(dataResponse.getLinkUuid(), is(linkUuid));   
     }
 
@@ -473,8 +473,8 @@ public class TestLinkLayerNamespace
                 propertyMap.put(entry.getKey(), entry.getLinkLayerStatus());
             }
         }
-        assertThat((LinkLayerMessages.LinkStatus)propertyMap.get(LinkLayer.EVENT_PROP_LINK_STATUS), 
-                is(LinkLayerMessages.LinkStatus.OK));
+        assertThat((CustomCommsTypes.LinkStatus)propertyMap.get(LinkLayer.EVENT_PROP_LINK_STATUS), 
+                is(CustomCommsTypes.LinkStatus.OK));
     }
     
     /**

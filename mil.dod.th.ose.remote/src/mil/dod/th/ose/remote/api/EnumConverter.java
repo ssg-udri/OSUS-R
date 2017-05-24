@@ -23,7 +23,7 @@ import mil.dod.th.core.mp.Program.ProgramStatus;
 import mil.dod.th.core.persistence.ObservationQuery;
 import mil.dod.th.core.remote.proto.AssetMessages;
 import mil.dod.th.core.remote.proto.BaseMessages;
-import mil.dod.th.core.remote.proto.LinkLayerMessages;
+import mil.dod.th.core.remote.proto.CustomCommsTypes;
 import mil.dod.th.core.remote.proto.MissionProgramMessages.MissionStatus;
 import mil.dod.th.core.remote.proto.MissionProgramMessages.MissionTestResult;
 import mil.dod.th.core.remote.proto.ObservationStoreMessages.SortField;
@@ -60,12 +60,12 @@ public final class EnumConverter
     
     /**
      * BiMap that contains key value pairs used for converting between {@link LinkStatus} and 
-     * {@link mil.dod.th.core.remote.proto.LinkLayerMessages.LinkStatus}.
+     * {@link mil.dod.th.core.remote.proto.CustomCommsTypes.LinkStatus}.
      */
-    private static final BiMap<LinkStatus, LinkLayerMessages.LinkStatus> LINK_STATUS = 
-            ImmutableBiMap.<LinkStatus, LinkLayerMessages.LinkStatus>builder()
-            .put(LinkStatus.OK, LinkLayerMessages.LinkStatus.OK)
-            .put(LinkStatus.LOST, LinkLayerMessages.LinkStatus.LOST).build();
+    private static final BiMap<LinkStatus, CustomCommsTypes.LinkStatus> LINK_STATUS = 
+            ImmutableBiMap.<LinkStatus, CustomCommsTypes.LinkStatus>builder()
+            .put(LinkStatus.OK, CustomCommsTypes.LinkStatus.OK)
+            .put(LinkStatus.LOST, CustomCommsTypes.LinkStatus.LOST).build();
     
     /**
      * BiMap that contains key value pairs used for converting between {@link MissionStatus} and {@link ProgramStatus}.
@@ -209,7 +209,7 @@ public final class EnumConverter
     }
     
     /**
-     * Method used to convert proto based {@link mil.dod.th.core.remote.proto.LinkLayerMessages.LinkStatus} to 
+     * Method used to convert proto based {@link mil.dod.th.core.remote.proto.CustomCommsTypes.LinkStatus} to 
      * {@link LinkStatus}.
      * 
      * @param status
@@ -217,7 +217,7 @@ public final class EnumConverter
      * @return
      *      The java equivalent enumeration.
      */
-    public static LinkStatus convertProtoLinkStatusToJava(final LinkLayerMessages.LinkStatus status)
+    public static LinkStatus convertProtoLinkStatusToJava(final CustomCommsTypes.LinkStatus status)
     {
         if (LINK_STATUS.containsValue(status))
         {
@@ -227,7 +227,7 @@ public final class EnumConverter
     }
     
     /**
-     * Method used to convert java based {@link mil.dod.th.core.remote.proto.LinkLayerMessages.LinkStatus} to 
+     * Method used to convert java based {@link mil.dod.th.core.remote.proto.CustomCommsTypes.LinkStatus} to 
      * {@link LinkStatus}.
      * 
      * @param status
@@ -235,7 +235,7 @@ public final class EnumConverter
      * @return
      *      The proto equivalent enumeration.
      */
-    public static LinkLayerMessages.LinkStatus convertJavaLinkStatusToProto(final LinkStatus status)
+    public static CustomCommsTypes.LinkStatus convertJavaLinkStatusToProto(final LinkStatus status)
     {
         if (LINK_STATUS.containsKey(status))
         {

@@ -12,6 +12,7 @@
 //==============================================================================
 
 option java_package = "mil.dod.th.core.remote.proto";
+
 import "shared.proto";
 import "types/ccomm/CustomCommTypes.proto";
 import "ccomm/link/capability/LinkLayerCapabilities.proto";

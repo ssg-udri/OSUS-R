@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -33,6 +35,7 @@ import mil.dod.th.core.ccomm.physical.PhysicalLinkFactory;
 import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.types.ccomm.PhysicalLinkTypeEnum;
 import mil.dod.th.ose.core.factory.api.data.FactoryObjectInformationException;
+import mil.dod.th.ose.core.impl.ccomm.physical.PhysicalLinkInternal;
 
 import org.junit.After;
 import org.junit.Before;
@@ -222,16 +225,28 @@ public class TestCustomCommsServiceImpl_Physical extends CustomCommsServiceImpl_
     public void testGetPhysicalLinks() throws CCommException, IOException, InterruptedException, FactoryException, 
         FactoryObjectInformationException, IllegalArgumentException, ClassNotFoundException
     {
+        //mock
+        Set<PhysicalLinkInternal> phySet = new HashSet<>();
+        PhysicalLinkInternal phy1 = mock(PhysicalLinkInternal.class);
+        PhysicalLinkInternal phy2 = mock(PhysicalLinkInternal.class);
+        phySet.add(phy1);
+        phySet.add(phy2);
+        when(m_PhysRegistry.getObjects()).thenReturn(phySet);
+
         String name = "name";
         String name2 = "name2";
         
         //act
         m_SUT.createPhysicalLink(PhysicalLinkTypeEnum.SERIAL_PORT, name);
         m_SUT.createPhysicalLink(PhysicalLinkTypeEnum.SERIAL_PORT, name2);
+
+        List<PhysicalLink> phyLinks = m_SUT.getPhysicalLinks();
         
         //verify
         verify(m_PhysRegistry, times(1)).createNewObject(m_PhysFactory, name, new Hashtable<String, Object>());
         verify(m_PhysRegistry, times(1)).createNewObject(m_PhysFactory, name2, new Hashtable<String, Object>());
+        assertThat(phyLinks.size(), is(2));
+        assertThat(phyLinks, contains(phy1, phy2));
         verify(m_WakeLock, times(2)).activate();
         verify(m_WakeLock, times(2)).cancel();
     }

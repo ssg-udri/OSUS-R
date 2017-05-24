@@ -22,6 +22,7 @@ import java.util.List;
 
 import mil.dod.th.core.ccomm.CustomCommsService;
 import mil.dod.th.core.ccomm.link.LinkLayer;
+import mil.dod.th.core.ccomm.physical.PhysicalLink;
 import mil.dod.th.core.ccomm.transport.TransportLayer;
 import mil.dod.th.core.remote.proto.SharedMessages.UUID;
 import mil.dod.th.ose.remote.comms.CustomCommUtility;
@@ -32,12 +33,13 @@ import org.junit.Test;
 /**
  * Verify the get link layer and get transport layer by uuid takes in a proto uuid converts it to a java 
  * uuid and looks in the custom comms service for an object with that uuid.
+ * 
  * @author matt
  */
 public class TestCustomCommUtility
 {
     private CustomCommsService m_CustomCommsService;
-    
+
     /**
      * Verify using the utility the user can retrieve a link layer by the proto uuid that is in the custom
      * comms service.
@@ -60,7 +62,7 @@ public class TestCustomCommUtility
         
         assertThat(CustomCommUtility.getLinkLayerByUuid(m_CustomCommsService, uuid), is(testLink));
     }
-    
+
     /**
      * Verify using the utility the user can retrieve a transport layer by the proto uuid that is in the custom
      * comms service.
@@ -82,5 +84,28 @@ public class TestCustomCommUtility
         when(m_CustomCommsService.getTransportLayers()).thenReturn(transportList);
         
         assertThat(CustomCommUtility.getTransportLayerByUuid(m_CustomCommsService, uuid), is(testTransport));
+    }
+
+    /**
+     * Verify using the utility the user can retrieve a physical link by the proto uuid that is in the custom
+     * comms service.
+     */
+    @Test
+    public void testGetPhysicalLinkByUuid()
+    {
+        m_CustomCommsService = mock(CustomCommsService.class);
+
+        java.util.UUID javaUuid = java.util.UUID.randomUUID();
+        UUID uuid = SharedMessageUtils.convertUUIDToProtoUUID(javaUuid);
+
+        PhysicalLink testPhyLink = mock(PhysicalLink.class);
+        when(testPhyLink.getUuid()).thenReturn(javaUuid);
+
+        List<PhysicalLink> phyLinkList = new ArrayList<PhysicalLink>();
+        phyLinkList.add(testPhyLink);
+
+        when(m_CustomCommsService.getPhysicalLinks()).thenReturn(phyLinkList);
+
+        assertThat(CustomCommUtility.getPhysicalLinkByUuid(m_CustomCommsService, uuid), is(testPhyLink));
     }
 }

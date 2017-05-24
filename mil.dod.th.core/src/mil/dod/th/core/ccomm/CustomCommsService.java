@@ -278,6 +278,15 @@ public interface CustomCommsService
     List<String> getPhysicalLinkNames();
 
     /**
+     * Return the list of PhysicalLinks. The list returned is unmodifiable, any needed changes to a
+     * {@link PhysicalLink} should be done through other {@link CustomCommsService} calls.
+     * 
+     * @return 
+     *     the list of all the {@link PhysicalLink}s held by this service
+     */
+    List<PhysicalLink> getPhysicalLinks();
+    
+    /**
      * Get a LinkLayer, based off name search.
      * 
      * @param name

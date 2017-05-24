@@ -25,6 +25,8 @@ import com.google.protobuf.Message;
 
 import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.CustomCommsService;
+import mil.dod.th.core.ccomm.physical.PhysicalLink;
+import mil.dod.th.core.factory.FactoryException;
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.remote.RemoteChannel;
 import mil.dod.th.core.remote.messaging.MessageFactory;
@@ -36,6 +38,7 @@ import mil.dod.th.core.remote.proto.PhysicalLinkMessages.IsOpenRequestData;
 import mil.dod.th.core.remote.proto.PhysicalLinkMessages.IsOpenResponseData;
 import mil.dod.th.core.remote.proto.PhysicalLinkMessages.PhysicalLinkNamespace;
 import mil.dod.th.core.remote.proto.PhysicalLinkMessages.PhysicalLinkNamespace.PhysicalLinkMessageType;
+import mil.dod.th.core.remote.proto.PhysicalLinkMessages.SetPropertyRequestData;
 import mil.dod.th.core.remote.proto.RemoteBase.Namespace;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestPayload;
@@ -192,6 +195,12 @@ public class PhysicalLinkMessageService implements MessageService
             case DeleteResponse:
                 dataMessage = null;
                 break;
+            case SetPropertyRequest:
+                dataMessage = setPhysicalLinkProperty(physicalLinkMessage, message, channel);
+                break;
+            case SetPropertyResponse:
+                dataMessage = null;
+                break;
             default:
                 throw new UnsupportedOperationException(
                         String.format("Message type: %s is not a supported type for"
@@ -300,5 +309,45 @@ public class PhysicalLinkMessageService implements MessageService
                 response).queue(channel);
         
         return isPhysicalLinkInUse;
+    }
+
+    /**
+     * Method responsible for setting property(ies) on a physical link based on the UUID.
+     * 
+     * @param message
+     *  the set phy link property request message containing the UUID of the phy link and the 
+     *  properties that are to be set
+     * @param request
+     *  the entire remote message for the request
+     * @param channel
+     *  the channel that was used to send the request
+     * @return
+     *  the data message for this request
+     * @throws IOException
+     *  if message cannot be parsed or if response message cannot be sent
+     */
+    private Message setPhysicalLinkProperty(final PhysicalLinkNamespace message, 
+            final TerraHarvestMessage request, final RemoteChannel channel) throws IOException
+    {
+        final SetPropertyRequestData propRequest = SetPropertyRequestData.parseFrom(message.getData());
+        final PhysicalLink phyLink = CustomCommUtility.getPhysicalLinkByUuid(m_CommsService, propRequest.getUuid());
+        try
+        {
+            phyLink.setProperties(SharedMessageUtils.convertListSimpleTypesMapEntrytoMapStringObject(
+                                    propRequest.getPropertiesList()));
+        }
+        catch (final FactoryException exception)
+        {
+            final String errorDesc =
+                    String.format("A physical link with UUID [%s] could not update properties because: %s.",
+                    SharedMessageUtils.convertProtoUUIDtoUUID(propRequest.getUuid()), exception.getMessage());
+            m_Logging.error(exception, "Failed to set properties for physical link %s.", phyLink.getName());
+            m_MessageFactory.createBaseErrorMessage(request, ErrorCode.CCOMM_ERROR, errorDesc).queue(channel);
+        }
+
+        m_MessageFactory.createPhysicalLinkResponseMessage(request, 
+                PhysicalLinkMessageType.SetPropertyResponse, null).queue(channel);
+
+        return propRequest;
     }
 }

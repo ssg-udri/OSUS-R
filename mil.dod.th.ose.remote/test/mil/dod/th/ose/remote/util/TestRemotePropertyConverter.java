@@ -35,7 +35,7 @@ import mil.dod.th.core.mp.Program.ProgramStatus;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.remote.objectconverter.JaxbProtoObjectConverter;
 import mil.dod.th.core.remote.objectconverter.ObjectConverterException;
-import mil.dod.th.core.remote.proto.LinkLayerMessages;
+import mil.dod.th.core.remote.proto.CustomCommsTypes;
 import mil.dod.th.core.remote.proto.MapTypes.ComplexTypesMapEntry;
 import mil.dod.th.core.remote.proto.MapTypes.ComplexTypesMapEntry.ValueCase;
 import mil.dod.th.core.remote.proto.MissionProgramMessages.MissionStatus;
@@ -112,7 +112,7 @@ public class TestRemotePropertyConverter
                 build());
 
         entries.add(ComplexTypesMapEntry.newBuilder().setKey("prop3").
-                setLinkLayerStatus(LinkLayerMessages.LinkStatus.OK).build());
+                setLinkLayerStatus(CustomCommsTypes.LinkStatus.OK).build());
         
         entries.add(ComplexTypesMapEntry.newBuilder().setKey("prop4").
                 setProgramStatus(MissionStatus.EXECUTED).build());
@@ -352,7 +352,7 @@ public class TestRemotePropertyConverter
         assertThat(convertedProps.get(EventConstants.EVENT_TOPIC).getValueCase(), is(ValueCase.MULTI)); 
         assertThat(convertedProps.get(EventConstants.EVENT_TOPIC).getMulti().getStringValue(), is("blah"));
         assertThat(convertedProps.get("test4").getValueCase(), is(ValueCase.LINKLAYERSTATUS)); 
-        assertThat(convertedProps.get("test4").getLinkLayerStatus(), is(LinkLayerMessages.LinkStatus.OK));
+        assertThat(convertedProps.get("test4").getLinkLayerStatus(), is(CustomCommsTypes.LinkStatus.OK));
         assertThat(convertedProps.get("test5").getValueCase(), is(ValueCase.PROGRAMSTATUS)); 
         assertThat(convertedProps.get("test5").getProgramStatus(), is(MissionStatus.EXECUTED));
         assertThat(convertedProps.get("test6").getValueCase(), is(ValueCase.PROGRAMTESTRESULT)); 

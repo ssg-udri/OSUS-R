@@ -12,6 +12,8 @@
 //==============================================================================
 
 option java_package = "mil.dod.th.core.remote.proto";
+
+import "mapTypes.proto";
 import "shared.proto";
 
 // Namespace which gives access to transport layer operations
@@ -57,6 +59,12 @@ message TransportLayerNamespace
 
         // Response for DeleteRequest.
         DeleteResponse = 12;
+
+        //Request to set property(ies) for a given transport layer.
+        SetPropertyRequest = 13;
+        
+        //Response for SetPropertyRequest
+        SetPropertyResponse = 14;       
     }
 
     // This is the custom comms message type
@@ -144,4 +152,14 @@ message DeleteRequestData
 {
     // UUID of the transport layer you want to remove.
     required UUID transportLayerUuid = 1;
+}
+
+//This message requests that a property(ies) be set on a given transport layer.
+message SetPropertyRequestData
+{
+    //UUID of the transport layer that the property is to be set on.
+    required UUID uuid = 1;
+    
+    //map of properties that need to be set for this transport layer.
+    repeated SimpleTypesMapEntry properties = 2; 
 }
