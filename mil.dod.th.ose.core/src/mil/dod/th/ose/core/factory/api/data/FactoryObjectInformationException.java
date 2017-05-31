@@ -14,8 +14,8 @@ package mil.dod.th.ose.core.factory.api.data;
 
 /**
  * Wrapper exception thrown when an attempt to persist factory object information fails.
+ * 
  * @author callen
- *
  */
 public class FactoryObjectInformationException extends Exception
 {

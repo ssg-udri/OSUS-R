@@ -18,7 +18,6 @@ import mil.dod.th.core.factory.FactoryException;
  * General exception class used for asset related exceptions.
  * 
  * @author dhumeniuk
- *
  */
 public class AssetException extends FactoryException
 {

@@ -425,8 +425,8 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
                 else
                 {
                     final SetPositionCommand positionCommand = (SetPositionCommand)command;
-                    commandResponse = updatePosition(positionCommand.getSensorId(), positionCommand.getLocation(),
-                        positionCommand.getOrientation());
+                    commandResponse = updatePositionByCommand(positionCommand.getSensorId(),
+                            positionCommand.getLocation(), positionCommand.getOrientation());
                 }
             }
             else if (command instanceof GetPositionCommand)
@@ -502,6 +502,102 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
     }
 
     @Override
+    public Coordinates getPositionLocation() throws IllegalStateException
+    {
+        return getPositionLocation(null);
+    }
+
+    @Override
+    public Coordinates getPositionLocation(final String sensorId) throws IllegalStateException
+    {
+        if (m_PluginOverridesPosition)
+        {
+            throw new IllegalStateException("Asset manages its own position data, cannot use core to get location");
+        }
+
+        if (m_AssetLocation.containsKey(sensorId))
+        {
+            return cloneCoordinates(m_AssetLocation.get(sensorId));
+        }
+
+        return null;
+    }
+
+    @Override
+    public void setPositionLocation(final Coordinates location) throws AssetException, IllegalStateException
+    {
+        setPositionLocation(null, location);
+    }
+
+    @Override
+    public void setPositionLocation(final String sensorId, final Coordinates location)
+            throws AssetException, IllegalStateException
+    {
+        if (m_PluginOverridesPosition)
+        {
+            throw new IllegalStateException("Asset manages its own position data, cannot use core to set location");
+        }
+
+        try
+        {
+            updatePosition(sensorId, location, null);
+        }
+        catch (final FactoryObjectInformationException e)
+        {
+            throw new AssetException(
+                    String.format("Unable to update asset %s with new location information!", getName()), e);
+        }
+    }
+
+    @Override
+    public Orientation getPositionOrientation() throws IllegalStateException
+    {
+        return getPositionOrientation(null);
+    }
+
+    @Override
+    public Orientation getPositionOrientation(final String sensorId) throws IllegalStateException
+    {
+        if (m_PluginOverridesPosition)
+        {
+            throw new IllegalStateException("Asset manages its own position data, cannot use core to get orientation");
+        }
+
+        if (m_AssetOrientation.containsKey(sensorId))
+        {
+            return cloneOrientation(m_AssetOrientation.get(sensorId));
+        }
+
+        return null;
+    }
+
+    @Override
+    public void setPositionOrientation(final Orientation orientation) throws AssetException, IllegalStateException
+    {
+        setPositionOrientation(null, orientation);
+    }
+
+    @Override
+    public void setPositionOrientation(final String sensorId, final Orientation orientation)
+            throws AssetException, IllegalStateException
+    {
+        if (m_PluginOverridesPosition)
+        {
+            throw new IllegalStateException("Asset manages its own position data, cannot use core to set orientation");
+        }
+
+        try
+        {
+            updatePosition(sensorId, null, orientation);
+        }
+        catch (final FactoryObjectInformationException e)
+        {
+            throw new AssetException(
+                    String.format("Unable to update asset %s with new orientation information!", getName()), e);
+        }
+    }
+
+    @Override
     public void setStatus(final SummaryStatusEnum summaryStatus, final String summaryString)
     {
         setStatus(null, summaryStatus, summaryString);
@@ -559,6 +655,13 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
         setBaseObservationFields(observation);
 
         m_ObservationStore.persist(observation);
+    }
+
+    @Override
+    public void mergeObservation(final Observation observation)
+            throws ValidationFailedException, PersistenceFailedException
+    {
+        m_ObservationStore.merge(observation);
     }
 
     @Override
@@ -710,31 +813,49 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
      *            the coordinates information to update the asset's location to
      * @param orientation
      *            the orientation information to update the asset's orientation to
-     * @return set position command response
+     * @throws FactoryObjectInformationException
+     *            if the new location information could not be persisted
+     */
+    private synchronized void updatePosition(final String sensorId, final Coordinates location,
+        final Orientation orientation) throws FactoryObjectInformationException
+    {
+        // pull out position objects
+        if (location != null)
+        {
+            m_AssetLocation.put(sensorId, location);
+            m_AssetDataManager.setCoordinates(getUuid(), m_AssetLocation);
+        }
+        if (orientation != null)
+        {
+            m_AssetOrientation.put(sensorId, orientation);
+            m_AssetDataManager.setOrientation(getUuid(), m_AssetOrientation);
+        }
+    }
+
+    /**
+     * Update the position of the asset for the {@link SetPositionCommand}.
+     * 
+     * @param sensorId
+     *            sensor ID or null
+     * @param location
+     *            the coordinates information to update the asset's location to
+     * @param orientation
+     *            the orientation information to update the asset's orientation to
+     * @return response message for the command
      * @throws CommandExecutionException
      *            if the new location information could not be persisted
      */
-    private synchronized Response updatePosition(final String sensorId, final Coordinates location,
-        final Orientation orientation) throws CommandExecutionException
+    private Response updatePositionByCommand(final String sensorId, final Coordinates location,
+            final Orientation orientation) throws CommandExecutionException
     {
         try
         {
-            // pull out position objects
-            if (location != null)
-            {
-                m_AssetLocation.put(sensorId, location);
-                m_AssetDataManager.setCoordinates(getUuid(), m_AssetLocation);
-            }
-            if (orientation != null)
-            {
-                m_AssetOrientation.put(sensorId, orientation);
-                m_AssetDataManager.setOrientation(getUuid(), m_AssetOrientation);
-            }
+            updatePosition(sensorId, location, orientation);
         }
         catch (final FactoryObjectInformationException e)
         {
             throw new CommandExecutionException(
-                    String.format("Unable to update asset %s for new location information!", getName()), e);
+                    String.format("Unable to update asset %s with new position information!", getName()), e);
         }
 
         return new SetPositionResponse().withSensorId(sensorId);

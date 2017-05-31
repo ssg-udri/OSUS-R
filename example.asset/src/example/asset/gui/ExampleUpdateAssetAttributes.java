@@ -12,7 +12,9 @@
 //==============================================================================
 package example.asset.gui;
 
+import aQute.bnd.annotation.metatype.Meta.AD;
 import aQute.bnd.annotation.metatype.Meta.OCD;
+
 import mil.dod.th.core.ConfigurationConstants;
 import mil.dod.th.core.asset.AssetAttributes;
 
@@ -24,5 +26,40 @@ import mil.dod.th.core.asset.AssetAttributes;
 @OCD (description = ConfigurationConstants.PARTIAL_OBJECT_CLASS_DEFINITION)
 public interface ExampleUpdateAssetAttributes extends AssetAttributes
 {
-    //Interface required but asset doesn't need any additional configuration properties defined.
+    String CONFIG_PROP_SENSOR_ID = "ex.update.sensor.id";
+    String CONFIG_PROP_LATITUDE = "ex.update.latitude";
+    String CONFIG_PROP_LONGITUDE = "ex.update.longitude";
+
+    /**
+     * Device sensor ID.
+     * 
+     * @return
+     *      Device sensor ID
+     */
+    @AD(id = CONFIG_PROP_SENSOR_ID, name = "Sensor ID",
+            description = "Used by asset to update asset position with a sensor ID", required = false,
+            deflt = "")
+    String sensorId();
+
+    /**
+     * Device latitude.
+     * 
+     * @return
+     *      Device latitude
+     */
+    @AD(id = CONFIG_PROP_LATITUDE, name = "Latitude",
+            description = "Used by asset to update asset location latitude", required = false,
+            deflt = "0.0")
+    double latitude();
+
+    /**
+     * Device longitude.
+     * 
+     * @return
+     *      Device longitude
+     */
+    @AD(id = CONFIG_PROP_LONGITUDE, name = "Longitude",
+            description = "Used by asset to update asset location longitude", required = false,
+            deflt = "0.0")
+    double longitude();
 }

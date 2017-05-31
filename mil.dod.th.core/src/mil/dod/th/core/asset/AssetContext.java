@@ -19,6 +19,8 @@ import mil.dod.th.core.factory.FactoryObjectContext;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
 import mil.dod.th.core.persistence.PersistenceFailedException;
+import mil.dod.th.core.types.spatial.Coordinates;
+import mil.dod.th.core.types.spatial.Orientation;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
 import mil.dod.th.core.validator.ValidationFailedException;
 
@@ -31,6 +33,102 @@ import mil.dod.th.core.validator.ValidationFailedException;
 @ProviderType
 public interface AssetContext extends Asset, FactoryObjectContext
 {
+    /**
+     * Returns the current asset location. This method is only valid if the asset plug-in does not override position.
+     * 
+     * @return asset {@link Coordinates} or null if location has not been set
+     * @throws IllegalStateException
+     *      thrown if the asset plug-in overrides position data managed by the core
+     */
+    Coordinates getPositionLocation() throws IllegalStateException;
+
+    /**
+     * Returns the current location of a specific sensor. This method is only valid if the asset plug-in does not
+     * override position.
+     * 
+     * @param sensorId
+     *      sensor identifier for a sensor provided by the asset
+     * @return {@link Coordinates} of a sensor provided by the asset or null if location has not been set
+     * @throws IllegalStateException
+     *      thrown if the asset plug-in overrides position data managed by the core
+     */
+    Coordinates getPositionLocation(String sensorId) throws IllegalStateException;
+
+    /**
+     * Update the current asset location. This method is only valid if the asset plug-in does not override position.
+     * 
+     * @param location
+     *      new location of the asset
+     * @throws AssetException
+     *      thrown if the new location could not be persisted
+     * @throws IllegalStateException
+     *      thrown if the asset plug-in overrides position data managed by the core
+     */
+    void setPositionLocation(Coordinates location) throws AssetException, IllegalStateException;
+
+    /**
+     * Update the current location of a specific sensor. This method is only valid if the asset plug-in does not
+     * override position.
+     * 
+     * @param sensorId
+     *      sensor identifier for a sensor provided by the asset
+     * @param location
+     *      new location for a sensor
+     * @throws AssetException
+     *      thrown if the new location could not be persisted
+     * @throws IllegalStateException
+     *      thrown if the asset plug-in overrides position data managed by the core
+     */
+    void setPositionLocation(String sensorId, Coordinates location) throws AssetException, IllegalStateException;
+
+    /**
+     * Returns the current asset orientation. This method is only valid if the asset plug-in does not override position.
+     * 
+     * @return asset {@link Orientation} or null if orientation has not been set
+     * @throws IllegalStateException
+     *      thrown if the asset plug-in overrides position data managed by the core
+     */
+    Orientation getPositionOrientation() throws IllegalStateException;
+
+    /**
+     * Returns the current orientation of a specific sensor. This method is only valid if the asset plug-in does not
+     * override position.
+     * 
+     * @param sensorId
+     *      sensor identifier for a sensor provided by the asset
+     * @return {@link Orientation} of a sensor provided by the asset or null if orientation has not been set
+     * @throws IllegalStateException
+     *      thrown if the asset plug-in overrides position data managed by the core
+     */
+    Orientation getPositionOrientation(String sensorId) throws IllegalStateException;
+
+    /**
+     * Update the current asset orientation. This method is only valid if the asset plug-in does not override position.
+     * 
+     * @param orientation
+     *      new orientation of the asset
+     * @throws AssetException
+     *      thrown if the new orientation could not be persisted
+     * @throws IllegalStateException
+     *      thrown if the asset plug-in overrides position data managed by the core
+     */
+    void setPositionOrientation(Orientation orientation) throws AssetException, IllegalStateException;
+
+    /**
+     * Update the current orientation of a specific sensor. This method is only valid if the asset plug-in does not
+     * override position.
+     * 
+     * @param sensorId
+     *      sensor identifier for a sensor provided by the asset
+     * @param orientation
+     *      new orientation for a sensor
+     * @throws AssetException
+     *      thrown if the new orientation could not be persisted
+     * @throws IllegalStateException
+     *      thrown if the asset plug-in overrides position data managed by the core
+     */
+    void setPositionOrientation(String sensorId, Orientation orientation) throws AssetException, IllegalStateException;
+
     /**
      * Update the current asset status.  Will post an OSGi event with the topic {@link Asset#TOPIC_STATUS_CHANGED} and 
      * persist an observation containing a {@link Status} object with only the summary status included plus basic 
@@ -97,7 +195,19 @@ public interface AssetContext extends Asset, FactoryObjectContext
      *      thrown if the observation cannot be persisted
      */
     void persistObservation(Observation observation) throws ValidationFailedException, PersistenceFailedException;
-    
+
+    /**
+     * Merge the observation to the {@link mil.dod.th.core.persistence.ObservationStore}.
+     * 
+     * @param observation
+     *      observation to merge, no additional fields are set or updated
+     * @throws ValidationFailedException
+     *      thrown if the observation to be merged fails validation
+     * @throws PersistenceFailedException
+     *      thrown if the observation cannot be merged
+     */
+    void mergeObservation(Observation observation) throws ValidationFailedException, PersistenceFailedException;
+
     /**
      * If data contained within a {@link Response} object changes, this method can be called to post the change 
      * asynchronously.  For example, if the pan of a camera changes without being commanded, a {@link 

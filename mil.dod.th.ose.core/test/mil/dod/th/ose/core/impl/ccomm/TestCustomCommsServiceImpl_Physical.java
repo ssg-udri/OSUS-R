@@ -246,7 +246,7 @@ public class TestCustomCommsServiceImpl_Physical extends CustomCommsServiceImpl_
         verify(m_PhysRegistry, times(1)).createNewObject(m_PhysFactory, name, new Hashtable<String, Object>());
         verify(m_PhysRegistry, times(1)).createNewObject(m_PhysFactory, name2, new Hashtable<String, Object>());
         assertThat(phyLinks.size(), is(2));
-        assertThat(phyLinks, contains(phy1, phy2));
+        assertThat(phyLinks, containsInAnyOrder(phy1, phy2));
         verify(m_WakeLock, times(2)).activate();
         verify(m_WakeLock, times(2)).cancel();
     }

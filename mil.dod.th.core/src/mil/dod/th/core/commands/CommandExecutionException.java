@@ -18,7 +18,6 @@ import mil.dod.th.core.asset.AssetException;
  * General exception class used for capability command execution related exceptions.
  * 
  * @author jconn
- *
  */
 public class CommandExecutionException extends AssetException
 {

@@ -18,15 +18,16 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
 
-import org.osgi.service.log.LogService;
-
 import aQute.bnd.annotation.component.Component;
+
 import mil.dod.th.core.ccomm.physical.PhysicalLink;
 import mil.dod.th.core.ccomm.physical.PhysicalLinkContext;
 import mil.dod.th.core.ccomm.physical.PhysicalLinkException;
 import mil.dod.th.core.ccomm.physical.SerialPortProxy;
 import mil.dod.th.core.factory.Extension;
 import mil.dod.th.core.log.Logging;
+
+import org.osgi.service.log.LogService;
 
 /**
  * Example implementation of the {@link SerialPortProxy}.

@@ -16,6 +16,7 @@ import static mil.dod.th.ose.test.matchers.Matchers.rawDictionaryHasEntry;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -872,6 +873,30 @@ public class TestAssetImpl
         assertThat(persistedObservation.getAssetOrientation(), is(SpatialTypesFactory.newOrientation(5, 6, 7)));
     }
 
+    @Test
+    public void testMergeObservation() throws PersistenceFailedException, ValidationFailedException
+    {
+        Observation observation = new Observation();
+        m_SUT.mergeObservation(observation);
+
+        ArgumentCaptor<Observation> obsCapt = ArgumentCaptor.forClass(Observation.class);
+        verify(m_ObservationStore).merge(obsCapt.capture());
+
+        // Verify that no base fields are set/updated like in persistObservation
+        Observation persistedObservation = obsCapt.getValue();
+        assertThat(persistedObservation.getAssetName(), nullValue());
+        assertThat(persistedObservation.getAssetUuid(), nullValue());
+        assertThat(persistedObservation.getSystemId(), is(0));
+        assertThat(persistedObservation.getVersion(), nullValue());
+        assertThat(persistedObservation.isSystemInTestMode(), is(false));
+        assertThat(persistedObservation.getUuid(), nullValue());
+        assertThat(persistedObservation.isSetObservedTimestamp(), is(false));
+        assertThat(persistedObservation.isSetCreatedTimestamp(), is(false));
+        assertThat(persistedObservation.getAssetType(), nullValue());
+        assertThat(persistedObservation.getAssetLocation(), nullValue());
+        assertThat(persistedObservation.getAssetOrientation(), nullValue());
+    }
+
     /**
      * Verify event is posted given the parameters.
      */
@@ -1181,6 +1206,151 @@ public class TestAssetImpl
                 rawDictionaryHasEntry(AssetAttributes.CONFIG_PROP_PLUGIN_OVERRIDES_POSITION, true));
         // should be there from before
         assertThat(props.getValue(), rawDictionaryHasEntry(AssetAttributes.CONFIG_PROP_ACTIVATE_ON_STARTUP, false));
+    }
+
+    @Test
+    public void testSetPosition() throws IOException, ConfigurationException, AssetException
+    {
+        Dictionary<String, Object> propsUsedForNewProp = new Hashtable<>();
+        propsUsedForNewProp.put(AssetAttributes.CONFIG_PROP_PLUGIN_OVERRIDES_POSITION, true);
+        when(m_Configuration.getProperties()).thenReturn(propsUsedForNewProp);
+        when(m_ConfigAdmin.getConfiguration(eq(OBJ_PID), Mockito.any(String.class))).thenReturn(m_Configuration);
+        // update props
+        m_SUT.blockingPropsUpdate(new HashMap<String, Object>());
+
+        try
+        {
+            m_SUT.setPositionLocation(null);
+            fail("setPositionLocation() should fail when plugin overrides position");
+        }
+        catch (IllegalStateException e)
+        {
+        }
+
+        try
+        {
+            m_SUT.setPositionOrientation(null);
+            fail("setPositionOrientation() should fail when plugin overrides position");
+        }
+        catch (IllegalStateException e)
+        {
+        }
+
+        try
+        {
+            m_SUT.setPositionLocation("example-sensor-id", null);
+            fail("setPositionLocation(sensorId) should fail when plugin overrides position");
+        }
+        catch (IllegalStateException e)
+        {
+        }
+
+        try
+        {
+            m_SUT.setPositionOrientation("example-sensor-id", null);
+            fail("setPositionOrientation(sensorId) should fail when plugin overrides position");
+        }
+        catch (IllegalStateException e)
+        {
+        }
+    }
+
+    @Test
+    public void testSetPositionNoPosOverride() throws AssetException
+    {
+        m_SUT.setPositionLocation(
+                SpatialTypesFactory.newCoordinates(88d, 99d, 3d, SpatialTypesFactory.newEllipse(1d, 2d, 3d)));
+        m_SUT.setPositionOrientation(SpatialTypesFactory.newOrientation(12d, 13d, 14d));
+
+        verifyCoordsWithEllipse(m_SUT.getPositionLocation(), 88d, 99d, 3d, 1d, 2d, 3d);
+
+        verifyOrientation(m_SUT.getPositionOrientation(), 12d, 13d, 14d);
+    }
+
+    @Test
+    public void testSetPositionNoPosOverrideBySensorId() throws AssetException
+    {
+        m_SUT.setPositionLocation("example-sensor-id",
+                SpatialTypesFactory.newCoordinates(88d, 99d, 3d, SpatialTypesFactory.newEllipse(1d, 2d, 3d)));
+        m_SUT.setPositionOrientation("example-sensor-id", SpatialTypesFactory.newOrientation(12d, 13d, 14d));
+
+        verifyCoordsWithEllipse(m_SUT.getPositionLocation("example-sensor-id"), 88d, 99d, 3d, 1d, 2d, 3d);
+
+        verifyOrientation(m_SUT.getPositionOrientation("example-sensor-id"), 12d, 13d, 14d);
+    }
+
+    @Test
+    public void testSetPositionNoLocationOrOrientation() throws AssetException
+    {
+        m_SUT.setPositionLocation(null);
+        m_SUT.setPositionOrientation(null);
+
+        verifyCoordsWithEllipse(m_SUT.getPositionLocation(), 100d, 10d, 5d, 1d, 2d, 90d);
+
+        verifyOrientation(m_SUT.getPositionOrientation(), 100d, 90d, 45d);
+    }
+
+    @Test
+    public void testGetPosition() throws IOException, ConfigurationException
+    {
+        Dictionary<String, Object> propsUsedForNewProp = new Hashtable<>();
+        propsUsedForNewProp.put(AssetAttributes.CONFIG_PROP_PLUGIN_OVERRIDES_POSITION, true);
+        when(m_Configuration.getProperties()).thenReturn(propsUsedForNewProp);
+        when(m_ConfigAdmin.getConfiguration(eq(OBJ_PID), Mockito.any(String.class))).thenReturn(m_Configuration);
+        // update props
+        m_SUT.blockingPropsUpdate(new HashMap<String, Object>());
+
+        try
+        {
+            m_SUT.getPositionLocation();
+            fail("getPositionLocation() should fail when plugin overrides position");
+        }
+        catch (IllegalStateException e)
+        {
+        }
+
+        try
+        {
+            m_SUT.getPositionOrientation();
+            fail("getPositionOrientation() should fail when plugin overrides position");
+        }
+        catch (IllegalStateException e)
+        {
+        }
+
+        try
+        {
+            m_SUT.getPositionLocation("example-sensor-id");
+            fail("getPositionLocation(sensorId) should fail when plugin overrides position");
+        }
+        catch (IllegalStateException e)
+        {
+        }
+
+        try
+        {
+            m_SUT.getPositionOrientation("example-sensor-id");
+            fail("getPositionOrientation(sensorId) should fail when plugin overrides position");
+        }
+        catch (IllegalStateException e)
+        {
+        }
+    }
+
+    @Test
+    public void testGetPositionNoOverridePos()
+            throws CommandExecutionException, ValidationFailedException, InterruptedException, IOException
+    {
+        verifyCoordsWithEllipse(m_SUT.getPositionLocation(), 100d, 10d, 5d, 1d, 2d, 90d);
+        verifyOrientation(m_SUT.getPositionOrientation(), 100d, 90d, 45d);
+    }
+
+    @Test
+    public void testGetPositionNoOverridePosBySensorId()
+            throws CommandExecutionException, ValidationFailedException, InterruptedException, IOException
+    {
+        verifyCoordsWithEllipse(m_SUT.getPositionLocation("example-sensor-id"), 101d, 11d, 6d, 1d, 2d, 90d);
+        verifyOrientation(m_SUT.getPositionOrientation("example-sensor-id"), 101d, 91d, 46d);
     }
 
     private Coordinates getCoordsFromCommand(final String sensorId)

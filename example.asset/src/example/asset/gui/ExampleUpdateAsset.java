@@ -18,6 +18,7 @@ import java.util.Set;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
+import aQute.bnd.annotation.metatype.Configurable;
 
 import example.asset.lexicon.ExampleAssetUtils;
 
@@ -34,6 +35,12 @@ import mil.dod.th.core.asset.commands.Response;
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.observation.types.Observation;
 import mil.dod.th.core.observation.types.Status;
+import mil.dod.th.core.persistence.PersistenceFailedException;
+import mil.dod.th.core.types.MapEntry;
+import mil.dod.th.core.types.spatial.Coordinates;
+import mil.dod.th.core.types.spatial.LatitudeWgsDegrees;
+import mil.dod.th.core.types.spatial.LongitudeWgsDegrees;
+import mil.dod.th.core.validator.ValidationFailedException;
 
 /**
  * This asset factory will create asset instances which post a 
@@ -85,7 +92,46 @@ public class ExampleUpdateAsset  implements AssetProxy
     @Override
     public void updated(final Map<String, Object> props)
     {
-        // nothing
+        ExampleUpdateAssetAttributes attributes =
+                Configurable.createConfigurable(ExampleUpdateAssetAttributes.class, props);
+        try
+        {
+            if (attributes.sensorId().isEmpty())
+            {
+                m_Context.setPositionLocation(new Coordinates()
+                        .withLatitude(new LatitudeWgsDegrees().withValue(attributes.latitude()))
+                        .withLongitude(new LongitudeWgsDegrees().withValue(attributes.longitude())));
+
+                final Observation obs = new Observation()
+                        .withAssetLocation(m_Context.getPositionLocation())
+                        .withReserved(new MapEntry("resKey", "resValue"));
+                m_Context.persistObservation(obs);
+            }
+            else
+            {
+                m_Context.setPositionLocation(attributes.sensorId(), new Coordinates()
+                        .withLatitude(new LatitudeWgsDegrees().withValue(attributes.latitude()))
+                        .withLongitude(new LongitudeWgsDegrees().withValue(attributes.longitude())));
+
+                final Observation obs = new Observation()
+                        .withSensorId(attributes.sensorId())
+                        .withAssetLocation(m_Context.getPositionLocation(attributes.sensorId()))
+                        .withReserved(new MapEntry("resKey", "resValue"));
+                m_Context.persistObservation(obs);
+            }
+        }
+        catch (AssetException e)
+        {
+            m_Log.error("Example update asset unable to store position data");
+        }
+        catch (IllegalStateException e)
+        {
+            m_Log.error("Example update asset try to save position in the core when overriding position");
+        }
+        catch (PersistenceFailedException | ValidationFailedException e)
+        {
+            m_Log.error("Example update asset failed to persist position observations");
+        }
     }
 
     @Override

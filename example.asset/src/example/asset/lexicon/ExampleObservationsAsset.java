@@ -120,7 +120,6 @@ import aQute.bnd.annotation.component.Reference;
  * Example observation asset for creating observations when the activate method is called.
  * 
  * @author matt
- *
  */
 @Component(factory = Asset.FACTORY)
 public class ExampleObservationsAsset implements AssetProxy
@@ -391,6 +390,10 @@ public class ExampleObservationsAsset implements AssetProxy
                     .withAssetOrientation(SpatialTypesFactory.newOrientation(90.0, 45.0, 15.0))
                     .withReserved(new MapEntry("resKey", "resValue"));
             m_Context.persistObservation(genericObs);
+
+            //MERGE Observation
+            genericObs.getReserved().add(new MapEntry("mergeKey", "mergeValue"));
+            m_Context.mergeObservation(genericObs);
         }
         finally
         {
