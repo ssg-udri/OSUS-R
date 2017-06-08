@@ -72,6 +72,8 @@ import mil.dod.th.core.asset.commands.StopRecordingCommand;
 import mil.dod.th.core.asset.commands.StopRecordingResponse;
 import mil.dod.th.core.asset.commands.TargetRefinementCommand;
 import mil.dod.th.core.asset.commands.TargetRefinementResponse;
+import mil.dod.th.core.asset.commands.ZeroizeCommand;
+import mil.dod.th.core.asset.commands.ZeroizeResponse;
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.observation.types.Detection;
 import mil.dod.th.core.observation.types.Observation;
@@ -279,6 +281,10 @@ public class ExampleCommandAsset implements AssetProxy
         else if (capabilityCommand instanceof SetLiftCommand)
         {
             return new SetLiftResponse();
+        }
+        else if (capabilityCommand instanceof ZeroizeCommand)
+        {
+            return new ZeroizeResponse();
         }
         else
         {

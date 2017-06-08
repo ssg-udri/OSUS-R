@@ -45,5 +45,6 @@
     <xs:include schemaLocation="StartRecordingCommand.xsd"></xs:include>
     <xs:include schemaLocation="StopRecordingCommand.xsd"></xs:include>
     <xs:include schemaLocation="TargetRefinementCommand.xsd"></xs:include>
+    <xs:include schemaLocation="ZeroizeCommand.xsd"></xs:include>
         
 </xs:schema>

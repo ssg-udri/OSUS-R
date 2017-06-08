@@ -75,6 +75,8 @@ import mil.dod.th.remote.lexicon.asset.commands.StopRecordingCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.StopRecordingResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.TargetRefinementCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.TargetRefinementResponseGen;
+import mil.dod.th.remote.lexicon.asset.commands.ZeroizeCommandGen;
+import mil.dod.th.remote.lexicon.asset.commands.ZeroizeResponseGen;
 
 
 /**
@@ -249,6 +251,9 @@ public class CommandConverterImpl implements CommandConverter
             case SET_LIFT_COMMAND:
                 commandProto = SetLiftCommandGen.SetLiftCommand.parseFrom(commandRequest);
                 break;
+            case ZEROIZE_COMMAND:
+                commandProto = ZeroizeCommandGen.ZeroizeCommand.parseFrom(commandRequest);
+                break;
             default:
                 throw new IllegalArgumentException(String.format("%s is not a supported command", commandEnum));
         }
@@ -332,6 +337,9 @@ public class CommandConverterImpl implements CommandConverter
                 break;
             case SET_LIFT_RESPONSE:
                 responseProto = SetLiftResponseGen.SetLiftResponse.parseFrom(response);
+                break;
+            case ZEROIZE_RESPONSE:
+                responseProto = ZeroizeResponseGen.ZeroizeResponse.parseFrom(response);
                 break;
             default: 
                 throw new IllegalArgumentException(String.format("%s is not a supported response", commandEnum));

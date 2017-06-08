@@ -656,6 +656,37 @@
         <xs:attribute name="sensorIdAvailable" type="xs:boolean" use="optional" default="false" />
     </xs:complexType>
 
+    <xs:complexType name="ZeroizeCapabilities">
+        <xs:attribute name="zeroizeKeysSupported" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                  Indicates whether secure erase of encryption keys is supported.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="zeroizeConfigurationSupported" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                  Indicates whether secure erase of configuration information is supported.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="zeroizeDataSupported" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                  Indicates whether secure erase of stored sensor data information is supported.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="zeroizeCodeSupported" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                  Indicates whether secure erase of device firmware is supported.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+  
     <xs:element name="AssetCapabilities">
         <xs:complexType>
             <xs:complexContent>
@@ -684,6 +715,7 @@
                         <xs:element name="videoCapabilities" type="VideoCapabilities" minOccurs="0" maxOccurs="1" />
                         <xs:element name="commandCapabilities" type="CommandCapabilities" minOccurs="0" maxOccurs="1" />
                         <xs:element name="observationCapabilities" type="ObservationCapabilities" minOccurs="0" maxOccurs="1" />
+                        <xs:element name="zeroizeCapabilities" type="ZeroizeCapabilities" minOccurs="0" maxOccurs="1" />
                     </xs:sequence>
                 </xs:extension>
             </xs:complexContent>
