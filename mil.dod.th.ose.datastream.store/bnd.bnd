@@ -10,7 +10,7 @@
 # with this software. If not, see
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
-Bundle-Version: 1.0.1.${tstamp}
+Bundle-Version: 1.0.2.${tstamp}
 Bundle-Name: Streaming Data Store-and-Forward
 Bundle-Description: Implementation of streaming data store-and-forward
 Export-Package: mil.dod.th.ose.datastream.store.data;hasPersistentTypes=true

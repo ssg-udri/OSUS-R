@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 1.1.3.${tstamp}
+Bundle-Version: 1.1.4.${tstamp}
 Bundle-Description: THOSE Web GUI API
 Bundle-Name: Web GUI API
 Bundle-Vendor: UDRI
