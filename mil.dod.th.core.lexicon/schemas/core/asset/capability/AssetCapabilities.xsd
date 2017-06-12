@@ -392,7 +392,12 @@
             <xs:element name="detectTarget" type="DetectTargetParameters" minOccurs="0" maxOccurs="1" />
             <xs:element name="tuneSettings" type="TuneSettingsParameters" minOccurs="0" maxOccurs="1" />
             <xs:element name="createActionList" type="CreateActionListParameters" minOccurs="0" maxOccurs="1" />
-            <xs:element name="lift" type="Lift" minOccurs="0" maxOccurs="1" />
+            <xs:element name="lift" type="Lift" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <!-- Override the generated proto index. -->
+                    <xs:appinfo>index=12</xs:appinfo>
+                </xs:annotation>
+            </xs:element>
         </xs:sequence>
         <xs:attribute name="captureData" type="xs:boolean" use="required">
             <xs:annotation>
