@@ -45,5 +45,6 @@
     <xs:include schemaLocation="StartRecordingResponse.xsd"></xs:include>
     <xs:include schemaLocation="StopRecordingResponse.xsd"></xs:include>
     <xs:include schemaLocation="TargetRefinementResponse.xsd"></xs:include>
+    <xs:include schemaLocation="ZeroizeResponse.xsd"></xs:include>
         
 </xs:schema>

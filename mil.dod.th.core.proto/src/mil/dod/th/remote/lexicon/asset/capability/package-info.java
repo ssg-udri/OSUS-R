@@ -15,7 +15,6 @@
  * Generated protocol messages from mil.dod.th.core.asset.capability.
  * 
  * @author dhumeniuk
- *
  */
-@aQute.bnd.annotation.Version("6.1.0")
+@aQute.bnd.annotation.Version("6.2.0")
 package mil.dod.th.remote.lexicon.asset.capability;

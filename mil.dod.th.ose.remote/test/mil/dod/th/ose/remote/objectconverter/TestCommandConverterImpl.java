@@ -83,6 +83,8 @@ import mil.dod.th.remote.lexicon.asset.commands.TargetRefinementCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.TargetRefinementCommandGen.ChannelMetadata;
 import mil.dod.th.remote.lexicon.asset.commands.TargetRefinementCommandGen.RefinementParams;
 import mil.dod.th.remote.lexicon.asset.commands.TargetRefinementResponseGen;
+import mil.dod.th.remote.lexicon.asset.commands.ZeroizeCommandGen;
+import mil.dod.th.remote.lexicon.asset.commands.ZeroizeResponseGen;
 import mil.dod.th.remote.lexicon.types.SharedTypesGen.FrequencyKhz;
 import mil.dod.th.remote.lexicon.types.SharedTypesGen.Mode;
 import mil.dod.th.remote.lexicon.types.SharedTypesGen.SpeedMetersPerSecond;
@@ -322,6 +324,11 @@ public class TestCommandConverterImpl
                         .setBase(BaseTypesGen.Command.getDefaultInstance())
                         .build();
                 break;
+            case ZEROIZE_COMMAND:
+                commandGenProto = ZeroizeCommandGen.ZeroizeCommand.newBuilder()
+                        .setBase(BaseTypesGen.Command.getDefaultInstance())
+                        .build();
+                break;
             default:
                 fail(String.format("Unit test for Command %s is missing", commandType));
                 return;
@@ -490,6 +497,11 @@ public class TestCommandConverterImpl
                 break;
             case SET_LIFT_RESPONSE:
                 commandResponseProto = SetLiftResponseGen.SetLiftResponse.newBuilder()
+                        .setBase(BaseTypesGen.Response.getDefaultInstance())
+                        .build();
+                break;
+            case ZEROIZE_RESPONSE:
+                commandResponseProto = ZeroizeResponseGen.ZeroizeResponse.newBuilder()
                         .setBase(BaseTypesGen.Response.getDefaultInstance())
                         .build();
                 break;

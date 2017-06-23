@@ -34,6 +34,7 @@ import mil.dod.th.core.asset.capability.StatusCapabilities;
 import mil.dod.th.core.asset.capability.TuneChannelParameters;
 import mil.dod.th.core.asset.capability.TuneSettingsParameters;
 import mil.dod.th.core.asset.capability.VideoCapabilities;
+import mil.dod.th.core.asset.capability.ZeroizeCapabilities;
 import mil.dod.th.core.types.ActionEnum;
 import mil.dod.th.core.types.ComponentType;
 import mil.dod.th.core.types.ComponentTypeEnum;
@@ -152,10 +153,11 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
         final String description = ProjectBaseCapabilities.getDescription();
         final String manufacturer = ProjectBaseCapabilities.getManufacturer();
         final ObservationCapabilities obsCapabilities = makeObsCapabilities();
+        final ZeroizeCapabilities zeroizeCapabilities = makeZeroizeCapabilities();
         return new AssetCapabilities(primaryImage, secondaryImages, productName, description, manufacturer, type, 
                 minRange, maxRange, nominalRange, minFov, maxFov, nominalFov, supportedCameras, statusCapabilities, 
                 detectionCapabilities, digitalMediaCapabilities, audioCapabilities, imageCapabilities, 
-                videoCapabilities, commandCapabilities, obsCapabilities);
+                videoCapabilities, commandCapabilities, obsCapabilities, zeroizeCapabilities);
     }
 
     /**
@@ -660,5 +662,16 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
     {
         final ObservationCapabilities obsCaps = new ObservationCapabilities(false, false);
         return obsCaps;
+    }
+
+    /**
+     * Creates an object that is populated with placeholder values for a ZeroizeCapabilities object.
+     * 
+     * @return ZeroizeCapabilities object
+     */
+    private static ZeroizeCapabilities makeZeroizeCapabilities()
+    {
+        final ZeroizeCapabilities zeroizeCaps = new ZeroizeCapabilities(false, false, false, false);
+        return zeroizeCaps;
     }
 }

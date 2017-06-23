@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 1.0.1.${tstamp}
+Bundle-Version: 1.0.2.${tstamp}
 Bundle-Description: An asset plug-in to capture images from a UVC webcam connected to a Linux or Windows computer
 Bundle-Name: UVC Webcam Asset Plug-In
 Bundle-SymbolicName: edu.udayton.udri.asset.webcam.uvc

@@ -70,6 +70,7 @@
         <supportedCommands>TargetRefinementCommand</supportedCommands>
         <supportedCommands>GetLiftCommand</supportedCommands>
         <supportedCommands>SetLiftCommand</supportedCommands>
+        <supportedCommands>ZeroizeCommand</supportedCommands>
         <supportedModes value="Auto" description="Auto description." />
         <panTilt azimuthSupported="true" elevationSupported="true" bankSupported="false">
             <minAzimuth>-50.0</minAzimuth>
@@ -97,4 +98,5 @@
             <maxHeight>3.0</maxHeight>
         </lift>
     </commandCapabilities>
+    <zeroizeCapabilities zeroizeKeysSupported="true" />
 </AssetCapabilities>

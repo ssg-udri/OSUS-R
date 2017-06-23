@@ -49,6 +49,7 @@
       <xs:enumeration value="TargetRefinementCommand" />
       <xs:enumeration value="GetLiftCommand" />
       <xs:enumeration value="SetLiftCommand" />
+      <xs:enumeration value="ZeroizeCommand" />
     </xs:restriction>
   </xs:simpleType>
   
@@ -80,6 +81,7 @@
       <xs:enumeration value="TargetRefinementResponse" />
       <xs:enumeration value="GetLiftResponse" />
       <xs:enumeration value="SetLiftResponse" />
+      <xs:enumeration value="ZeroizeResponse" />
     </xs:restriction>
   </xs:simpleType>
 

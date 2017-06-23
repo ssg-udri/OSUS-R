@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 1.0.3.${tstamp}
+Bundle-Version: 1.0.4.${tstamp}
 Bundle-Name: Example Platform Serial Port Bundle
 Bundle-Description: Bundle example for a platform serial connection
 Bundle-Vendor: UDRI

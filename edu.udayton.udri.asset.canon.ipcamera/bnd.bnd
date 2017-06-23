@@ -13,7 +13,7 @@
 #
 # OSUS Plug-in BND Specification
 #
-Bundle-Version: 1.0.1.${tstamp}
+Bundle-Version: 1.0.2.${tstamp}
 Bundle-Description: Plug-in for the Canon VB-C60 IP camera
 Bundle-Name: Plug-in for the Canon VB-C60 IP camera
 Bundle-SymbolicName: edu.udayton.udri.asset.canon.ipcamera

@@ -80,7 +80,8 @@ public class TestAssetSyncableCommandModel
                 CommandTypeEnum.SET_CAMERA_SETTINGS_COMMAND, CommandTypeEnum.CONFIGURE_PROFILE_COMMAND,
                 CommandTypeEnum.SET_MODE_COMMAND, CommandTypeEnum.CREATE_ACTION_LIST_COMMAND, 
                 CommandTypeEnum.TARGET_REFINEMENT_COMMAND, CommandTypeEnum.START_RECORDING_COMMAND,
-                CommandTypeEnum.STOP_RECORDING_COMMAND, CommandTypeEnum.SET_LIFT_COMMAND));
+                CommandTypeEnum.STOP_RECORDING_COMMAND, CommandTypeEnum.SET_LIFT_COMMAND,
+                CommandTypeEnum.ZEROIZE_COMMAND));
     }
     
     /**
@@ -241,7 +242,8 @@ public class TestAssetSyncableCommandModel
                 CommandTypeEnum.SET_CAMERA_SETTINGS_COMMAND, CommandTypeEnum.CONFIGURE_PROFILE_COMMAND,
                 CommandTypeEnum.SET_MODE_COMMAND, CommandTypeEnum.CREATE_ACTION_LIST_COMMAND, 
                 CommandTypeEnum.TARGET_REFINEMENT_COMMAND, CommandTypeEnum.START_RECORDING_COMMAND,
-                CommandTypeEnum.STOP_RECORDING_COMMAND, CommandTypeEnum.SET_LIFT_COMMAND));
+                CommandTypeEnum.STOP_RECORDING_COMMAND, CommandTypeEnum.SET_LIFT_COMMAND,
+                CommandTypeEnum.ZEROIZE_COMMAND));
         
         List<CommandTypeEnum> supportedCommands = new ArrayList<CommandTypeEnum>();
         supportedCommands.add(CommandTypeEnum.GET_PAN_TILT_COMMAND);

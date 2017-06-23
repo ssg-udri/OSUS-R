@@ -14,5 +14,5 @@
 /**
  * Contains the common command types, XJC generated, from the XSDs.
  */
-@aQute.bnd.annotation.Version("1.0.0")
+@aQute.bnd.annotation.Version("1.1.0")
 package mil.dod.th.core.types.command;
