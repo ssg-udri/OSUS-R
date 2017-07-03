@@ -36,6 +36,7 @@ public class TestBaseLinkFrame
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testAddress()
     {
         m_SUT.setAddr(8);

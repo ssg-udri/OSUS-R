@@ -40,8 +40,16 @@ public class BaseLinkFrame implements LinkFrame
     {
         m_Address = 0;
     }
-
+    
+    /**
+     * Get the address field of the frame.
+     * 
+     * @return The integer representation of the address field.
+     * 
+     * @deprecated Does not appear to be used. Consider removing in 2.0.
+     */
     @Override
+    @Deprecated
     public int getAddr()
     {
         return m_Address;
@@ -53,7 +61,15 @@ public class BaseLinkFrame implements LinkFrame
         return m_Payload;
     }
 
+    /**
+     * Set the address field of the frame. 
+     * 
+     * @param address The integer representation of the address field.
+     * 
+     * @deprecated Does not appear to be used. Consider removing in 2.0.
+     */
     @Override
+    @Deprecated
     public void setAddr(final int address)
     {
         m_Address = address;

@@ -27,7 +27,10 @@ public interface LinkFrame
      * Get the address field of the frame.
      * 
      * @return The integer representation of the address field.
+     * 
+     * @deprecated Does not appear to be used. Consider removing in 2.0.
      */
+    @Deprecated
     int getAddr();
 
     /**
@@ -42,7 +45,10 @@ public interface LinkFrame
      * {@link mil.dod.th.core.ccomm.Address}.  The use of this field is up to the {@link LinkLayer}.
      * 
      * @param addr The integer representation of the address field. 
+     * 
+     * @deprecated Does not appear to be used. Consider removing in 2.0.
      */
+    @Deprecated
     void setAddr(int addr);
 
     /**
