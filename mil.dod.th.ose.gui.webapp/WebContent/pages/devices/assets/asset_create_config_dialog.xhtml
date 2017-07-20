@@ -42,9 +42,11 @@ Dialog shown for setting the configuration properties of an Asset to be created.
                    <h:outputText value=" = Property is required or no default has been defined."/>
                </div>
                <div style="width:100%; margin-top:1em; text-align:center">
+                   <h:outputText value="ERROR: Go back and select an Asset Type" style="padding-right:1em;color:red;" rendered="#{!addAssetHelper.isSetAssetFactory()}"/>
                    <p:commandButton id="newAssetCreate" value="Add" update="@form"
                      actionListener="#{addAssetHelper.requestCreateAsset((addAssetHelper.getAssetFactory()).getFullyQualifiedAssetType(),(activeController.getActiveController()).getId(), addAssetHelper.getNewAssetName())}"
-                     oncomplete="if (!args.validationFailed){ assetCreateConfigurationDlg.hide();}"/>
+                     oncomplete="if (!args.validationFailed){ assetCreateConfigurationDlg.hide();}"
+                     disabled="#{!addAssetHelper.isSetAssetFactory()}"/>
                    <p:commandButton id="newAssetCancelConfig" immediate="true" value="Back" onclick="newAssetDlg.show(); assetCreateConfigurationDlg.hide();">
                        <p:resetInput target="newAssetconfigPanel" />
                    </p:commandButton>
