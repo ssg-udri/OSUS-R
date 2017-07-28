@@ -76,7 +76,7 @@ Map platforms = [:]
 
 if (env.ENABLE_WINDOWS_BUILD == "true") {
     platforms['windows'] = {
-        node('windows') {
+        node('windows && osus') {
             deleteDir()
             unstash 'sources'
             withEnv([
@@ -95,7 +95,7 @@ if (env.ENABLE_WINDOWS_BUILD == "true") {
 
 if (env.ENABLE_LINUX64_BUILD == "true") {
     platforms['linux64'] = {
-        node('linux && 64bit') {
+        node('linux && 64bit && osus') {
             deleteDir()
             unstash 'sources'
             withEnv([
@@ -114,7 +114,7 @@ if (env.ENABLE_LINUX64_BUILD == "true") {
 
 if (env.ENABLE_LINUX32_BUILD == "true") {
     platforms['linux32'] = {
-        node('linux && 32bit') {
+        node('linux && 32bit && osus') {
             deleteDir()
             unstash 'sources'
             withEnv([
@@ -133,7 +133,7 @@ if (env.ENABLE_LINUX32_BUILD == "true") {
 
 if (env.ENABLE_DOCS_BUILD == "true") {
     platforms['docs'] = {
-        node {
+        node('osus') {
             deleteDir()
             unstash 'sources'
             withEnv([
@@ -170,7 +170,7 @@ if (env.ENABLE_DOCS_BUILD == "true") {
 
 if (env.ENABLE_GUI_ASSET_BUILD == "true") {
     platforms['gui-asset'] = {
-        node('linux && 64bit') {
+        node('linux && 64bit && osus') {
             deleteDir()
             unstash 'sources'
             withEnv([
@@ -191,7 +191,7 @@ if (env.ENABLE_GUI_ASSET_BUILD == "true") {
 
 if (env.ENABLE_GUI_OTHER_BUILD == "true") {
     platforms['gui-other'] = {
-        node('linux && 64bit') {
+        node('linux && 64bit && osus') {
             deleteDir()
             unstash 'sources'
             withEnv([
