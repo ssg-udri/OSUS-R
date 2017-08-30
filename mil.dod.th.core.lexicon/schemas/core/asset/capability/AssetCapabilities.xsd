@@ -369,7 +369,27 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-    
+
+    <xs:complexType name="ReservedFieldDefinition">
+        <xs:annotation>
+            <xs:documentation>
+                Describes a reserved field that can be included within an observation.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>The name of the reserved field.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="datatype" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Data type of the reserved field. Must be compatible with xs:anySimpleType.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
     <xs:complexType name="CommandCapabilities">
         <xs:sequence>
             <xs:element name="supportedCommands" type="command:CommandTypeEnum" minOccurs="0" maxOccurs="unbounded" >
@@ -654,9 +674,20 @@
     <xs:complexType name="ObservationCapabilities">
         <xs:annotation>
             <xs:documentation>
-                The following attributes define whether an attribute is available in observations.
+                The following attributes define reserved fields and whether an attribute is available in observations.
             </xs:documentation>
         </xs:annotation>
+        <xs:sequence>
+            <xs:element name="reservedFields" type="ReservedFieldDefinition" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <!-- Override the generated proto index. -->
+                    <xs:appinfo>index=3</xs:appinfo>
+                    <xs:documentation>
+                        Declares the reserved field keys and data types that can be included in observations.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
         <xs:attribute name="observedTimestampAvailable" type="xs:boolean" use="optional" default="false" />
         <xs:attribute name="sensorIdAvailable" type="xs:boolean" use="optional" default="false" />
     </xs:complexType>

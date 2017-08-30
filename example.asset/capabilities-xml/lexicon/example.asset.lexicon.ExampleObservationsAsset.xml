@@ -42,4 +42,8 @@
     </videoCapabilities>
     <commandCapabilities captureData="true" performBIT="true" captureDataBySensor="false">
     </commandCapabilities>
+    <observationCapabilities>
+        <reservedFields name="resKey" datatype="string"/>
+        <reservedFields name="mergeKey" datatype="string"/>
+    </observationCapabilities>
 </AssetCapabilities>

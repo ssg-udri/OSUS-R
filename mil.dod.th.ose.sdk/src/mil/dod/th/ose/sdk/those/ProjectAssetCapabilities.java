@@ -30,6 +30,7 @@ import mil.dod.th.core.asset.capability.ImageCapabilities;
 import mil.dod.th.core.asset.capability.Lift;
 import mil.dod.th.core.asset.capability.ObservationCapabilities;
 import mil.dod.th.core.asset.capability.PanTilt;
+import mil.dod.th.core.asset.capability.ReservedFieldDefinition;
 import mil.dod.th.core.asset.capability.StatusCapabilities;
 import mil.dod.th.core.asset.capability.TuneChannelParameters;
 import mil.dod.th.core.asset.capability.TuneSettingsParameters;
@@ -660,7 +661,9 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
      */
     private static ObservationCapabilities makeObsCapabilities()
     {
-        final ObservationCapabilities obsCaps = new ObservationCapabilities(false, false);
+        final List<ReservedFieldDefinition> reservedFields = new ArrayList<>();
+        reservedFields.add(new ReservedFieldDefinition("key", "string"));
+        final ObservationCapabilities obsCaps = new ObservationCapabilities(reservedFields, false, false);
         return obsCaps;
     }
 

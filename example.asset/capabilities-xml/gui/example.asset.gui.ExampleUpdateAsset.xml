@@ -25,4 +25,8 @@
     <commandCapabilities captureData="false" performBIT="false" captureDataBySensor="false">
         <supportedCommands>GetVersionCommand</supportedCommands>
     </commandCapabilities>
+
+    <observationCapabilities>
+        <reservedFields name="resKey" datatype="string"/>
+    </observationCapabilities>
 </AssetCapabilities>
