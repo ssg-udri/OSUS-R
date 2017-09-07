@@ -80,7 +80,7 @@ import mil.dod.th.remote.lexicon.asset.commands.StartRecordingResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.StopRecordingCommandGen;
 import mil.dod.th.remote.lexicon.asset.commands.StopRecordingResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.TargetRefinementCommandGen;
-import mil.dod.th.remote.lexicon.asset.commands.TargetRefinementCommandGen.ChannelMetadata;
+import mil.dod.th.remote.lexicon.asset.commands.TargetRefinementCommandGen.RefinementChannelMetadata;
 import mil.dod.th.remote.lexicon.asset.commands.TargetRefinementCommandGen.RefinementParams;
 import mil.dod.th.remote.lexicon.asset.commands.TargetRefinementResponseGen;
 import mil.dod.th.remote.lexicon.asset.commands.ZeroizeCommandGen;
@@ -299,7 +299,7 @@ public class TestCommandConverterImpl
                         .setBase(BaseTypesGen.Command.getDefaultInstance())
                         .addRefinement(RefinementParams.newBuilder().setRefinementAction(
                             TargetRefinementCommandGen.RefinementAction.Enum.ADD)
-                            .setChannelMetadata(ChannelMetadata.newBuilder().addChannel(5)
+                            .setChannelMetadata(RefinementChannelMetadata.newBuilder().addChannel(5)
                             .setEstimatedFrequency(FrequencyKhz.newBuilder().setValue(773.21)))
                             .setTimeMs(System.currentTimeMillis()))
                         .build();

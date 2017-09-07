@@ -62,7 +62,9 @@ public class XsdType
      * Boolean used to determine whether the XSD type represents a restriction on another type.
      */
     private boolean m_ComplexRestriction;
-    
+
+    private String m_OverriddenName;
+
     /**
      * Get the map of {@link XsdField}s.
      * 
@@ -193,5 +195,15 @@ public class XsdType
     public boolean isComplexRestriction()
     {
         return m_ComplexRestriction;
+    }
+
+    public void setOverriddenName(final String overriddenName)
+    {
+        m_OverriddenName = overriddenName;
+    }
+
+    public String getOverriddenName()
+    {
+        return m_OverriddenName;
     }
 }

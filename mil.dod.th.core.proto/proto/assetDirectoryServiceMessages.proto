@@ -11,6 +11,7 @@
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==============================================================================
 
+package assetdir.messages;
 option java_package = "mil.dod.th.core.remote.proto";
 import "shared.proto";
 import "asset/capability/AssetCapabilities.proto";

@@ -25,7 +25,9 @@
     
     <target name="build" depends="template.build">
         <zip destfile="${target-dir}/remote-interface-proto.zip">
-            <zipfileset file="${osus.license.file}" fullpath="LICENSE"/>
+            <zipfileset file="${osus.license.file}" fullpath="LICENSE" />
+            <zipfileset file="resources/generate-cpp.sh" fullpath="generate-cpp.sh" filemode="755" />
+            <zipfileset file="resources/Makefile.example" fullpath="Makefile.example" />
             <zipfileset dir="proto" />
             <zipfileset dir="${target-dir}/proto" />
         </zip>

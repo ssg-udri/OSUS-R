@@ -205,8 +205,16 @@ public class ProtoFileGenerator
             throws JaxbProtoConvertException
     {
         final String prefix = "message %s {%n";
-        
-        outStream.format(prefix, message.getName());
+        final String overriddenName = message.getXsdType().getOverriddenName();
+
+        if (overriddenName == null)
+        {
+            outStream.format(prefix, message.getName());
+        }
+        else
+        {
+            outStream.format(prefix, overriddenName);
+        }
         
         printMessageContents(outStream, message);
 
@@ -299,6 +307,27 @@ public class ProtoFileGenerator
     }
 
     /**
+     * Returns the field type for a reference.
+     * 
+     * @param field
+     *      The {@link ProtoField} containing a reference type.
+     * @return
+     *      Field type name for a reference field
+     */
+    private String getFieldReferenceType(final ProtoField field)
+    {
+        final XsdType xsdType = field.getTypeRef().getXsdType();
+        if (xsdType == null || xsdType.getOverriddenName() == null)
+        {
+            return field.getTypeRef().getName();
+        }
+        else
+        {
+            return xsdType.getOverriddenName();
+        }
+    }
+
+    /**
      * This method is responsible for taking a specified {@link ProtoField} and creating the string representation of
      * that field.
      * 
@@ -327,7 +356,7 @@ public class ProtoFileGenerator
                 fieldBuilder.append("int64");
                 break;
             case Reference:
-                fieldBuilder.append(field.getTypeRef().getName());
+                fieldBuilder.append(getFieldReferenceType(field));
                 break;
             case Enum:
                 final ProtoElement element = field.getTypeRef();

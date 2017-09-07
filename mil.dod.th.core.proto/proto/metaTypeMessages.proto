@@ -16,6 +16,7 @@
 //
 //==============================================================================
 
+package metatype.messages;
 option java_package = "mil.dod.th.core.remote.proto";
 
 //Namespace contains functions related to the OSGi MetaTypeService interface to incorporate

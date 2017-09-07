@@ -16,6 +16,7 @@
 //
 //==============================================================================
 
+package event.messages;
 option java_package = "mil.dod.th.core.remote.proto";
 
 import "mapTypes.proto";

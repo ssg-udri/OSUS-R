@@ -209,6 +209,7 @@
         <exclude name="eclipse-javascript-profile.xml" />
         <exclude name="eclipse-preferences.epf" />
         <exclude name="LICENSE" />
+        <exclude name="mil.dod.th.core.proto/resources/Makefile.example" />
         <exclude name="mil.dod.th.ose.core/TH-standard-template*/**" />
         <exclude name="mil.dod.th.ose.core/TH-standard.xsl" />
         <exclude name="mil.dod.th.ose.shell/resources/motd" />

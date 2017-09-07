@@ -11,6 +11,7 @@
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==============================================================================
 
+package obsstore.messages;
 option java_package = "mil.dod.th.core.remote.proto";
 
 import "observation/types/Observation.proto";

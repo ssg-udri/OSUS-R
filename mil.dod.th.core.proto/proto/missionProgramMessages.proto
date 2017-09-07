@@ -15,6 +15,7 @@
 //
 //===============================================================================
 
+package mission.messages;
 option java_package = "mil.dod.th.core.remote.proto";
 
 import "types/SharedTypes.proto";

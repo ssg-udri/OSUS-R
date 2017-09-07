@@ -227,6 +227,7 @@ public class XsdParser
     private void handleComplexType(final Element element, final Element parentElement, final XsdNamespace xsdNamespace, 
             final XsdType type, final File xsdFile) throws ClassNotFoundException, JaxbProtoConvertException
     {
+        final String overriddenName = getNameOverride(element.getChildNodes());
         final String elementName = 
                 element.getAttribute("name"); //NOCHECKSTYLE Duplicate string is more readable
         final String typeName = elementName.isEmpty() ? parentElement.getAttribute("name") : elementName;
@@ -234,7 +235,7 @@ public class XsdParser
         if (type == null)
         {
             final Class<?> newJaxbClass = determineJaxbClass(xsdFile, WordUtils.capitalize(typeName));
-            final XsdType newType = getOrCreateXsdType(xsdNamespace, xsdFile, newJaxbClass);
+            final XsdType newType = getOrCreateXsdType(xsdNamespace, xsdFile, newJaxbClass, overriddenName);
             traverseNodes(element.getChildNodes(), element, xsdNamespace, newJaxbClass, newType, xsdFile, 1);
         }
         else
@@ -244,7 +245,68 @@ public class XsdParser
                     xsdFile.getAbsolutePath()));
         }
     }
-    
+
+    /**
+     * Determines if there is an appinfo with the name property and returns the value if there is.
+     * 
+     * @param nodes
+     *      Nodes to be checked for an appinfo with a name property.
+     * @return
+     *      String that represents the name property if one is found.
+     * @throws JaxbProtoConvertException 
+     *      Thrown if the contents of the appinfo tag cannot be read.
+     */
+    private String getNameOverride(final NodeList nodes) throws JaxbProtoConvertException
+    {
+        for (int i = 0; i < nodes.getLength(); i++)
+        {
+            final Node node = nodes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE)
+            {
+                final Element element = (Element)node;
+                final String nodeName = element.getNodeName();
+                if ("xs:annotation".equals(nodeName)) //NOCHECKSTYLE Duplicate string is more readable
+                {
+                    final Element appInfo = searchAnnotationForAppInfo(element.getChildNodes());
+                    return getPropertyFromAppInfo(appInfo, "name");
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns property value, if it exists, for the given appInfo element.
+     * 
+     * @param appInfo
+     *      Element property.
+     * @param property
+     *      Name of the property
+     * @return
+     *      String that represents the property value if found.
+     * @throws JaxbProtoConvertException 
+     *      Thrown if the contents of the appinfo tag cannot be read.
+     */
+    private String getPropertyFromAppInfo(final Element appInfo, final String property) throws JaxbProtoConvertException
+    {
+        if (appInfo != null)
+        {
+            final String content = appInfo.getTextContent();
+            final Properties props = new Properties();
+            try
+            {
+                props.load(new StringReader(content));
+            }
+            catch (final IOException ex)
+            {
+                throw new JaxbProtoConvertException("Invalid properties specified within appinfo tag.", ex);
+            }
+
+            return props.getProperty(property);
+        }
+        return null;
+    }
+
     /**
      * Method that handles an XSD element that is a simple type.
      * 
@@ -266,7 +328,7 @@ public class XsdParser
                 element.getAttribute("name"); //NOCHECKSTYLE Duplicate string is more readable
         final String typeName = elementName.isEmpty() ? parentElement.getAttribute("name") : elementName;
         final Class<?> newJaxbClass = determineJaxbClass(xsdFile, WordUtils.capitalize(typeName));
-        getOrCreateXsdType(xsdNamespace, xsdFile, newJaxbClass);
+        getOrCreateXsdType(xsdNamespace, xsdFile, newJaxbClass, null);
     }
     
     /**
@@ -366,10 +428,13 @@ public class XsdParser
      *      XSD file the type is in.
      * @param jaxbClass
      *      JAXB class the XSD type represents.
+     * @param overriddenName
+     *      Overridden name if exists, otherwise null.
      * @return
      *      The found or newly created XSD type.
      */
-    private XsdType getOrCreateXsdType(final XsdNamespace namespace, final File xsdFile, final Class<?> jaxbClass)
+    private XsdType getOrCreateXsdType(final XsdNamespace namespace, final File xsdFile, final Class<?> jaxbClass,
+            final String overriddenName)
     {
         XsdType type = namespace.getTypesMap().get(jaxbClass);
         if (type == null)
@@ -379,6 +444,7 @@ public class XsdParser
             type.setXsdNamespace(namespace);
             type.setJaxbType(jaxbClass);
             type.setXsdFile(xsdFile);
+            type.setOverriddenName(overriddenName);
             namespace.getTypesMap().put(jaxbClass, type);
         }
         return type;
@@ -556,25 +622,12 @@ public class XsdParser
      */
     private Integer getIndexFromAppInfo(final Element appInfo) throws JaxbProtoConvertException
     {
-        if (appInfo != null)
+        final String index = getPropertyFromAppInfo(appInfo, "index");
+        if (index != null)
         {
-            final String content = appInfo.getTextContent();
-            final Properties props = new Properties();
-            try
-            {
-                props.load(new StringReader(content));
-            }
-            catch (final IOException ex)
-            {
-                throw new JaxbProtoConvertException("Invalid properties specified within appinfo tag.", ex);
-            }
-
-            final String index = props.getProperty("index");
-            if (index != null)
-            {
-                return Integer.parseInt(index);
-            }
+            return Integer.parseInt(index);
         }
+
         return null;
     }
     

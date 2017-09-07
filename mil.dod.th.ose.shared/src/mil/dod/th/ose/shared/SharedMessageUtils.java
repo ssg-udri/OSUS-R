@@ -87,7 +87,7 @@ final public class SharedMessageUtils
         final Multitype.Builder builder = Multitype.newBuilder();
         if (value == null)
         {
-            builder.setType(Type.NULL);
+            builder.setType(Type.NONE);
         }
         else if (value instanceof Integer)
         {
@@ -178,7 +178,7 @@ final public class SharedMessageUtils
     {
         switch (value.getType()) 
         {
-            case NULL:
+            case NONE:
                 return null;
                 
             case INT32:

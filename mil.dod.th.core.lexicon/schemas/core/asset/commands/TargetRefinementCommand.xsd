@@ -78,6 +78,8 @@
    
    <xs:complexType name="ChannelMetadata">
         <xs:annotation>
+            <!-- Override the generated proto type name to avoid name clashes in generated protobuf code. -->
+            <xs:appinfo>name=RefinementChannelMetadata</xs:appinfo>
             <xs:documentation>
                 This type describes attributes specific to an RF channel.
             </xs:documentation>

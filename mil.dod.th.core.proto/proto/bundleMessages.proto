@@ -16,6 +16,7 @@
 //
 //==============================================================================
 
+package bundle.messages;
 option java_package = "mil.dod.th.core.remote.proto";
 
 //Namespace contains functions related to the OSGi Bundle interface to facilitate

@@ -6,7 +6,7 @@
   </local-check-config>
   <fileset name="all" enabled="true" check-config-name="all" local="true">
     <file-match-pattern match-pattern="." include-pattern="true"/>
-    <file-match-pattern match-pattern=".classpath|.project|.checkstyle|.pmd|.settings|.DS_Store" include-pattern="false"/>
+    <file-match-pattern match-pattern=".classpath|.project|.checkstyle|.pmd|.settings|.DS_Store|Makefile.example" include-pattern="false"/>
     <file-match-pattern match-pattern="generated/" include-pattern="false"/>
     <file-match-pattern match-pattern=".class" include-pattern="false"/>
     <file-match-pattern match-pattern=".java" include-pattern="false"/>

@@ -86,7 +86,7 @@ public class TestSharedMessageUtils
         assertThat(value.getStringValue(), is("test"));
         
         value = SharedMessageUtils.convertObjectToMultitype(null);
-        assertThat(value.getType(), is(Type.NULL));
+        assertThat(value.getType(), is(Type.NONE));
         
         value = SharedMessageUtils.convertObjectToMultitype(false);
         assertThat(value.getType(), is(Type.BOOL));
@@ -153,7 +153,7 @@ public class TestSharedMessageUtils
     @Test
     public void testConvertMultitypeToObject()
     {
-        Object value = SharedMessageUtils.convertMultitypeToObject(Multitype.newBuilder().setType(Type.NULL).build());
+        Object value = SharedMessageUtils.convertMultitypeToObject(Multitype.newBuilder().setType(Type.NONE).build());
         assertThat(value, is(nullValue()));
         
         value = SharedMessageUtils.convertMultitypeToObject(Multitype.newBuilder().

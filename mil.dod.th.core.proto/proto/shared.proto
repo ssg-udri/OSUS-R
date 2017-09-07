@@ -39,7 +39,7 @@ message Multitype
         // Base types
         
         // no type
-        NULL = 1;
+        NONE = 1;
         // string
         STRING = 2;
         // 32-bit integer

@@ -23,7 +23,7 @@ message PersistentEventRegistrationMessage
     required int32 systemId = 1;
 
     //the remote EventRegistrationRequestData message that contains the original registration message
-    required EventRegistrationRequestData regMessage = 2;
+    required event.messages.EventRegistrationRequestData regMessage = 2;
 
     //the mode of encryption to use when sending event messages in response to this registration
     required EncryptType encryptionType = 3;

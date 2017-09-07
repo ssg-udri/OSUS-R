@@ -50,8 +50,8 @@ message ComplexTypesMapEntry
 
         // enums
         LinkStatus linkLayerStatus = 3;
-        MissionStatus programStatus = 4;
-        MissionTestResult programTestResult = 5;
+        mission.messages.MissionStatus programStatus = 4;
+        mission.messages.MissionTestResult programTestResult = 5;
         SummaryStatus.Enum summaryStatus = 6;
         
         // Observations will be in the format as specified during event registration. The 

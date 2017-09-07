@@ -1,0 +1,42 @@
+#==============================================================================
+# This software is part of the Open Standard for Unattended Sensors (OSUS)
+# reference implementation (OSUS-R).
+#
+# To the extent possible under law, the author(s) have dedicated all copyright
+# and related and neighboring rights to this software to the public domain
+# worldwide. This software is distributed without any warranty.
+#
+# You should have received a copy of the CC0 Public Domain Dedication along
+# with this software. If not, see
+# <http://creativecommons.org/publicdomain/zero/1.0/>.
+#==============================================================================
+
+PROGRAM_NAME = libOsusProto.so
+CC = gcc
+CXX = g++
+RM = rm -f
+
+# Change this path to the directory where protobufs 2.6.1 is installed
+PROTOC_2_6_1 ?= /usr/local/protoc/2.6.1
+
+CXXFLAGS = -g -O3 -MMD -MP
+CPPFLAGS = -I. -I$(PROTOC_2_6_1)/include/
+LDFLAGS = -L$(PROTOC_2_6_1)/lib
+LDLIBS = -lprotobuf
+
+SRCS = $(shell find . -name '*.pb.cc')
+OBJS = $(subst .pb.cc,.pb.o,$(SRCS))
+DEPS = $(subst .pb.cc,.pb.d,$(SRCS))
+
+all: $(PROGRAM_NAME)
+
+$(PROGRAM_NAME): $(OBJS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -shared -o $@ $^ $(LDFLAGS) $(LDLIBS)
+
+-include $(DEPS)
+
+clean:
+	$(RM) $(OBJS) $(PROGRAM_NAME)
+
+dist-clean: clean
+	$(RM) *~  $(DEPS)
