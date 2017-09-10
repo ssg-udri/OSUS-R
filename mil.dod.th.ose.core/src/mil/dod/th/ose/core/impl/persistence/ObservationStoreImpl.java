@@ -180,7 +180,7 @@ public class ObservationStoreImpl extends AbstractH2DataStore<Observation> imple
         }
         
         final String dataDir = context.getProperty(SystemConfigurationConstants.DATA_DIR_PROPERTY);
-        activateStore(String.format("jdbc:h2:file:%s", dataDir + File.separator + DATABASE_FILE_BASE), combindedProps);
+        activateStore(String.format("jdbc:h2:file:%s", dataDir + "/" + DATABASE_FILE_BASE), combindedProps);
         
         //pull out the version numbers
         final URL entry = m_ClassService.getResource(Observation.class, "version.properties");

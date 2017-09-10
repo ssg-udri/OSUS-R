@@ -107,7 +107,7 @@ public class PersistentDataStoreImpl extends AbstractH2DataStore<PersistentData>
         }
 
         final String dataDir = context.getProperty(SystemConfigurationConstants.DATA_DIR_PROPERTY);
-        activateStore(String.format("jdbc:h2:file:%s", dataDir + File.separator + DATABASE_FILE_BASE), combindedProps);
+        activateStore(String.format("jdbc:h2:file:%s", dataDir + "/" + DATABASE_FILE_BASE), combindedProps);
     }
 
     /**
