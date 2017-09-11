@@ -12,54 +12,58 @@
 //==============================================================================
 package mil.dod.th.ose.bbb.platform;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
 
 /**
- * Service used to manager timer tasks.
+ * Service used to manage periodic, time based tasks.
  * 
  * @author cweisenborn
  */
 @Component(provide = BeagleBoneBlackTimerManager.class)
 public class BeagleBoneBlackTimerManager
 {
-    private Timer m_Timer;
+    private ScheduledExecutorService m_Executor;
     
     /**
-     * Activate method. Responsible for setting up the timer.
+     * Activate method. Responsible for setting up the scheduler.
      */
     @Activate
     public void activate()
     {
-        m_Timer = new Timer();
+        m_Executor = Executors.newScheduledThreadPool(1);
     }
     
     /**
-     * Deactivation method. Responsible for canceling all scheduled timer tasks.
+     * Deactivation method. Responsible for canceling all scheduled tasks.
+     * 
+     * @throws InterruptedException
+     *      if interrupted while waiting for tasks to terminate
      */
     @Deactivate
-    public void deactivate()
+    public void deactivate() throws InterruptedException
     {
-        m_Timer.cancel();
-        m_Timer.purge();
+        m_Executor.shutdown();
+        m_Executor.awaitTermination(2, TimeUnit.SECONDS);
     }
     
     /**
      * Scheduled the specified task a fixed rate.
      * 
      * @param task
-     *      {@link TimerTask} to scheduled at a fixed rate.
+     *      {@link Runnable} to be scheduled at a fixed rate.
      * @param delayMs
      *      Delay in milliseconds before the task should start.
      * @param periodMs
      *      Fixed rate in milliseconds between calls to the task.
      */
-    public void addScheduledAtFixedRateTask(final TimerTask task, final long delayMs, final long periodMs)
+    public void addScheduledAtFixedRateTask(final Runnable task, final long delayMs, final long periodMs)
     {
-        m_Timer.scheduleAtFixedRate(task, delayMs, periodMs);
+        m_Executor.scheduleWithFixedDelay(task, delayMs, periodMs, TimeUnit.MILLISECONDS);
     }
 }

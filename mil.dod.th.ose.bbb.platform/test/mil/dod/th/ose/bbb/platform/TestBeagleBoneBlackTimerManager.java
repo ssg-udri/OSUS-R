@@ -15,8 +15,6 @@ package mil.dod.th.ose.bbb.platform;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 
-import java.util.TimerTask;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,7 +36,7 @@ public class TestBeagleBoneBlackTimerManager
     @Test
     public void testAddScheduledAtFixedRateTask() throws InterruptedException
     {
-        TestTimerTask task = new TestTimerTask();
+        TestTask task = new TestTask();
         
         m_SUT.addScheduledAtFixedRateTask(task, 0, 1000);
         
@@ -47,7 +45,7 @@ public class TestBeagleBoneBlackTimerManager
         assertThat(task.getCount(), greaterThanOrEqualTo(5));
     }
     
-    private class TestTimerTask extends TimerTask
+    private class TestTask implements Runnable
     {
         private int m_Counter = 0;
         

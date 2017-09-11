@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.TimerTask;
 
 import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
@@ -32,7 +31,7 @@ import mil.dod.th.core.pm.WakeLock;
  * @author cweisenborn
  */
 @Component(provide = BeagleBoneBlackLockManager.class)
-public class BeagleBoneBlackLockManager extends TimerTask
+public class BeagleBoneBlackLockManager implements Runnable
 {
     private LoggingService m_LogService;
     private Object m_Lock;
@@ -84,6 +83,8 @@ public class BeagleBoneBlackLockManager extends TimerTask
         final BeagleBoneBlackLockInfo lockInfo = new BeagleBoneBlackLockInfo(lock, startLockTimeMs, stopLockTimeMs);
         synchronized (m_Lock)
         {
+            // Wake locks are scheduled based on system or wall clock time, so System.currentTimeMillis() must be used
+            // to determine when locks are activated or scheduled
             if (lockInfo.getStartTimeMs() <= System.currentTimeMillis())
             {
                 m_ActiveLocks.add(lockInfo);
@@ -186,6 +187,8 @@ public class BeagleBoneBlackLockManager extends TimerTask
     {
         synchronized (m_Lock)
         {
+            // Wake locks are scheduled based on system or wall clock time, so System.currentTimeMillis() must be used
+            // to determine when locks are activated or expired
             final Iterator<BeagleBoneBlackLockInfo> scheduledIterator = m_ScheduledLocks.iterator();
             while (scheduledIterator.hasNext())
             {

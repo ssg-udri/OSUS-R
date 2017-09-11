@@ -18,6 +18,7 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
@@ -48,7 +49,7 @@ public class BeagleBoneBlackWakeManager extends TimerTask implements BeagleBoneB
     private BeagleBoneBlackLockManager m_BeagleBoneBlackWakeLockMgr;
     private BeagleBoneBlackGpioManager m_BegaleBoneBlackGpioMgr;
     
-    private Long m_WakeTime = System.currentTimeMillis();
+    private Long m_WakeTime;
     private Long m_StandbyTime = PlatformPowerManager.INDEFINITE;
     
     private boolean m_IsEnabled;
@@ -94,6 +95,8 @@ public class BeagleBoneBlackWakeManager extends TimerTask implements BeagleBoneB
     @Activate
     public void activate()
     {
+        m_WakeTime = currentElapsedTimeMs();
+
         m_BeagleBoneBlackWakeLockMgr.registerWakeLockAddedListener(this);
         m_BegaleBoneBlackGpioMgr.setGpioState(POWER_STATUS_PIN, GpioState.HIGH);
     }
@@ -122,7 +125,7 @@ public class BeagleBoneBlackWakeManager extends TimerTask implements BeagleBoneB
         m_StandbyMode = config.standbyMode();
         if (!m_IsEnabled && config.enabled())
         {
-            m_WakeTime = System.currentTimeMillis();
+            m_WakeTime = currentElapsedTimeMs();
         }
         m_IsEnabled = config.enabled();
     }
@@ -147,11 +150,11 @@ public class BeagleBoneBlackWakeManager extends TimerTask implements BeagleBoneB
     {
         if (m_IsEnabled)
         {
-            if (System.currentTimeMillis() - m_WakeTime >= m_MinWakeTimeMs 
+            if (currentElapsedTimeMs() - m_WakeTime >= m_MinWakeTimeMs 
                     && m_StandbyTime == PlatformPowerManager.INDEFINITE
                     && m_BeagleBoneBlackWakeLockMgr.getActiveLocks().isEmpty())
             {
-                m_StandbyTime = System.currentTimeMillis() + m_StandbyNoticeTimeMs;
+                m_StandbyTime = currentElapsedTimeMs() + m_StandbyNoticeTimeMs;
                 final Dictionary<String, Object> props = new Hashtable<>();
                 props.put(PlatformPowerManager.EVENT_PROP_STANDBY_TIME, m_StandbyTime);
                 final Event standbyEvent = new Event(PlatformPowerManager.TOPIC_STANDBY_NOTICE_EVENT, props);
@@ -161,7 +164,7 @@ public class BeagleBoneBlackWakeManager extends TimerTask implements BeagleBoneB
             }
             else if (m_BeagleBoneBlackWakeLockMgr.getActiveLocks().isEmpty()
                     && m_StandbyTime != PlatformPowerManager.INDEFINITE 
-                    && System.currentTimeMillis() >= m_StandbyTime)
+                    && currentElapsedTimeMs() >= m_StandbyTime)
             {
                 try
                 {
@@ -179,7 +182,7 @@ public class BeagleBoneBlackWakeManager extends TimerTask implements BeagleBoneB
                 m_EventAdmin.postEvent(wakeEvent);
                 m_LogService.debug("Wake event posted...");
                 
-                m_WakeTime = System.currentTimeMillis();
+                m_WakeTime = currentElapsedTimeMs();
                 m_StandbyTime = PlatformPowerManager.INDEFINITE;
             }
             else if (m_StandbyTime != PlatformPowerManager.INDEFINITE 
@@ -245,7 +248,7 @@ public class BeagleBoneBlackWakeManager extends TimerTask implements BeagleBoneB
     private void handleCancelStandby()
     {
         m_LogService.debug("Canceling standby...");
-        m_WakeTime = System.currentTimeMillis() - m_MinWakeTimeMs + m_StandbyBackoffTimeMs;
+        m_WakeTime = currentElapsedTimeMs() - m_MinWakeTimeMs + m_StandbyBackoffTimeMs;
         m_StandbyTime = PlatformPowerManager.INDEFINITE;
         final Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put(PlatformPowerManager.EVENT_PROP_CANCELLED_TIME, System.currentTimeMillis());
@@ -267,6 +270,8 @@ public class BeagleBoneBlackWakeManager extends TimerTask implements BeagleBoneB
         final BeagleBoneBlackLockInfo nextScheduledLock = m_BeagleBoneBlackWakeLockMgr.getNextScheduledLock();
         if (nextScheduledLock != null)
         {
+            // Wake locks are scheduled based on system or wall clock time, so System.currentTimeMillis() must be used
+            // to calculate the sleep time.
             final long timeOffset = (nextScheduledLock.getStartTimeMs() - System.currentTimeMillis()) / SECOND_MS;
             if (timeOffset > 0 && timeOffset < sleepTime)
             {
@@ -274,5 +279,17 @@ public class BeagleBoneBlackWakeManager extends TimerTask implements BeagleBoneB
             }
         }
         return sleepTime;
+    }
+
+    /**
+     * Returns the number of milliseconds that have elapsed based on a fixed origin. The elapsed time is not affected
+     * by system time changes.
+     * 
+     * @return
+     *      Number of milliseconds that have elapsed since startup
+     */
+    private long currentElapsedTimeMs()
+    {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
     }
 }
