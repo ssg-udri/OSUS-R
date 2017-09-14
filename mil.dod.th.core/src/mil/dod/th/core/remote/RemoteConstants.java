@@ -26,7 +26,7 @@ public final class RemoteConstants
      * Version of the remote interface.  Each {@link mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage} will 
      * contain this version.  See remote interface control document (ICD) for further information.
      */
-    final public static Version SPEC_VERSION = Version.newBuilder().setMajor(10).setMinor(3).build(); //NOCHECKSTYLE:
+    final public static Version SPEC_VERSION = Version.newBuilder().setMajor(10).setMinor(4).build(); //NOCHECKSTYLE:
                                                                                //magic number, literal version number.
     /** Event topic prefix to use for all topics in RemoteConstants. */
     final public static String TOPIC_PREFIX = "mil/dod/th/core/remote/RemoteConstants/";
