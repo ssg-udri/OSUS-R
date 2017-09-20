@@ -39,7 +39,6 @@ import org.osgi.service.cm.ConfigurationAdmin;
  * Power manager commands.
  * 
  * @author cweisenborn
- *
  */
 @Component(provide = PowerManagerCommands.class, properties = {"osgi.command.scope=thpower", 
         "osgi.command.function=enable|disable|getWakeLocks|getWakeLock"
@@ -47,8 +46,6 @@ import org.osgi.service.cm.ConfigurationAdmin;
         + "|startwl|stopwl" })
 public class PowerManagerCommands
 {
-
-    
     /** ID used when creating the shell wake lock. **/
     static final private String SHELL_LOCK_ID = "shellWakeLock";
     
@@ -281,11 +278,11 @@ public class PowerManagerCommands
     {
         final PrintStream out = session.getConsole();
 
-        final Configuration config = m_ConfigAdmin.getConfiguration(PlatformPowerManager.class.getName(), null);
+        final Configuration config = m_ConfigAdmin.getConfiguration(PlatformPowerManager.CONFIG_PID, null);
         final Dictionary<String, Object> dict = config.getProperties();
-        
+
         Boolean enabled = null; 
-        String isEnabled = "No Property Exists";
+        String isEnabled = "<unknown>";
         if (dict != null)
         {
             enabled = (Boolean)dict.get(PlatformPowerManager.CONFIG_PROP_ENABLED);
@@ -351,7 +348,7 @@ public class PowerManagerCommands
     public void enable(final CommandSession session) throws IOException
     {
         final PrintStream out = session.getConsole();
-        final Configuration config = m_ConfigAdmin.getConfiguration(PlatformPowerManager.class.getName(), null);
+        final Configuration config = m_ConfigAdmin.getConfiguration(PlatformPowerManager.CONFIG_PID, null);
         Dictionary<String, Object> dict = config.getProperties();
         
         Boolean enabled = null;
@@ -391,7 +388,7 @@ public class PowerManagerCommands
     @Descriptor("Disables the PlatformPowerManager")
     public void disable(final CommandSession session) throws IOException
     {
-        final Configuration config = m_ConfigAdmin.getConfiguration(PlatformPowerManager.class.getName(), null);
+        final Configuration config = m_ConfigAdmin.getConfiguration(PlatformPowerManager.CONFIG_PID, null);
         Dictionary<String, Object> dict = config.getProperties();
         final PrintStream out = session.getConsole();
         
@@ -457,4 +454,3 @@ public class PowerManagerCommands
         m_ShellLock.cancel();
     }
 }
-

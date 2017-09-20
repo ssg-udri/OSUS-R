@@ -103,7 +103,12 @@ public interface PlatformPowerManager
      * Event property key for the time at which standby was cancelled in milliseconds (Long) since the epoch.
      */
     String EVENT_PROP_CANCELLED_TIME = "cancelled.time.ms";
-    
+
+    /**
+     * Configuration PID identifier used by implementations of this service.
+     */
+    String CONFIG_PID = "mil.dod.th.core.pm.PlatformPowerManager";
+
     /** 
      * Configuration property key for whether power management is enabled. When disabled, the system will stay awake and
      * ignore all requests. If the property is not set, power management is enabled. 

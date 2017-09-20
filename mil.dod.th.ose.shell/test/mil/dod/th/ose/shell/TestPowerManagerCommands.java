@@ -71,7 +71,7 @@ public class TestPowerManagerCommands
         m_SUT.setPlatformPowerManager(m_PlatformPowerManager);
         m_SUT.setConfigurationAdmin(m_ConfigurationAdmin);
         
-        when(m_ConfigurationAdmin.getConfiguration(PlatformPowerManager.class.getName(), 
+        when(m_ConfigurationAdmin.getConfiguration(PlatformPowerManager.CONFIG_PID, 
                 null)).thenReturn(m_Configuration);
         
         Set<WakeLock> activeLocks = getMockedWakeLocks(WakeLockState.Active);
@@ -344,7 +344,7 @@ public class TestPowerManagerCommands
         m_SUT.info(m_Session);
         
         verify(m_PrintStream).format("Overall PlatformPowerManager status: %s%n%n\t"
-                + "Enabled: %s%n\tPlatformPowerManager Present: %s%n%n", "Enabled", "No Property Exists", "Yes");
+                + "Enabled: %s%n\tPlatformPowerManager Present: %s%n%n", "Enabled", "<unknown>", "Yes");
         
         verify(m_PrintStream).format("Battery Remaining: %s%n%n", "10 amp-hours");
         verify(m_PrintStream).format("Battery Voltage: %s%n%n", "20 mV");
@@ -385,7 +385,7 @@ public class TestPowerManagerCommands
         when(m_Configuration.getProperties()).thenReturn(null);
         
         m_SUT.enable(m_Session);
-        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.class.getName(), null);
+        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.CONFIG_PID, null);
         
         ArgumentCaptor<Dictionary> mapCaptor = ArgumentCaptor.forClass(Dictionary.class);
         verify(m_Configuration).update(mapCaptor.capture());
@@ -408,7 +408,7 @@ public class TestPowerManagerCommands
         when(m_Configuration.getProperties()).thenReturn(dict);
         
         m_SUT.enable(m_Session);
-        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.class.getName(), null);
+        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.CONFIG_PID, null);
         
         ArgumentCaptor<Dictionary> mapCaptor = ArgumentCaptor.forClass(Dictionary.class);
         verify(m_Configuration).update(mapCaptor.capture());
@@ -431,7 +431,7 @@ public class TestPowerManagerCommands
         when(m_Configuration.getProperties()).thenReturn(dict);
         
         m_SUT.enable(m_Session);
-        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.class.getName(), null);
+        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.CONFIG_PID, null);
         
         verify(m_Configuration, never()).update(Mockito.any(Dictionary.class));
         
@@ -452,7 +452,7 @@ public class TestPowerManagerCommands
         m_SUT.setPlatformPowerManager(null);
         
         m_SUT.enable(m_Session);
-        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.class.getName(), null);
+        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.CONFIG_PID, null);
         
         verify(m_Configuration).update(Mockito.any(Dictionary.class));
         
@@ -471,9 +471,9 @@ public class TestPowerManagerCommands
         m_SUT.setPlatformPowerManager(null);
         
         m_SUT.disable(m_Session);
-        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.class.getName(), null);
+        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.CONFIG_PID, null);
         
-        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.class.getName(), null);
+        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.CONFIG_PID, null);
         
         verify(m_Configuration).update(Mockito.any(Dictionary.class));
         
@@ -492,7 +492,7 @@ public class TestPowerManagerCommands
         when(m_Configuration.getProperties()).thenReturn(null);
         
         m_SUT.disable(m_Session);
-        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.class.getName(), null);
+        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.CONFIG_PID, null);
         
         ArgumentCaptor<Dictionary> mapCaptor = ArgumentCaptor.forClass(Dictionary.class);
         verify(m_Configuration).update(mapCaptor.capture());
@@ -515,7 +515,7 @@ public class TestPowerManagerCommands
         when(m_Configuration.getProperties()).thenReturn(dict);
         
         m_SUT.disable(m_Session);
-        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.class.getName(), null);
+        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.CONFIG_PID, null);
         
         ArgumentCaptor<Dictionary> mapCaptor = ArgumentCaptor.forClass(Dictionary.class);
         verify(m_Configuration).update(mapCaptor.capture());
@@ -537,7 +537,7 @@ public class TestPowerManagerCommands
         when(m_Configuration.getProperties()).thenReturn(dict);
         
         m_SUT.disable(m_Session);
-        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.class.getName(), null);
+        verify(m_ConfigurationAdmin).getConfiguration(PlatformPowerManager.CONFIG_PID, null);
         
         verify(m_Configuration, never()).update(Mockito.any(Dictionary.class));
         

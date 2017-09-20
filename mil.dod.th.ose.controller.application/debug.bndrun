@@ -25,4 +25,4 @@
     org.apache.felix.http.jettyEnabled=true
 
 # need to keep workding dir to preserve config admin settings
--runkeep
+-runkeep: true
