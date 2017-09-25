@@ -188,12 +188,20 @@ public class TestAddressManagerService extends TestCase
         
         // Create the properties for a new address
         Address addr1 = addressManagerService.getOrCreateAddress("Example:100", "UniqueName");
+        assertThat(addressManagerService.getAddressByName("UniqueName"), is(addr1));
         
         Address addr2 = addressManagerService.getOrCreateAddress("Example:200", "DoNotCopy");
-    
+        assertThat(addressManagerService.getAddressByName("DoNotCopy"), is(addr2));
+
+        // Verify address names/descriptors can be returned
+        assertThat(addressManagerService.getAddressNames(), hasItems("UniqueName", "DoNotCopy"));
+        Map<String, String> nameMap = addressManagerService.getAddressNamesWithDescriptor();
+        assertThat(nameMap.size(), is(2));
+        assertThat(nameMap.keySet(), hasItems("UniqueName", "DoNotCopy"));
+        assertThat(nameMap.values(), hasItems("Example:100", "Example:200"));
+
         // Try to create an address with a duplicate name and verify it was not created.
         int size = addressManagerService.getAddressDescriptiveStrings().size();
-        
         try
         {
             addressManagerService.getOrCreateAddress("Example:300", "DoNotCopy");
