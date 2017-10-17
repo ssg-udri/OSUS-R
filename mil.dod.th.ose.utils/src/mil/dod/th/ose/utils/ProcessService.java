@@ -15,11 +15,14 @@ package mil.dod.th.ose.utils;
 import java.io.IOException;
 import java.util.List;
 
+import aQute.bnd.annotation.ProviderType;
+
 /**
  * OSGi service that handles the creation of processes.
  * 
  * @author cweisenborn
  */
+@ProviderType
 public interface ProcessService
 {
     /**

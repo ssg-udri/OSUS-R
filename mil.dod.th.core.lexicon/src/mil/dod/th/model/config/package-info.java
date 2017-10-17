@@ -14,5 +14,5 @@
 /**
  * Contains the model configuration types, XJC generated, from the XSDs.
  */
-@aQute.bnd.annotation.Version("3.0.0")
+@aQute.bnd.annotation.Version("3.1.0")
 package mil.dod.th.model.config;

@@ -14,7 +14,7 @@
 /**
  * Defines interfaces for using custom communication layers and addressing capabilities.
  */
-@Version("3.1.0")
+@Version("3.2.0")
 package mil.dod.th.core.ccomm;
 
 import aQute.bnd.annotation.Version;

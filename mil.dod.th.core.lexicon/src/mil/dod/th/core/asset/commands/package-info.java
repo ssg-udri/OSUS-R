@@ -15,5 +15,5 @@
  * Contains commands available to assets. Classes are generated from XSDs.
  * </p>
  */
-@aQute.bnd.annotation.Version("3.2.0")
+@aQute.bnd.annotation.Version("3.3.0")
 package mil.dod.th.core.asset.commands;

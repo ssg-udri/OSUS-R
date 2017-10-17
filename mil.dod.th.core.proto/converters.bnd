@@ -10,7 +10,7 @@
 # with this software. If not, see
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
-Bundle-Version: 1.2.1.${tstamp}
+Bundle-Version: 1.2.2.${tstamp}
 Bundle-Name: Terra Harvest Core Protocol Buffer Enum Converters
 Bundle-Description: Contains converters used to convert between JAXB and protocol buffer enumerations.
 Bundle-Vendor: UDRI

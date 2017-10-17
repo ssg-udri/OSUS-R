@@ -14,7 +14,7 @@
 /**
  * Contains the service interfaces for managing the platform's power usage.
  */
-@Version("2.0.1")
+@Version("2.1.0")
 package mil.dod.th.core.pm;
 
 import aQute.bnd.annotation.Version;

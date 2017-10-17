@@ -15,11 +15,14 @@ package mil.dod.th.ose.utils;
 import java.io.IOException;
 import java.net.URLConnection;
 
+import aQute.bnd.annotation.ProviderType;
+
 /**
  * This service should be used when components must create {@link java.net.URLConnection}s.
  * 
  * @author allenchl
  */
+@ProviderType
 public interface UrlService
 {
     /**
