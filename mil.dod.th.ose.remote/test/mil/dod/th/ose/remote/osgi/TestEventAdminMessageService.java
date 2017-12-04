@@ -448,6 +448,34 @@ public class TestEventAdminMessageService
         assertThat((String[])properties.getValue().get(EventConstants.EVENT_TOPIC), is(new String[]{"new-topic"}));
         assertThat((String)properties.getValue().get(EventConstants.EVENT_FILTER), 
                 is(String.format("(&(!(%s=*))(x=y))", RemoteConstants.REMOTE_EVENT_PROP)));
+
+        // Verify duplicate regs are not created when already exist
+        // Create new event registration request - has multiple topics in different order
+        requestMessage = EventRegistrationRequestData.newBuilder().addTopic("other-topic").addTopic("test-topic");
+        // add required fields
+        requestMessage = RemoteUtils.appendRequiredFields(requestMessage, false);
+        eventAdminMessage = EventAdminNamespace.newBuilder()
+                .setType(EventAdminMessageType.EventRegistrationRequest)
+                .setData(requestMessage.build().toByteString())
+                .build();
+        payload = createPayload(eventAdminMessage);
+        message = createEventAdminMessage(eventAdminMessage);
+
+        // replay
+        m_SUT.handleMessage(message, payload, channel);
+
+        // verify that the event is not registered again
+        verify(m_Context, times(3)).registerService(eq(EventHandler.class), Mockito.any(EventHandler.class),
+                properties.capture());
+        // verify response message is sent back to source requester (id=0)
+        verify(m_MessageFactory).createEventAdminResponseMessage(eq(message), 
+                eq(EventAdminMessageType.EventRegistrationResponse), messageCaptor.capture());
+        verify(m_ResponseWrapper, times(4)).queue(channel);
+
+        // verify content of message
+        receivedMessage = messageCaptor.getValue();
+        // ensure existing ID is returned
+        assertThat(receivedMessage.getId(), is(2));
     }
     
     /**
@@ -944,6 +972,7 @@ public class TestEventAdminMessageService
                 .setData(requestMessage.build().toByteString())
                 .build();
         message = createEventAdminMessage(eventAdminMessage);
+        payload = createPayload(eventAdminMessage);
         m_SUT.handleMessage(message, payload, channel);
         
         m_SUT.deactivate();

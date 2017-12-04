@@ -37,6 +37,7 @@ import aQute.bnd.annotation.component.Reference;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.google.protobuf.ProtocolStringList;
 
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.persistence.PersistenceFailedException;
@@ -378,26 +379,36 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
         //parse the message
         final EventRegistrationRequestData requestData = 
                 EventRegistrationRequestData.parseFrom(message.getData());
-        registerListenerLocally(++m_LastRegId, requestData, request.getSourceId(), request.getEncryptType());
-        
-        try
+
+        Integer regId = registrationExists(requestData, request.getSourceId(), request.getEncryptType());
+        if (regId != -1)
         {
-            persistRegistration(requestData, m_LastRegId, request.getSourceId(), request.getEncryptType());
+            m_Logging.debug("Use existing registration %d", regId);
         }
-        catch (final PersistenceFailedException exception) 
+        else
         {
-            // send appropriate response
-            final String errorDesc = "Failed persisting the remote registration, the registration will not be known "
-                    + "if the system restarts.";
-            m_MessageFactory.createBaseErrorMessage(request, ErrorCode.PERSIST_ERROR,
-                    errorDesc + exception.getMessage()).queue(channel);
-            m_Logging.error(exception, errorDesc);
-            return requestData;
+            registerListenerLocally(++m_LastRegId, requestData, request.getSourceId(), request.getEncryptType());
+            regId = m_LastRegId;
+
+            try
+            {
+                persistRegistration(requestData, m_LastRegId, request.getSourceId(), request.getEncryptType());
+            }
+            catch (final PersistenceFailedException exception) 
+            {
+                // send appropriate response
+                final String errorDesc = "Failed persisting the remote registration, the registration will not be "
+                        + "known if the system restarts.";
+                m_MessageFactory.createBaseErrorMessage(request, ErrorCode.PERSIST_ERROR,
+                        errorDesc + exception.getMessage()).queue(channel);
+                m_Logging.error(exception, errorDesc);
+                return requestData;
+            }
         }
         
         //construct response message
         final EventRegistrationResponseData data = EventRegistrationResponseData.newBuilder().
-                setId(m_LastRegId).build();
+                setId(regId).build();
         m_MessageFactory.createEventAdminResponseMessage(request, EventAdminMessageType.EventRegistrationResponse, 
                 data).queue(channel);
         
@@ -569,6 +580,70 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
         final ServiceRegistration<EventHandler> reg = m_Context.registerService(EventHandler.class, 
                 new EventHandlerImpl(systemId, encryptionType, message), properties);
         m_Registrations.put(regId, new RemoteEventRegistration(systemId, reg, message));
+    }
+
+    /**
+     * Check to see if an event registration already exists for a system ID.
+     * @param message
+     *     the remote event registration message that contains the information of what to listen for
+     * @param systemId
+     *     the id of the system which is requesting to receive remote notification of events
+     * @param encryptionType
+     *     the type of encryption to apply to event messages that are generated in response to the registration
+     * @return true if event registration already exists, false otherwise
+     */
+    private int registrationExists(final EventRegistrationRequestData message, final int systemId,
+            final EncryptType encryptionType)
+    {
+        for (Integer existingRegId : m_Registrations.keySet())
+        {
+            final RemoteEventRegistration existingEventReg = m_Registrations.get(existingRegId);
+            final EventRegistrationRequestData existingMessage = existingEventReg.getEventRegistrationRequestData();
+            if (systemId == existingEventReg.getSystemId()
+                    && message.getCanQueueEvent() == existingMessage.getCanQueueEvent()
+                    && message.getObjectFormat().equals(existingMessage.getObjectFormat())
+                    && ((message.hasFilter() && message.getFilter().equals(existingMessage.getFilter()))
+                            || (!message.hasFilter() && !existingMessage.hasFilter()))
+                    && topicListsEqual(message.getTopicList(), existingMessage.getTopicList()))
+            {
+                return existingRegId;
+            }
+        }
+
+        return -1;
+    }
+    
+    /**
+     * Helper function used to compare topic lists and determine whether they are equal.
+     * @param list1
+     *      first list to compare
+     * @param list2
+     *      second list to compare
+     * @return
+     *      true if the lists are equal, false otherwise
+     */
+    private boolean topicListsEqual(final ProtocolStringList list1, final ProtocolStringList list2)
+    {
+        if (list1.size() != list2.size())
+        {
+            return false;
+        }
+        
+        final List<String> sortedList1 = new ArrayList<>(list1);
+        sortedList1.sort(String::compareTo);
+
+        final List<String> sortedList2 = new ArrayList<>(list2);
+        sortedList2.sort(String::compareTo);
+        
+        for (int i = 0; i < sortedList1.size(); ++i)
+        {
+            if (!sortedList1.get(i).equals(sortedList2.get(i)))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
