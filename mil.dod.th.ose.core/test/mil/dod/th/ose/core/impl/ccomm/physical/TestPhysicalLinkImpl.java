@@ -112,6 +112,7 @@ public class TestPhysicalLinkImpl
         m_SUT.setLoggingService(LoggingServiceMocker.createMock());
         m_SUT.initialize(m_FactReg, m_PhysLinkProxy, m_PhysicalLinkFactoryInternal, m_ConfigurationAdmin, 
                 m_EventAdmin, m_PowManInternal, m_Uuid, m_Name, m_Pid, m_BaseType);
+        m_SUT.postCreation();
 
         m_Configuration = ConfigurationAdminMocker.addMockConfiguration(m_SUT);
         when(m_FactReg.createConfiguration(eq(m_Uuid), anyString(), eq(m_SUT))).thenReturn(m_Configuration);

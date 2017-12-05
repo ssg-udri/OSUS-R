@@ -99,7 +99,8 @@ public class TestLinkLayerImpl
                 m_WakeLock);
         
         m_SUT.initialize(m_FactReg, m_LinkLayerProxy, m_LinkLayerFactoryInternal, m_ConfigurationAdmin, m_EventAdmin, 
-                m_PowManInternal, m_Uuid, m_Name, m_Pid, m_BaseType);       
+                m_PowManInternal, m_Uuid, m_Name, m_Pid, m_BaseType);
+        m_SUT.postCreation();
     }
     
     /** 
