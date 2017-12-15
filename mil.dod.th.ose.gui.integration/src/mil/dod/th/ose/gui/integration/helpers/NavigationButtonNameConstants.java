@@ -21,7 +21,7 @@ package mil.dod.th.ose.gui.integration.helpers;
 public class NavigationButtonNameConstants
 {
     /**
-     * Button id for Set Up Missions button.
+     * Button id for Add Mission App button.
      */
     public static final String NAVBUT_PROP_SETUP_MIS = "setupButton";
     
@@ -36,7 +36,7 @@ public class NavigationButtonNameConstants
     public static final String NAVBUT_PROP_COMMS = "commsButton";
     
     /**
-     * Button id for Missions button.
+     * Button id for Mission App Status button.
      */
     public static final String NAVBUT_PROP_MISSIONS = "missionsButton";
     
@@ -44,11 +44,6 @@ public class NavigationButtonNameConstants
      * Button id for Power management button.
      */
     public static final String NAVBUT_PROP_POWER = "powerButton";
-    
-    /**
-     * Button id for Mission Editor button.
-     */
-    public static final String NAVBUT_PROP_MIS_EDITOR = "editorButton";
     
     /**
      * Button id for System Configuration button.

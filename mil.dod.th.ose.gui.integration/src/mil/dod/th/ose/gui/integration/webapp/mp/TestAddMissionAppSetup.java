@@ -35,11 +35,11 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
- * Selenium test for the mission setup page.
+ * Selenium test for the add mission app setup page.
  * 
  * @author cweisenborn
  */
-public class TestMissionSetup 
+public class TestAddMissionAppSetup 
 {
     private static WebDriver m_Driver;
     

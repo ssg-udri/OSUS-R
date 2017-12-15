@@ -31,12 +31,12 @@ public class PageNameConstants
     public static final String PAGECONST_PROP_COMMS = "comms.xhtml";
     
     /**
-     * Constant that holds Set Up Mission page name
+     * Constant that holds Add Mission App page name
      */
     public static final String PAGECONST_PROP_MISSION_SETUP = "setup_mission.xhtml";
     
     /**
-     * Constant that holds Missions Page Name
+     * Constant that holds Mission App Status Page Name
      */
     public static final String PAGECONST_PROP_MISSION = "missions.xhtml";
     
@@ -44,11 +44,6 @@ public class PageNameConstants
      * Constant that holds Power Management Page Name
      */
     public static final String PAGECONST_PROP_POWER = "power.xhtml";
-    
-    /**
-     * Constant that holds Mission Editor Page Name
-     */
-    public static final String PAGECONST_PROP_MISSION_EDITOR = "missioneditor.xhtml";
     
     /**
      * Constant that holds System Configuration Page Name
