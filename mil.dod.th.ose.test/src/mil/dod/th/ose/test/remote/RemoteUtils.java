@@ -12,6 +12,7 @@
 //==============================================================================
 package mil.dod.th.ose.test.remote;
 
+import mil.dod.th.core.remote.RemoteConstants;
 import mil.dod.th.core.remote.proto.EventMessages.EventRegistrationRequestData;
 
 /**
@@ -22,12 +23,6 @@ import mil.dod.th.core.remote.proto.EventMessages.EventRegistrationRequestData;
  */
 final public class RemoteUtils
 {
-    /**
-     * Constant used to define the timeout for an event registration in hours. Default is 
-     * 3 weeks (504h).
-     */
-    static final private int DEFAULT_EVENT_REG_TIMEOUT_HOURS = 504;    
-    
     /**
      * Appends supplemental required fields to {@link EventRegistrationRequestData} messages that do not have them.
      * 
@@ -43,7 +38,7 @@ final public class RemoteUtils
     {
         if (!requestMessage.hasExpirationTimeHours())
         {
-            requestMessage.setExpirationTimeHours(DEFAULT_EVENT_REG_TIMEOUT_HOURS);
+            requestMessage.setExpirationTimeHours(RemoteConstants.REMOTE_EVENT_DEFAULT_REG_TIMEOUT_HOURS);
         }
         
         requestMessage.setCanQueueEvent(queueEvent);

@@ -88,7 +88,7 @@
   </osgiConfigs>
   
   <eventRegs canQueueEvent="false" eventFilter="(obj.name=remoteConfigTestAsset)" objectFormat="NATIVE" 
-    systemId="99">
+    systemId="99" expirationTimeHours="5">
     <eventTopics>mil/dod/th/core/asset/Asset/DATA_CAPTURED</eventTopics>
   </eventRegs>
   

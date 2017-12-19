@@ -50,6 +50,13 @@
               </tr>
               <tr>
                   <td>
+                       <h:outputText id="remoteEventHeader" styleClass="textHeader" value="Remote Event Expiration (hours)"/>
+                       <br/>
+                       <p:inputText id="remoteevent" styleClass="allInputs" value="#{terraHarvestSystemUtil.remoteEventExpirationHours}"/>
+                  </td>
+              </tr>
+              <tr>
+                  <td>
                        <h:outputText id="sysVersionHeader" styleClass="textHeader" value="System Version"/>
                        <br/>
                        <h:outputText styleClass="allInputs" value="#{terraHarvestSystemUtil.systemVersion}"/>

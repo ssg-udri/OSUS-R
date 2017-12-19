@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +65,8 @@ import mil.dod.th.ose.remote.api.RemoteEventRegistration;
 import mil.dod.th.ose.remote.proto.PersistEventRegistration.PersistentEventRegistrationMessage;
 import mil.dod.th.ose.remote.util.RemoteInterfaceUtilities;
 import mil.dod.th.ose.remote.util.RemotePropertyConverter;
+import mil.dod.th.ose.shared.AutoExpireHashMap;
+import mil.dod.th.ose.shared.AutoExpireMap;
 import mil.dod.th.ose.shared.EventUtils;
 import mil.dod.th.ose.shared.ExceptionLoggingThreadPool;
 import mil.dod.th.ose.shared.SharedMessageUtils;
@@ -80,9 +81,9 @@ import org.osgi.service.event.EventHandler;
 
 /**
  * This class is responsible for managing OSGi EventAdmin messages received through the remote interface
- * and sending proper responses according to different incoming event admin request messages.  
+ * and sending proper responses according to different incoming event admin request messages.
+ * 
  * @author bachmakm
- *
  */
 //Remote event admin is provided but not other service because this would create a cycle, instead this class 
 //registers with the message router
@@ -116,10 +117,9 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
     private BundleContext m_Context;
 
     /**
-     * Map of all registrations, key is the registration id.
+     * Map of all registrations with auto expiring entries, key is the registration id.
      */
-    private final Map<Integer, RemoteEventRegistration> m_Registrations = 
-            new HashMap<Integer, RemoteEventRegistration>();
+    private AutoExpireMap<Integer, RemoteEventRegistration> m_Registrations;
 
     /**
      * Routes incoming messages.
@@ -216,7 +216,10 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
     public void activate(final BundleContext context)
     {
         m_Context = context;
-        
+        m_Registrations = new AutoExpireHashMap<Integer, RemoteEventRegistration>(
+            TimeUnit.HOURS.toMillis(RemoteConstants.REMOTE_EVENT_DEFAULT_REG_TIMEOUT_HOURS),
+            TimeUnit.MINUTES.toMillis(1),
+            (key, value) -> handleExpiredEntry(key, value));
         m_MessageRouter.bindMessageService(this);
         
         //get any persisted registrations
@@ -246,10 +249,31 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
                 m_LastRegId = regId;
             }
             final EventRegistrationRequestData dataMsg = message.getRegMessage();
-            registerListenerLocally(regId, dataMsg, message.getSystemId(), message.getEncryptionType());
+            final int remainingExpHours = message.hasRemainingExpirationTimeHours()
+                    ? message.getRemainingExpirationTimeHours() : -1;
+            registerListenerLocally(regId, dataMsg, message.getSystemId(), message.getEncryptionType(),
+                    remainingExpHours);
         }
     }
-    
+
+    /**
+     * Callback for handling expired registration entires.
+     * 
+     * @param id
+     *      Registration ID
+     * @param eventReg
+     *      Remote event registration object
+     */
+    private void handleExpiredEntry(final Integer id, final RemoteEventRegistration eventReg)
+    {
+        m_Logging.info("Remote event registration %d for system [0x%08x] expired", id, eventReg.getSystemId());
+        final ServiceRegistration<EventHandler> serviceReg = eventReg.getServiceRegistration();
+        serviceReg.unregister();
+
+        // remove from datastore
+        removePersistedRegistration(id);
+    }
+
     /**
      * Deactivate the service, clean out all event registrations and unbind the service from the message router.
      */
@@ -322,10 +346,16 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
     }
     
     @Override
+    public long getRemoteEventExpirationHours(final int regId)
+    {
+        return m_Registrations.getRemainingTime(regId, TimeUnit.HOURS);
+    }
+
+    @Override
     public void addRemoteEventRegistration(final int systemId, final EventRegistrationRequestData eventRegMessage)
     {
         m_Logging.debug("Adding event registration from RemoteEventAdmin: %s", eventRegMessage);
-        registerListenerLocally(++m_LastRegId, eventRegMessage, systemId, EncryptType.NONE);
+        registerListenerLocally(++m_LastRegId, eventRegMessage, systemId, EncryptType.NONE, -1);
     }
     
     /**
@@ -387,7 +417,7 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
         }
         else
         {
-            registerListenerLocally(++m_LastRegId, requestData, request.getSourceId(), request.getEncryptType());
+            registerListenerLocally(++m_LastRegId, requestData, request.getSourceId(), request.getEncryptType(), -1);
             regId = m_LastRegId;
 
             try
@@ -494,8 +524,14 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
      */
     private void cleanupAllRegistrations()
     {
-        for (RemoteEventRegistration eventReg : m_Registrations.values())
+        for (Integer regId : m_Registrations.keySet())
         {
+            final RemoteEventRegistration eventReg = m_Registrations.get(regId);
+
+            // Update the remaining expiration time
+            updateRegistration(regId);
+
+            // Unregister the service registration
             final ServiceRegistration<EventHandler> serviceReg = eventReg.getServiceRegistration();
             serviceReg.unregister();
         }
@@ -528,11 +564,53 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
                 setSystemId(systemId).
                 setRegMessage(newRegistration).
                 setEncryptionType(encryptionType).build();
-        
-        m_Datastore.persist(
-                this.getClass(), UUID.randomUUID(), String.valueOf(regId), persistMessage.toByteArray());
+
+        m_Datastore.persist(this.getClass(), UUID.randomUUID(), String.valueOf(regId), persistMessage.toByteArray());
     }
     
+    /**
+     * Update the remaining expiration time for a remote event registration.
+     * 
+     * @param regId
+     *      Registration ID
+     */
+    private synchronized void updateRegistration(final int regId)
+    {
+        final Collection<PersistentData> regCollection = m_Datastore.query(getClass(), String.valueOf(regId));
+        if (!regCollection.isEmpty())
+        {
+            final PersistentData data = regCollection.iterator().next();
+
+            // get existing message to update
+            final byte[] bytes = (byte[])data.getEntity();
+            final PersistentEventRegistrationMessage oldMessage;
+            try
+            {
+                oldMessage = PersistentEventRegistrationMessage.parseFrom(bytes);
+            }
+            catch (final IOException e)
+            {
+                m_Logging.error(e, "Unable to update a remote event registration with ID %s from the datastore.", 
+                        data.getDescription());
+                // skip
+                return;
+            }
+
+            final PersistentEventRegistrationMessage updatedMessage = PersistentEventRegistrationMessage.newBuilder(
+                    oldMessage).setRemainingExpirationTimeHours(
+                            (int)m_Registrations.getRemainingTime(regId, TimeUnit.HOURS)).build();
+            data.setEntity(updatedMessage.toByteArray());
+            try
+            {
+                m_Datastore.merge(data);
+            }
+            catch (final Exception e)
+            {
+                m_Logging.error(e, "Error persisting remote registration update");
+            }
+        }
+    }
+
     /**
      * Remove a persisted registration from the datastore.
      * @param regId
@@ -553,9 +631,11 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
      *     the id of the system which is requesting to receive remote notification of events
      * @param encryptionType
      *     the type of encryption to apply to event messages that are generated in response to the registration
+     * @param remainingExpHours
+     *     number of hours remaining before the registration expires, -1 if registration is new
      */
     private void registerListenerLocally(final int regId, final EventRegistrationRequestData message, 
-            final int systemId, final EncryptType encryptionType)
+            final int systemId, final EncryptType encryptionType, final int remainingExpHours)
     {
         final Dictionary<String, Object> properties = new Hashtable<String, Object>();
         // set topic property
@@ -579,7 +659,19 @@ public class EventAdminMessageService implements MessageService, RemoteEventAdmi
         // register event handler for the given channel
         final ServiceRegistration<EventHandler> reg = m_Context.registerService(EventHandler.class, 
                 new EventHandlerImpl(systemId, encryptionType, message), properties);
-        m_Registrations.put(regId, new RemoteEventRegistration(systemId, reg, message));
+
+        // Determine the expiration time for the registration
+        final long expireTimeMillis;
+        if (remainingExpHours > 0)
+        {
+            expireTimeMillis = TimeUnit.HOURS.toMillis(remainingExpHours);
+        }
+        else
+        {
+            expireTimeMillis = TimeUnit.HOURS.toMillis(message.getExpirationTimeHours());
+        }
+
+        m_Registrations.put(regId, new RemoteEventRegistration(systemId, reg, message), expireTimeMillis);
     }
 
     /**

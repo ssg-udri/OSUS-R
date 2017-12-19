@@ -27,4 +27,7 @@ message PersistentEventRegistrationMessage
 
     //the mode of encryption to use when sending event messages in response to this registration
     required EncryptType encryptionType = 3;
+
+    //remaining expiration of event registration in hours. Default is 1 week (168 hours).
+    optional int32 remainingExpirationTimeHours = 4 [default = 168];
 }
