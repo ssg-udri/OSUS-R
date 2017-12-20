@@ -24,6 +24,7 @@ import javax.faces.bean.ViewScoped;
 import javax.inject.Inject;
 
 import mil.dod.th.core.controller.TerraHarvestController;
+import mil.dod.th.ose.gui.webapp.remote.RemoteEvents;
 import mil.dod.th.ose.gui.webapp.utils.GrowlMessageUtil;
 
 import org.glassfish.osgicdi.OSGiService;
@@ -49,6 +50,11 @@ public class TerraHarvestControllerUtilImpl implements TerraHarvestControllerUti
     private int m_SystemId;
     
     /**
+     * Variable which holds remote event expiration hours used when creating new remote event registrations.
+     */
+    private int m_RemoteEventExpirationHours;
+
+    /**
      * Service for this instance of a Terra Harvest system.
      */
     @Inject @OSGiService
@@ -68,6 +74,7 @@ public class TerraHarvestControllerUtilImpl implements TerraHarvestControllerUti
     {
         m_SystemName = m_TerraHarvestController.getName();
         m_SystemId = m_TerraHarvestController.getId();
+        m_RemoteEventExpirationHours = RemoteEvents.getRemoteEventExpirationHours();
     }
     
     /**
@@ -147,6 +154,18 @@ public class TerraHarvestControllerUtilImpl implements TerraHarvestControllerUti
         return new ArrayList<String>(m_TerraHarvestController.getBuildInfo().keySet());
     }
     
+    @Override
+    public int getRemoteEventExpirationHours()
+    {
+        return m_RemoteEventExpirationHours;
+    }
+
+    @Override
+    public void setRemoteEventExpirationHours(final int expHours)
+    {
+        m_RemoteEventExpirationHours = expHours;
+    }
+
     /* (non-Javadoc)
      * @see mil.dod.th.ose.gui.webapp.general.TerraHarvestSystemUtil#setSystemNameAndId()
      */
@@ -155,6 +174,7 @@ public class TerraHarvestControllerUtilImpl implements TerraHarvestControllerUti
     {
         m_TerraHarvestController.setName(m_SystemName);
         m_TerraHarvestController.setId(m_SystemId);
+        RemoteEvents.setRemoteEventExpirationHours(m_RemoteEventExpirationHours);
         
         m_GrowlUtil.createLocalFacesMessage(FacesMessage.SEVERITY_INFO, "Updated System Information", 
                 "System information has been updated.");

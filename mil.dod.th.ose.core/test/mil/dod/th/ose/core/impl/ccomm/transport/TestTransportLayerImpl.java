@@ -122,6 +122,7 @@ public class TestTransportLayerImpl
 
         m_SUT.initialize(m_FactReg, m_TransportLayerProxy, m_TransportLayerFactoryInternal, m_ConfigurationAdmin, 
                 m_EventAdmin, m_PowManInternal, m_Uuid, m_Name, m_Pid, m_BaseType);
+        m_SUT.postCreation();
 
         verify(m_PowManInternal).createWakeLock(m_TransportLayerProxy.getClass(), m_SUT, "coreTransLayer");
         verify(m_PowManInternal).createWakeLock(m_TransportLayerProxy.getClass(), m_SUT, "coreTransLayerRecv");

@@ -15,12 +15,15 @@ package mil.dod.th.ose.utils;
 import java.io.IOException;
 import java.net.Socket;
 
+import aQute.bnd.annotation.ProviderType;
+
 /**
  * Create a client socket. This interface supports dependency injection to other components that need a service for
  * creating new client sockets.
  * 
  * @author callen
  */
+@ProviderType
 public interface ClientSocketFactory 
 {
     /**

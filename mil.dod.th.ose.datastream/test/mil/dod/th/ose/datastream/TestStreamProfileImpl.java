@@ -130,6 +130,7 @@ public class TestStreamProfileImpl
 
         m_SUT.initialize(m_FactoryRegistry, m_StreamProfileProxy, m_FactoryInternal, 
                 m_ConfigAdmin, m_EventAdmin, m_PowerInternal, OBJ_UUID, OBJ_NAME, OBJ_PID, OBJ_BASETYPE);
+        m_SUT.postCreation();
     }
     
     @Test

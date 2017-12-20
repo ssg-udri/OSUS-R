@@ -19,9 +19,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import aQute.bnd.annotation.ProviderType;
+
 /**
  * This service allows components access to ImageIO methods.
  */
+@ProviderType
 public interface ImageIOService
 {
     /**

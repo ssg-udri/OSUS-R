@@ -29,6 +29,7 @@ import aQute.bnd.annotation.component.ConfigurationPolicy;
 import aQute.bnd.annotation.component.Modified;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import mil.dod.th.core.ccomm.physical.PhysicalLink;
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.pm.PlatformPowerManager;
@@ -40,9 +41,9 @@ import mil.dod.th.ose.utils.FileService;
  * 
  * @author cweisenborn
  */
-@Component(immediate = true, designate = BeagleBoneBlackPowerManagerConfig.class, 
-    configurationPolicy = ConfigurationPolicy.optional, provide = {PlatformPowerManager.class, 
-            BeagleBoneBlackPowerManager.class})
+@Component(provide = {PlatformPowerManager.class, BeagleBoneBlackPowerManager.class},
+           name = PlatformPowerManager.CONFIG_PID, immediate = true,
+           designate = BeagleBoneBlackPowerManagerConfig.class, configurationPolicy = ConfigurationPolicy.optional)
 public class BeagleBoneBlackPowerManager implements PlatformPowerManager
 {  
     private static final String ILLEGAL_WAKE_SOURCE = "Specified physical link [%s] is not a valid wake source.";

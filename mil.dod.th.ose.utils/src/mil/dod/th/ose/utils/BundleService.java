@@ -12,6 +12,8 @@
 //==============================================================================
 package mil.dod.th.ose.utils;
 
+import aQute.bnd.annotation.ProviderType;
+
 import org.osgi.framework.Bundle;
 
 /**
@@ -19,8 +21,8 @@ import org.osgi.framework.Bundle;
  * static methods.
  * 
  * @author dhumeniuk
- *
  */
+@ProviderType
 public interface BundleService
 {
     /**

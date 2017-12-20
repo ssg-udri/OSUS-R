@@ -273,5 +273,6 @@ public class TestXmlConfigurations
                 is("mil/dod/th/core/asset/Asset/DATA_CAPTURED"));
         assertThat(regData.getEventRegistrationRequestData().getObjectFormat(), 
                 is(RemoteTypesGen.LexiconFormat.Enum.NATIVE));
+        assertThat(regData.getEventRegistrationRequestData().getExpirationTimeHours(), is(5));
     }
 }

@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 1.6.5.${tstamp}
+Bundle-Version: 1.6.6.${tstamp}
 Bundle-Description: THOSE SDK Management Application
 Bundle-Name: THOSE SDK
 Bundle-Vendor: UDRI

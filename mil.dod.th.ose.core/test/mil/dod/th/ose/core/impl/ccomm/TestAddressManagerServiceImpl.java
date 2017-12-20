@@ -367,7 +367,7 @@ public class TestAddressManagerServiceImpl
      * - Removed addresses are correctly ... no longer returned.
      */
     @Test
-    public void getAddressDescriptiveStrings() throws IllegalArgumentException, IllegalStateException, IOException,
+    public void testGetAddressDescriptiveStrings() throws IllegalArgumentException, IllegalStateException, IOException,
         ConfigurationException, FactoryException, AssetException, CCommException
     {
         // No exception thrown on empty list, and that list is empty
@@ -492,7 +492,7 @@ public class TestAddressManagerServiceImpl
      * Verify that a created address can be verified by descriptive string and the address object itself.
      */
     @Test
-    public void testcheckAddressAlreadyExists() throws CCommException, FactoryException, IOException, AssetException,
+    public void testCheckAddressAlreadyExists() throws CCommException, FactoryException, IOException, AssetException,
             IllegalArgumentException
     {
         Address a = m_SUT.getOrCreateAddress("Base:blah");
@@ -510,7 +510,7 @@ public class TestAddressManagerServiceImpl
      * Verify no exception if the check for if an address exists is passed a unknown address string.
      */
     @Test
-    public void testcheckAddressAlreadyExistsUnknown()
+    public void testCheckAddressAlreadyExistsUnknown()
     {
         assertThat(m_SUT.checkAddressAlreadyExists("Base:jack-Jill"), is(false));
     }
@@ -520,7 +520,7 @@ public class TestAddressManagerServiceImpl
      * factory.
      */
     @Test
-    public void testcheckAddressAlreadyExistsNoFactory()
+    public void testCheckAddressAlreadyExistsNoFactory()
     {
         assertThat(m_SUT.checkAddressAlreadyExists("Monkey:jack-Jill"), is(false));
     }
@@ -530,7 +530,7 @@ public class TestAddressManagerServiceImpl
      * no formatted correctly.
      */
     @Test
-    public void testcheckAddressAlreadyExistsBadFormat() throws CCommException
+    public void testCheckAddressAlreadyExistsBadFormat() throws CCommException
     {
         String addrString = "Base:jack-Jill";
         when(m_Translator.getAddressPropsFromString(addrString.split(":")[1])).
@@ -538,7 +538,73 @@ public class TestAddressManagerServiceImpl
         //act
         assertThat(m_SUT.checkAddressAlreadyExists(addrString), is(false));
     }
-    
+
+    @Test
+    public void testGetAddressByNameNotExist()
+    {
+        try
+        {
+            m_SUT.getAddressByName(null);
+            fail("Expecting exception as name is null");
+        }
+        catch (IllegalArgumentException e)
+        {
+        }
+
+        try
+        {
+            m_SUT.getAddressByName("Base:invalid");
+            fail("Expecting exception as name is invalid");
+        }
+        catch (IllegalArgumentException e)
+        {
+        }
+    }
+
+    @Test
+    public void testGetAddressByName() throws CCommException, IllegalArgumentException,
+            FactoryObjectInformationException
+    {
+        when(m_AddressFactoryObjectDataManager.getName(Mockito.any(UUID.class))).thenReturn("addr-a");
+        Address a = m_SUT.getOrCreateAddress("Base:a", "addr-a");
+
+        assertThat(m_SUT.getAddressByName("addr-a"), is(a));
+    }
+
+    @Test
+    public void testGetAddressNamesEmpty()
+    {
+        assertThat(m_SUT.getAddressNames(), hasSize(0));
+    }
+
+    @Test
+    public void testGetAddressNames() throws CCommException, IllegalArgumentException, FactoryObjectInformationException
+    {
+        when(m_AddressFactoryObjectDataManager.getName(Mockito.any(UUID.class))).thenReturn("addr-a");
+        m_SUT.getOrCreateAddress("Base:a", "addr-a");
+
+        assertThat(m_SUT.getAddressNames(), hasItems("addr-a"));
+    }
+
+    @Test
+    public void testGetAddressNamesWithDescriptorEmpty()
+    {
+        Map<String, String> nameMap = m_SUT.getAddressNamesWithDescriptor();
+        assertThat(nameMap.size(), is(0));
+    }
+
+    @Test
+    public void testGetAddressNamesWithDescriptor() throws IllegalArgumentException, FactoryObjectInformationException,
+            CCommException
+    {
+        when(m_AddressFactoryObjectDataManager.getName(Mockito.any(UUID.class))).thenReturn("addr-a");
+        Address a = m_SUT.getOrCreateAddress("Base:a", "addr-a");
+        when(a.getDescription()).thenReturn("Base:a");
+
+        Map<String, String> nameMap = m_SUT.getAddressNamesWithDescriptor();
+        assertThat(nameMap, hasEntry("addr-a", "Base:a"));
+    }
+
     /**
      * Mock out translator service.
      */

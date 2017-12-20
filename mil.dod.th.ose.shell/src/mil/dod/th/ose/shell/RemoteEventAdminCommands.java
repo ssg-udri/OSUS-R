@@ -27,8 +27,8 @@ import org.apache.felix.service.command.Descriptor;
 
 /**
  * Class that supports access to remote event registrations.
+ * 
  * @author callen
- *
  */
 @Component(provide = RemoteEventAdminCommands.class, properties = {"osgi.command.scope=thremote", 
         "osgi.command.function=eventRegs" })
@@ -51,7 +51,6 @@ public class RemoteEventAdminCommands
         m_RemoteEventAdmin = remoteEventAdmin;
     }
     
-    
     /**
      * Prints all remote event registrations.
      * @param session
@@ -64,7 +63,9 @@ public class RemoteEventAdminCommands
         final Map<Integer, RemoteEventRegistration> regs = m_RemoteEventAdmin.getRemoteEventRegistrations();
         for (Integer regId : regs.keySet())
         {
-            out.printf("Registration ID: %d\n%s", regId, regs.get(regId));
+            final long expHours = m_RemoteEventAdmin.getRemoteEventExpirationHours(regId);
+            out.printf("Registration ID: %d (Expires in %d-%d hours)\n%s", regId, expHours, expHours + 1,
+                    regs.get(regId));
         }
     }
 }

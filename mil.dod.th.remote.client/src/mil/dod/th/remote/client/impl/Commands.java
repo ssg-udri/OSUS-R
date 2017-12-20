@@ -23,6 +23,7 @@ import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
 import mil.dod.th.core.persistence.ObservationStore;
+import mil.dod.th.core.remote.RemoteConstants;
 import mil.dod.th.core.remote.proto.AssetDirectoryServiceMessages.AssetDirectoryServiceNamespace;
 import mil.dod.th.core.remote.proto.AssetDirectoryServiceMessages.AssetDirectoryServiceNamespace
     .AssetDirectoryServiceMessageType;
@@ -64,12 +65,6 @@ import org.osgi.service.event.EventHandler;
     })
 public class Commands
 {
-    /**
-     * Constant used to define the timeout for an event registration in hours. Default is 
-     * 3 weeks (504h).
-     */
-    private final static int DEFAULT_EVENT_REG_TIMEOUT_HOURS = 504;
-
     /**
      * Constant used for the controller ID being connected to.
      */
@@ -244,7 +239,7 @@ public class Commands
 
         m_EventAdminMessageGen.createEventRegRequest()
             .setCanQueueEvent(true)
-            .setExpirationTimeHours(DEFAULT_EVENT_REG_TIMEOUT_HOURS)
+            .setExpirationTimeHours(RemoteConstants.REMOTE_EVENT_DEFAULT_REG_TIMEOUT_HOURS)
             .setObjectFormat(LexiconFormat.Enum.XML)
             .setTopics(ObservationStore.TOPIC_OBSERVATION_PERSISTED_WITH_OBS,
                 ObservationStore.TOPIC_OBSERVATION_MERGED_WITH_OBS)

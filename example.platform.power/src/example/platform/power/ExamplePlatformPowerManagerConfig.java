@@ -13,13 +13,14 @@
 package example.platform.power;
 
 import mil.dod.th.core.pm.PlatformPowerManager;
+
 import aQute.bnd.annotation.metatype.Meta.AD;
 import aQute.bnd.annotation.metatype.Meta.OCD;
 
 /**
- * Configuration interface used by a {@link ExamplePlatformPowerManager}
+ * Configuration interface used by a {@link ExamplePlatformPowerManager}.
+ * 
  * @author Josh
- *
  */
 @OCD
 public interface ExamplePlatformPowerManagerConfig
@@ -45,5 +46,4 @@ public interface ExamplePlatformPowerManagerConfig
     @AD(id = PlatformPowerManager.CONFIG_PROP_STARTUP_TIME_MS, name = "Startup Time (ms)", 
             description = "The startup time in milliseconds", required = false, deflt = "1000")
     long startupTimeMs();
-    
 }

@@ -18,6 +18,7 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import mil.dod.th.core.remote.RemoteConstants;
 import mil.dod.th.core.remote.proto.EventMessages.EventRegistrationRequestData;
 import mil.dod.th.ose.remote.api.RemoteEventAdmin;
 import mil.dod.th.ose.remote.api.RemoteEventRegistration;
@@ -79,6 +80,8 @@ public class TestRemoteEventAdminCommands
         
         //behavior
         when(m_RemoteEventAdmin.getRemoteEventRegistrations()).thenReturn(registrations);
+        when(m_RemoteEventAdmin.getRemoteEventExpirationHours(1)).thenReturn(167L);
+        when(m_RemoteEventAdmin.getRemoteEventExpirationHours(2)).thenReturn(5L);
         
         CommandSession testSession = mock(CommandSession.class);
         PrintStream testStream = mock(PrintStream.class);
@@ -86,7 +89,9 @@ public class TestRemoteEventAdminCommands
         
         m_SUT.eventRegs(testSession);
         
-        verify(testStream).printf("Registration ID: %d\n%s", 1, reg1);
-        verify(testStream).printf("Registration ID: %d\n%s", 2, reg2);
+        verify(testStream).printf("Registration ID: %d (Expires in %d-%d hours)\n%s", 1,
+                (long)RemoteConstants.REMOTE_EVENT_DEFAULT_REG_TIMEOUT_HOURS - 1,
+                (long)RemoteConstants.REMOTE_EVENT_DEFAULT_REG_TIMEOUT_HOURS, reg1);
+        verify(testStream).printf("Registration ID: %d (Expires in %d-%d hours)\n%s", 2, 5L, 6L, reg2);
     }
 }

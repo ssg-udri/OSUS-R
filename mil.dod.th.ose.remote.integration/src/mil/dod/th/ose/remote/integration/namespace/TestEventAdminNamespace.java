@@ -530,6 +530,73 @@ public class TestEventAdminNamespace
     }
     
     /**
+     * Verify that duplicate event registrations are not created.
+     */
+    @Test
+    public void testDuplicateEventRegs() throws IOException
+    {
+        MessageListener listener = new MessageListener(m_Socket);
+
+        // Register event
+        EventRegistrationRequestData.Builder requestMessage = EventRegistrationRequestData.newBuilder()
+                .addTopic("test-topic1");
+        // add required fields
+        requestMessage = RemoteUtils.appendRequiredFields(requestMessage, false);
+        TerraHarvestMessage message = createEventAdminMessage(EventAdminMessageType.EventRegistrationRequest, 
+                requestMessage.build());
+        // send out message
+        message.writeDelimitedTo(m_Socket.getOutputStream());
+        
+        // listen for messages for a specific time interval
+        List<MessageDetails> details = listener.waitForMessages(1000,
+                new BasicMessageMatcher(Namespace.EventAdmin, 
+                        EventAdminMessageType.EventRegistrationResponse));
+        
+        EventAdminNamespace response = null;
+        for (MessageDetails detail : details)
+        {
+            if (detail.getNamespaceMessage() instanceof EventAdminNamespace)
+            {
+                response = (EventAdminNamespace)detail.getNamespaceMessage();
+                break;
+            }
+        }
+        
+        assertThat(response, notNullValue());
+        
+        EventRegistrationResponseData regResponse = EventRegistrationResponseData.parseFrom(response.getData());
+        int origRegId = regResponse.getId();
+
+        // Register event again
+        requestMessage = EventRegistrationRequestData.newBuilder().addTopic("test-topic1");
+        // add required fields
+        requestMessage = RemoteUtils.appendRequiredFields(requestMessage, false);
+        message = createEventAdminMessage(EventAdminMessageType.EventRegistrationRequest, requestMessage.build());
+        // send out message
+        message.writeDelimitedTo(m_Socket.getOutputStream());
+        
+        // listen for messages for a specific time interval
+        details = listener.waitForMessages(1000,
+                new BasicMessageMatcher(Namespace.EventAdmin, 
+                        EventAdminMessageType.EventRegistrationResponse));
+        
+        response = null;
+        for (MessageDetails detail : details)
+        {
+            if (detail.getNamespaceMessage() instanceof EventAdminNamespace)
+            {
+                response = (EventAdminNamespace)detail.getNamespaceMessage();
+                break;
+            }
+        }
+        
+        assertThat(response, notNullValue());
+        
+        regResponse = EventRegistrationResponseData.parseFrom(response.getData());
+        assertThat(regResponse.getId(), equalTo(origRegId));
+    }
+
+    /**
      * Helper method for creating EventAdmin messages to be sent to controller. 
      * @param type
      *      type of message to be contained in the sent TerraHarvestMessage

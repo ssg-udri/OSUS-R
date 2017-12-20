@@ -140,13 +140,12 @@ the first line. It is used to declare to the browser the version of HTML the doc
                           <p:commandButton id="assetButton" immediate="true" styleClass="navigationButtons" value="Assets" action="dev-assets"></p:commandButton>
                           <p:commandButton id="commsButton" immediate="true" styleClass="navigationButtons" value="Comms" action="dev-comms"></p:commandButton>
                       </p:tab>
-                      <p:tab title="Mission Programming">
-                          <p:commandButton id="setupButton" immediate="true" styleClass="navigationButtons" value="Set Up Mission" action="mp-setupmis"></p:commandButton>
-                          <p:commandButton id="missionsButton" immediate="true" styleClass="navigationButtons" value="Missions" action="mp-missions"></p:commandButton>
+                      <p:tab title="Mission Apps">
+                          <p:commandButton id="setupButton" immediate="true" styleClass="navigationButtons" value="Add Mission App" action="mp-setupmis"></p:commandButton>
+                          <p:commandButton id="missionsButton" immediate="true" styleClass="navigationButtons" value="Mission App Status" action="mp-missions"></p:commandButton>
                       </p:tab>
                       <p:tab title="Advanced">
-                          <p:commandButton id="powerButton" disabled="true" immediate="true" styleClass="navigationButtons" value="Power Management" action="adv-powerman" ></p:commandButton>
-                          <p:commandButton id="editorButton" disabled="true" immediate="true" styleClass="navigationButtons" value="Mission Editor" action="adv-missioneditor" ></p:commandButton>
+                          <p:commandButton id="powerButton" disabled="true" rendered="false" immediate="true" styleClass="navigationButtons" value="Power Management" action="adv-powerman" ></p:commandButton>
                           <p:commandButton id="systemButton" immediate="true" styleClass="navigationButtons" value="System Configurations" action="adv-sysconfig"></p:commandButton>
                           <p:commandButton id="guiButton" immediate="true" styleClass="navigationButtons" value="GUI Configuration" action="adv-guiconfig" ></p:commandButton>
                       </p:tab>

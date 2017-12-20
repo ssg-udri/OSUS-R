@@ -15,11 +15,14 @@ package mil.dod.th.ose.utils;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+import aQute.bnd.annotation.ProviderType;
+
 /**
  * Create a server socket.  Abstracted interface to support dependency injection.
  * 
  * @author Dave Humeniuk
  */
+@ProviderType
 public interface ServerSocketFactory
 {
     /**

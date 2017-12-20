@@ -113,6 +113,7 @@ public class TestAbstractFactoryObject
         m_SUT.initialize(m_Registry, m_FactoryProxy, factoryInternal,
                 m_ConfigAdmin, m_EventAdmin, m_PowerInternal,
                 OBJ_UUID, OBJ_NAME, OBJ_PID, OBJ_BASETYPE);
+        m_SUT.postCreation();
         
         when(m_Registry.createConfiguration(OBJ_UUID, FACTORY_PID, m_SUT)).thenReturn(config);
     }

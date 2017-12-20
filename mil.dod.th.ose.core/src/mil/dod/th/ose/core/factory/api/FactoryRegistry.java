@@ -979,7 +979,10 @@ public class FactoryRegistry<T extends FactoryObjectInternal>  //NOPMD Avoid rea
         
         //add component instance to map
         m_ComponentMap.put(object.getUuid(), compInst);
-        
+
+        // Call method on object to notify that creation is complete (e.g. then post asset status, etc.)
+        object.postCreation();
+
         // return the object
         return object;
     }

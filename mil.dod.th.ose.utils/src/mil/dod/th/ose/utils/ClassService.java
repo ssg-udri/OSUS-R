@@ -14,12 +14,14 @@ package mil.dod.th.ose.utils;
 
 import java.net.URL;
 
+import aQute.bnd.annotation.ProviderType;
+
 /**
  * OSGi service for classes to allow for injection.
  * 
  * @author dhumeniuk
- *
  */
+@ProviderType
 public interface ClassService
 {
     /**

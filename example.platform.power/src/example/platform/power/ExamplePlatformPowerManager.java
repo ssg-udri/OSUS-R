@@ -45,12 +45,12 @@ import mil.dod.th.core.pm.PlatformPowerManager;
 import mil.dod.th.core.pm.WakeLock;
 
 /**
- * Provides an implementation of {@link PlatformPowerManager} for integration test purposes
+ * Provides an implementation of {@link PlatformPowerManager} for integration test purposes.
+ * 
  * @author jlatham
- *
  */
-@Component(provide = PlatformPowerManager.class, designate = ExamplePlatformPowerManagerConfig.class, 
-    configurationPolicy = ConfigurationPolicy.optional)
+@Component(provide = PlatformPowerManager.class, name = PlatformPowerManager.CONFIG_PID,
+           designate = ExamplePlatformPowerManagerConfig.class, configurationPolicy = ConfigurationPolicy.optional)
 public class ExamplePlatformPowerManager implements PlatformPowerManager, EventHandler
 {
     /** 

@@ -120,4 +120,32 @@ public interface AddressManagerService
      *      the output stream.
      */
     void printDeep(PrintStream printStream);
+
+    /**
+     * Find the {@link Address} with the given name.
+     * 
+     * @param name
+     *      the name of the {@link Address} to lookup
+     * @return 
+     *      address with the given name
+     * @throws IllegalArgumentException
+     *      {@link Address} does not exist
+     */
+    Address getAddressByName(String name) throws IllegalArgumentException;
+
+    /**
+     * Get a list of all the names of each {@link Address}.
+     * 
+     * @return 
+     *     a list of all the names of {@link Address}es held by the service
+     */
+    List<String> getAddressNames();
+
+    /**
+     * Get a map of {@link Address} names to their descriptive strings.
+     * 
+     * @return
+     *      a map of all names to their descriptive strings for {@link Address}es held by the service
+     */
+    Map<String, String> getAddressNamesWithDescriptor();
 }

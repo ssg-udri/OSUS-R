@@ -83,7 +83,6 @@ public class TestRemoteEventLoaderImpl
             //messages were created such that the number of topics is the event configs order
             //config1 has one topic, config2, has two, see createEventConfigs method below
             int numberOfTopics = message.getTopicCount();
-            assertThat(message.getExpirationTimeHours(), is(-1));
             switch (numberOfTopics)
             {
                 case 1:
@@ -91,24 +90,28 @@ public class TestRemoteEventLoaderImpl
                     assertThat(message.hasFilter(), is(false));
                     assertThat(message.getCanQueueEvent(), is(true));
                     assertThat(message.getObjectFormat(), is(RemoteTypesGen.LexiconFormat.Enum.XML));
+                    assertThat(message.getExpirationTimeHours(), is(10));
                     break;
                 case 2:
                     assertThat(message.getTopic(1), is(m_Top2));
                     assertThat(message.getFilter(), is(m_Filter1));
                     assertThat(message.getCanQueueEvent(), is(true));
                     assertThat(message.getObjectFormat(), is(RemoteTypesGen.LexiconFormat.Enum.NATIVE));
+                    assertThat(message.getExpirationTimeHours(), is(20));
                     break;
                 case 3:
                     assertThat(message.getTopic(2), is(m_Top3));
                     assertThat(message.hasFilter(), is(false));
                     assertThat(message.getCanQueueEvent(), is(false));
                     assertThat(message.getObjectFormat(), is(RemoteTypesGen.LexiconFormat.Enum.NATIVE));
+                    assertThat(message.getExpirationTimeHours(), is(30));
                     break;
                 case 4:
                     assertThat(message.getTopic(3), is(m_Top4));
                     assertThat(message.getFilter(), is(m_Filter2));
                     assertThat(message.getCanQueueEvent(), is(true));
                     assertThat(message.getObjectFormat(), is(RemoteTypesGen.LexiconFormat.Enum.UUID_ONLY));
+                    assertThat(message.getExpirationTimeHours(), is(40));
                     break;
                 default:
                     fail("unknown event config!");
@@ -120,7 +123,7 @@ public class TestRemoteEventLoaderImpl
      * Verify if one config fails to load that others are still loaded. 
      */
     @Test
-    public void testExceptionWhileLOading()
+    public void testExceptionWhileLoading()
     {
         //exception mocking 
         doNothing().doThrow(NullPointerException.class).doNothing().doNothing()
@@ -142,20 +145,20 @@ public class TestRemoteEventLoaderImpl
         final List<EventConfig> configs = new ArrayList<>();
         List<String> topics = new ArrayList<>();
         topics.add(m_Top1);
-        EventConfig config1 = new EventConfig(topics, null, true, LexiconFormatEnum.XML, 1);
+        EventConfig config1 = new EventConfig(topics, null, true, LexiconFormatEnum.XML, 1, 10);
         configs.add(config1);
         
         topics = new ArrayList<>();
         topics.add(m_Top1);
         topics.add(m_Top2);
-        EventConfig config2 = new EventConfig(topics, m_Filter1, true, LexiconFormatEnum.NATIVE, 2);
+        EventConfig config2 = new EventConfig(topics, m_Filter1, true, LexiconFormatEnum.NATIVE, 2, 20);
         configs.add(config2);
         
         topics = new ArrayList<>();
         topics.add(m_Top1);
         topics.add(m_Top2);
         topics.add(m_Top3);
-        EventConfig config3 = new EventConfig(topics, null, false, LexiconFormatEnum.NATIVE, 3);
+        EventConfig config3 = new EventConfig(topics, null, false, LexiconFormatEnum.NATIVE, 3, 30);
         configs.add(config3);
         
         topics = new ArrayList<>();
@@ -163,7 +166,7 @@ public class TestRemoteEventLoaderImpl
         topics.add(m_Top2);
         topics.add(m_Top3);
         topics.add(m_Top4);
-        EventConfig config4 = new EventConfig(topics, m_Filter2, true, LexiconFormatEnum.UUID_ONLY, 4);
+        EventConfig config4 = new EventConfig(topics, m_Filter2, true, LexiconFormatEnum.UUID_ONLY, 4, 40);
         configs.add(config4);
         return configs;
     }

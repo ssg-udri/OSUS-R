@@ -181,6 +181,9 @@
             <!-- The ID of the system which is to receive the events. In order to receive 
                  the event information an active remote channel between the systems must be available. -->
         </xs:attribute>
+        <xs:attribute name="expirationTimeHours" type="xs:int" use="optional" default="168">
+            <!-- Expiration of event registration in hours. Default is 1 week (168 hours). -->
+        </xs:attribute>
     </xs:complexType>
     
     <xs:complexType name="SocketChannelConfig">

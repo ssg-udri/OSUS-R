@@ -67,10 +67,10 @@ public class TestGUIOptionsNavigation
     }
 
     /**
-     * Tests to see if Mission Programming, Setup Mission button navigates to setup_mission.xhtml
+     * Tests to see if Mission Apps, Add Mission App button navigates to setup_mission.xhtml
      */
     @Test
-    public void testSetupButton() throws InterruptedException
+    public void testAddMissionAppButton() throws InterruptedException
     {
         NavigationHelper.navigateToPage(m_Driver, NavigationButtonNameConstants.NAVBUT_PROP_SETUP_MIS);
        
@@ -107,10 +107,10 @@ public class TestGUIOptionsNavigation
     }
 
     /*
-     * Tests to see if Mission Programming -> Missions button navigates to missions.xhtml
+     * Tests to see if Mission Apps -> Mission App Status button navigates to missions.xhtml
      */
     @Test  
-    public void testMissionsButton() throws InterruptedException
+    public void testMissionAppStatusButton() throws InterruptedException
     {
         NavigationHelper.navigateToPage(m_Driver, NavigationButtonNameConstants.NAVBUT_PROP_MISSIONS);
 
@@ -141,27 +141,6 @@ public class TestGUIOptionsNavigation
             public Boolean apply(WebDriver d)
             {
                 return d.getCurrentUrl().contains(PageNameConstants.PAGECONST_PROP_POWER);
-            }
-        });
-
-        assertThat(result, is(true));
-    }
-
-    /*
-     * Tests to see if Advanced -> Mission Editor button navigates to missioneditor.xhtml
-     */
-    @Test
-    @Ignore //Button disabled at this time.
-    public void testMissionEditorButton() throws InterruptedException
-    {
-        NavigationHelper.navigateToPage(m_Driver, NavigationButtonNameConstants.NAVBUT_PROP_MIS_EDITOR);
-
-        Boolean result = (new WebDriverWait(m_Driver, 10)).until(new ExpectedCondition<Boolean>()
-        {
-            @Override
-            public Boolean apply(WebDriver d)
-            {
-                return d.getCurrentUrl().contains(PageNameConstants.PAGECONST_PROP_MISSION_EDITOR);
             }
         });
 

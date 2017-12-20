@@ -19,8 +19,8 @@ import java.util.Map;
  * This class enables the retrieval of system specific information as it pertains 
  * to the platform running the web gui. This information includes things like 
  * system name, id, and version.
+ * 
  * @author nickmarcucci
- *
  */
 public interface TerraHarvestControllerUtil
 {
@@ -75,7 +75,23 @@ public interface TerraHarvestControllerUtil
      *  the build information keys of the current system.
      */
     List<String> getSystemBuildInformationKeys();
-    
+
+    /**
+     * Get the remote event expiration time used for new event registrations.
+     * 
+     * @return
+     *      event expiration time in hours
+     */
+    int getRemoteEventExpirationHours();
+
+    /**
+     * Set the remote event expiration time used for new event registrations.
+     * 
+     * @param expHours
+     *      event expiration time in hours
+     */
+    void setRemoteEventExpirationHours(int expHours);
+
     /**
      * Function used to alter the system name and id.
      */

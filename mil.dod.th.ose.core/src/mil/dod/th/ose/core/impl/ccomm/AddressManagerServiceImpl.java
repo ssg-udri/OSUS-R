@@ -14,6 +14,7 @@ package mil.dod.th.ose.core.impl.ccomm;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -311,6 +312,54 @@ public class AddressManagerServiceImpl extends DirectoryService implements Addre
         }
     }
     
+    @Override
+    public Address getAddressByName(final String name) throws IllegalArgumentException
+    {
+        for (Address aAddress : m_FactoryServiceContext.getRegistry().getObjects())
+        {
+            if (aAddress.getName().equals(name))
+            {
+                return aAddress;
+            }
+        }
+
+        throw new IllegalArgumentException(String.format("Address with name %s not found", name));
+    }
+
+    @Override
+    public List<String> getAddressNames()
+    {
+        final List<String> names  = new ArrayList<>();
+        for (Address address : m_FactoryServiceContext.getRegistry().getObjects())
+        {
+            names.add(address.getName());
+        }
+
+        return names;
+    }
+
+    @Override
+    public Map<String, String> getAddressNamesWithDescriptor()
+    {
+        final Map<String, String> namesWithDescMap = new HashMap<>();
+        for (Address address : m_FactoryServiceContext.getRegistry().getObjects())
+        {
+            String messageAddress;
+            try
+            {
+                messageAddress = address.getDescription();
+            }
+            catch (final Exception e)
+            {
+                messageAddress = null;
+            }
+
+            namesWithDescMap.put(address.getName(), messageAddress);
+        }
+
+        return namesWithDescMap;
+    }
+
     /**
      * Split the address string into a prefix and everything else.
      * @param addressDescription

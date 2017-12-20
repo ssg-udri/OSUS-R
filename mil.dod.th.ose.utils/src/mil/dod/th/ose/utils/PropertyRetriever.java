@@ -16,15 +16,16 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
-
+import aQute.bnd.annotation.ProviderType;
 
 /**
  * Generate a property object from a URL. 
  * This is an OSGi provided service that assists with calls on to a bundle like getEntry(String) 
  * and other similar calls that return the URL of the resource embedded within the bundle. 
+ * 
  * @author callen
- *
  */
+@ProviderType
 public interface PropertyRetriever
 {
     /**

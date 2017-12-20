@@ -29,7 +29,6 @@ import mil.dod.th.remote.converter.LexiconFormatEnumConverter;
  * {@link RemoteEventAdmin}. 
  * 
  * @author allenchl
- *
  */
 @Component
 public class RemoteEventLoaderImpl implements RemoteEventLoader
@@ -57,7 +56,7 @@ public class RemoteEventLoaderImpl implements RemoteEventLoader
             try
             {
                 final EventRegistrationRequestData.Builder data = EventRegistrationRequestData.newBuilder()
-                    .setExpirationTimeHours(-1)
+                    .setExpirationTimeHours(config.getExpirationTimeHours())
                     .setCanQueueEvent(config.isCanQueueEvent())
                     .addAllTopic(config.getEventTopics())
                     .setObjectFormat(LexiconFormatEnumConverter.convertJavaEnumToProto(config.getObjectFormat()));
@@ -76,4 +75,3 @@ public class RemoteEventLoaderImpl implements RemoteEventLoader
         }
     }
 }
-

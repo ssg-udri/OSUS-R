@@ -151,6 +151,12 @@ public abstract class AbstractFactoryObject implements FactoryObjectInternal
     }
 
     @Override
+    public void postCreation()
+    {
+        // Nothing to do by default
+    }
+
+    @Override
     public String getPid()
     {
         return m_Pid;

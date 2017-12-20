@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 1.0.5.${tstamp}
+Bundle-Version: 1.0.6.${tstamp}
 Bundle-Description: THOSE Log Writer
 Bundle-Name: THOSE Log Writer
 Bundle-Vendor: UDRI

@@ -47,7 +47,6 @@ public class NavigationHelper
             put(NavigationButtonNameConstants.NAVBUT_PROP_CHANNELS, PageNameConstants.PAGECONST_PROP_CHANNELS);
             put(NavigationButtonNameConstants.NAVBUT_PROP_COMMS, PageNameConstants.PAGECONST_PROP_COMMS);
             put(NavigationButtonNameConstants.NAVBUT_PROP_GUI_CONFIG, PageNameConstants.PAGECONST_PROP_GUI_CONFIG);
-            put(NavigationButtonNameConstants.NAVBUT_PROP_MIS_EDITOR, PageNameConstants.PAGECONST_PROP_MISSION_EDITOR);
             put(NavigationButtonNameConstants.NAVBUT_PROP_MISSIONS, PageNameConstants.PAGECONST_PROP_MISSION);
             put(NavigationButtonNameConstants.NAVBUT_PROP_SETUP_MIS, PageNameConstants.PAGECONST_PROP_MISSION_SETUP);
             put(NavigationButtonNameConstants.NAVBUT_PROP_POWER, PageNameConstants.PAGECONST_PROP_POWER);

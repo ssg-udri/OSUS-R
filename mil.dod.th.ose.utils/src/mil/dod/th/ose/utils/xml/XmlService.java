@@ -17,12 +17,14 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.util.JAXBSource;
 import javax.xml.validation.SchemaFactory;
 
+import aQute.bnd.annotation.ProviderType;
+
 /**
  * Service for accessing core Java XML functionality without having to call on static methods.
  * 
  * @author dhumeniuk
- *
  */
+@ProviderType
 public interface XmlService
 {
     /**

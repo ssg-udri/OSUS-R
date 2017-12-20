@@ -36,12 +36,11 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
- * Tests the functionality of the missions page. 
+ * Tests the functionality of the mission app status page. 
  * 
  * @author nickmarcucci
- *
  */
-public class TestMissionsPage
+public class TestMissionAppStatusPage
 {
     private static WebDriver m_Driver;
     

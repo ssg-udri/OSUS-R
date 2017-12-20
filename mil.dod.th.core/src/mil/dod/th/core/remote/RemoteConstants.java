@@ -185,6 +185,11 @@ public final class RemoteConstants
     final public static String REMOTE_EVENT_PROP_CONTROLLER_ID = "controller.id";
 
     /**
+     * Default remote event registration timeout, in hours. Default is 1 week (168h).
+     */
+    final public static int REMOTE_EVENT_DEFAULT_REG_TIMEOUT_HOURS = 168;
+
+    /**
      * Defined to prevent instantiation.
      */
     private RemoteConstants()

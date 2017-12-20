@@ -10,9 +10,25 @@
 // with this software. If not, see
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==============================================================================
+package mil.dod.th.ose.shared;
 
 /**
- * Contains the model configuration types, XJC generated, from the XSDs.
+ * Callback object for {@link AutoExpireMap}.
+ *
+ * @param <K>
+ *            the Key type
+ * @param <V>
+ *            the Value type
  */
-@aQute.bnd.annotation.Version("3.1.0")
-package mil.dod.th.model.config;
+public interface AutoExpireMapCallback<K, V>
+{
+    /**
+     * Called when an entry in the map expires.
+     * 
+     * @param key
+     *      entry key
+     * @param value
+     *      entry value
+     */
+    void entryExpired(K key, V value);
+}

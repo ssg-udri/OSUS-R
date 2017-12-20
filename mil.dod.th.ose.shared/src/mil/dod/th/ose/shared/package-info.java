@@ -14,5 +14,5 @@
 /**
  * Package contains shared types used by various THOSE bundles.
  */
-@aQute.bnd.annotation.Version("3.0.0")
+@aQute.bnd.annotation.Version("3.1.0")
 package mil.dod.th.ose.shared;

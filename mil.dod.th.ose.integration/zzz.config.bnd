@@ -12,7 +12,7 @@
 #==============================================================================
 #
 
-Bundle-Version: 1.0.4.${tstamp}
+Bundle-Version: 1.0.5.${tstamp}
 Bundle-Name: Example End Of Alphabet MetaType Bundle
 Bundle-Description: \
     Example bundle with a symbolic name alphabetically after other bundles so it is loaded last. Used to verify the \

@@ -14,5 +14,5 @@
 /**
  * Contains the shared base types, XJC generated, from the shared XSDs.
  */
-@aQute.bnd.annotation.Version("4.2.1")
+@aQute.bnd.annotation.Version("4.2.2")
 package mil.dod.th.core.types;

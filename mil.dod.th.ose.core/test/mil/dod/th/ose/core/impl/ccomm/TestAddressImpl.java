@@ -73,6 +73,7 @@ public class TestAddressImpl
 
         m_SUT.initialize(m_FactoryRegistry, m_Proxy, m_Factory, 
                 m_ConfigAdmin, m_EventAdmin, powerManager, OBJ_UUID, OBJ_NAME, OBJ_PID, OBJ_BASETYPE);
+        m_SUT.postCreation();
     }
     
     /**

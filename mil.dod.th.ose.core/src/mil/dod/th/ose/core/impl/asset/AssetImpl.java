@@ -213,6 +213,12 @@ public class AssetImpl extends AbstractFactoryObject implements AssetInternal
         // depending on if the position override is true or not the location could be accessed before
         // it is set
         restoreLocation();
+    }
+
+    @Override
+    public void postCreation()
+    {
+        super.postCreation();
 
         setStatus(SummaryStatusEnum.UNKNOWN, "A status has not been established.");
     }

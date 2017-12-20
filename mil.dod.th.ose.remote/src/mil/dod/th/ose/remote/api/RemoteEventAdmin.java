@@ -18,22 +18,35 @@ import mil.dod.th.core.remote.proto.EventMessages.EventRegistrationRequestData;
 
 /**
  * This interface allows access to remote event admin registrations.
+ * 
  * @author callen
- *
  */
 public interface RemoteEventAdmin
 {
     /**
      * Get a map of current remote event registrations for all known systemIds. 
      * Will return an empty map if there are no known registrations.
+     * 
      * @return
      *     map of registration IDs and their corresponding event registration messages
      */
     Map<Integer, RemoteEventRegistration> getRemoteEventRegistrations();
-    
+
+    /**
+     * Get the remaining expiration time for a registration in hours.
+     * 
+     * @param regId
+     *      Registration ID
+     * @return
+     *      Remaining expiration time in hours. Values are rounded down, so if the real time remaining were 1.2 hours
+     *      then 1 hour would be returned.
+     */
+    long getRemoteEventExpirationHours(int regId);
+
     /**
      * Automatically register for events when the system starts. These registrations are not persisted, therefore are
-     * only good for as long as the system is on. 
+     * only good for as long as the system is on.
+     * 
      * @param systemId
      *      the ID of the system which will receive the events
      * @param eventRegMessage

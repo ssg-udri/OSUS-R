@@ -14,5 +14,5 @@
 /**
  * Contains interfaces for defining and using assets (sensors).
  */
-@aQute.bnd.annotation.Version("4.2.0")
+@aQute.bnd.annotation.Version("4.3.0")
 package mil.dod.th.core.asset;

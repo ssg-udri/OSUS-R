@@ -86,9 +86,8 @@ message EventRegistrationRequestData
     // (|(obj.type=A)(obj.type=B)) would filter out events only if the object type is "A" OR "B")
     optional string filter = 2;
 
-    // TODO: TH-778 Field currently ignored until TH-778 is implemented.
-    // Expiration of event registration in hours. Max value and default is 3 weeks (504 hours).
-    required int32 expirationTimeHours = 3;
+    // Expiration of event registration in hours. Default is 1 week (168 hours).
+    required int32 expirationTimeHours = 3 [default = 168];
 
     // This boolean value indicates whether the event that is being registered for can be queued.
     // If false, when the system tries to send an event to a listener who is not currently available, the message will
