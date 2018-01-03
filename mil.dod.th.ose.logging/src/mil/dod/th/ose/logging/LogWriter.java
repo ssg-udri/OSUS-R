@@ -544,7 +544,7 @@ public class LogWriter implements LogListener
             final String maxLogsProp = m_Context.getProperty(LOG_FILE_COUNT_PROPERTY);
             
             //if the property from the context is null then use a default
-            final int defaultMaxLogs = 25;
+            final int defaultMaxLogs = 1000;
             final int maxLogs = maxLogsProp == null ? defaultMaxLogs : Integer.parseInt(maxLogsProp);
             setLogMaxFileCount(maxLogs);
 

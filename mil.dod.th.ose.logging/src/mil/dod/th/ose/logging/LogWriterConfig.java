@@ -65,7 +65,7 @@ public interface LogWriterConfig
      * @return
      *      The maximum amount of log files.
      */
-    @Meta.AD(required = false, deflt = "25", min = "0", description = "The value entered is the maximum number of "
+    @Meta.AD(required = false, deflt = "1000", min = "0", description = "The value entered is the maximum number of "
             + "log files allowed. If this maximum is exceeded, the oldest file will be deleted. Setting this to 0 "
             + "will not delete any files.")
     int logMaxFileCount();
