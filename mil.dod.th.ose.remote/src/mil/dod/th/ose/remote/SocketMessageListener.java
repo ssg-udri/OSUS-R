@@ -379,6 +379,6 @@ public class SocketMessageListener implements Runnable
             throw new IllegalStateException(e);
         }
         
-        return new String(outStream.toByteArray());
+        return new String(outStream.toByteArray()).replace("%", "%%");
     }
 }

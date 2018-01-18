@@ -31,6 +31,8 @@ import mil.dod.th.ose.utils.ClientSocketFactory;
 @Component
 public class ClientSocketFactoryImpl implements ClientSocketFactory 
 {
+    private final static int SSL_HANDSHAKE_TIMEOUT_MILLIS = 1000;
+
     @Override
     public Socket createClientSocket(final String host, final int port) throws IOException
     {
@@ -42,19 +44,26 @@ public class ClientSocketFactoryImpl implements ClientSocketFactory
     {
         if (useSsl)
         {
+            SSLSocket sslSocket = null;
             try
             {
-                final SSLSocket sslSocket =
-                        (SSLSocket)SSLContext.getDefault().getSocketFactory().createSocket(host, port);
+                sslSocket = (SSLSocket)SSLContext.getDefault().getSocketFactory().createSocket(host, port);
 
                 // Immediately initiate the handshake process to verify a valid connection before trying to send
                 // real data.
+                sslSocket.setSoTimeout(SSL_HANDSHAKE_TIMEOUT_MILLIS);
                 sslSocket.startHandshake();
+                sslSocket.setSoTimeout(0);
 
                 return sslSocket;
             }
             catch (final Exception e)
             {
+                if (sslSocket != null)
+                {
+                    // Make sure socket is closed when the SSL handshake fails
+                    sslSocket.close();
+                }
                 throw new IOException(e);
             }
         }

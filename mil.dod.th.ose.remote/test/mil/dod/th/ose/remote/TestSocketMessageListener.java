@@ -495,7 +495,8 @@ public class TestSocketMessageListener extends SocketMessageListener
         
         // setup data coming in, first garbage then good message
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        byte[] garbage = new byte[] { 0x3, 0x4d, 0x7e, 0x3f };  // first byte is size, last 3 bytes is just garbage
+        // first byte is size, other bytes are just garbage
+        byte[] garbage = new byte[] { 0x7, 0x4d, 0x7e, 0x3f, '%', '.', '\\', ',' };
         output.write(garbage);
         message.writeDelimitedTo(output);
         
