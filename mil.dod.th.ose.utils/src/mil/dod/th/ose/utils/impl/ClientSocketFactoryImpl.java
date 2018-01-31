@@ -31,7 +31,7 @@ import mil.dod.th.ose.utils.ClientSocketFactory;
 @Component
 public class ClientSocketFactoryImpl implements ClientSocketFactory 
 {
-    private final static int SSL_HANDSHAKE_TIMEOUT_MILLIS = 1000;
+    private final static int SSL_HANDSHAKE_TIMEOUT_MILLIS = 10000;
 
     @Override
     public Socket createClientSocket(final String host, final int port) throws IOException
