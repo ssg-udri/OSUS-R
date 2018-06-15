@@ -20,10 +20,10 @@ Service-Component: mil.dod.th.ose.rxtxtty.*
 
 # For some reason osname = win32 doesn't work on Server 2008R2, we need osname = win
 Bundle-NativeCode: \
- win32/rxtxSerial.dll; osname = win32; processor = x86, \
- win32/rxtxSerial.dll; osname = win; processor = x86, \
- win64/rxtxSerial.dll; osname = win32; processor = x86-64, \
- win64/rxtxSerial.dll; osname = win; processor = x86-64
+ win32/rxtxSerial.dll; osname=win32; processor=x86, \
+ win32/rxtxSerial.dll; osname=win; processor=x86, \
+ win64/rxtxSerial.dll; osname=win32; processor=x86-64, \
+ win64/rxtxSerial.dll; osname=win; processor=x86-64
 
 Include-Resource: capabilities-xml=capabilities-xml, \
  win32/rxtxSerial.dll=../deps/rxtx/win32/rxtxSerial.dll, \
