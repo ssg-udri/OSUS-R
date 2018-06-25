@@ -14,6 +14,7 @@ package mil.dod.th.core.asset;
 
 import aQute.bnd.annotation.metatype.Meta.AD;
 import aQute.bnd.annotation.metatype.Meta.OCD;
+
 import mil.dod.th.core.ConfigurationConstants;
 import mil.dod.th.core.factory.FactoryObject;
 

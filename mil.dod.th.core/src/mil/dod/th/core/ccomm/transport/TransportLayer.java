@@ -16,6 +16,7 @@ package mil.dod.th.core.ccomm.transport;
 import java.nio.ByteBuffer;
 
 import aQute.bnd.annotation.ProviderType;
+
 import mil.dod.th.core.ccomm.Address;
 import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.link.LinkLayer;

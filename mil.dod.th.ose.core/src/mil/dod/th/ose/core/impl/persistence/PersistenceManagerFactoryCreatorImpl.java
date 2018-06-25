@@ -25,11 +25,11 @@ import com.google.common.base.Preconditions;
 import mil.dod.th.ose.utils.BundleService;
 import mil.dod.th.ose.utils.ClassService;
 
+import org.osgi.framework.Bundle;
+
 import org.datanucleus.PropertyNames;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.plugin.OSGiPluginRegistry;
-import org.osgi.framework.Bundle;
-
 
 /**
  * Implementation of the {@link PersistenceManagerFactoryCreator}.

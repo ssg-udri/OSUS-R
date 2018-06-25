@@ -52,9 +52,10 @@ import mil.dod.th.ose.shared.SharedMessageUtils;
 import mil.dod.th.remote.converter.CommandResponseEnumConverter;
 import mil.dod.th.remote.converter.CommandTypeEnumConverter;
 
-import org.glassfish.osgicdi.OSGiService;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
+
+import org.glassfish.osgicdi.OSGiService;
 
 /**
  * Session scoped bean responsible for storing asset command models and sending and receiving 

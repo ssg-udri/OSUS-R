@@ -13,6 +13,7 @@
 package mil.dod.th.ose.archiver.vlc;
 
 import mil.dod.th.ose.utils.CoverageIgnore;
+
 import uk.co.caprica.vlcj.binding.LibVlc;
 import uk.co.caprica.vlcj.binding.LibVlcFactory;
 import uk.co.caprica.vlcj.binding.internal.libvlc_instance_t;

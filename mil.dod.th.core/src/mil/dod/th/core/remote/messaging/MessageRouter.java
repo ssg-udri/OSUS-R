@@ -14,6 +14,7 @@
 package mil.dod.th.core.remote.messaging;
 
 import aQute.bnd.annotation.ProviderType;
+
 import mil.dod.th.core.remote.RemoteChannel;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage;
 

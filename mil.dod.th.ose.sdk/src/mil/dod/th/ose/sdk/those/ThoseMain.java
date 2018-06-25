@@ -26,15 +26,14 @@ import com.google.common.base.Joiner;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+import mil.dod.th.core.types.ccomm.PhysicalLinkTypeEnum;
+import mil.dod.th.ose.utils.UtilInjectionModule;
+
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
-
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.internal.Strings;
-
-import mil.dod.th.core.types.ccomm.PhysicalLinkTypeEnum;
-import mil.dod.th.ose.utils.UtilInjectionModule;
 
 /**
  * Implements the those application main and command line input handling.

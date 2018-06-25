@@ -12,6 +12,9 @@
 //==============================================================================
 package mil.dod.th.ose.junit4xmltestrunner;
 
+import static org.hamcrest.MatcherAssert.assertThat; // NOCHECKSTYLE: avoid static import (used in context of testing)
+import static org.hamcrest.Matchers.*; // NOCHECKSTYLE: avoid static import (used in context of testing)
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,7 +28,6 @@ import java.util.Map;
 
 import mil.dod.th.core.log.Logging;
 
-import org.apache.commons.io.IOUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Filter;
 import org.osgi.framework.InvalidSyntaxException;
@@ -35,8 +37,7 @@ import org.osgi.service.log.LogService;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
-import static org.hamcrest.MatcherAssert.assertThat; // NOCHECKSTYLE: avoid static import (used in context of testing)
-import static org.hamcrest.Matchers.*; // NOCHECKSTYLE: avoid static import (used in context of testing)
+import org.apache.commons.io.IOUtils;
 
 /**
  * Interface to be implemented by a integration test bundle.  Implementation class should be defined

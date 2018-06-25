@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.remote.RemoteChannel;
 import mil.dod.th.core.remote.RemoteChannelLookup;

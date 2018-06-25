@@ -49,12 +49,13 @@ import mil.dod.th.ose.gui.webapp.controller.history.ControllerHistory;
 import mil.dod.th.ose.gui.webapp.utils.BundleContextUtil;
 import mil.dod.th.ose.gui.webapp.utils.GrowlMessageUtil;
 
-import org.glassfish.osgicdi.OSGiService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+
+import org.glassfish.osgicdi.OSGiService;
 
 /**
  * Class that maintains the history of all controllers that have been connected to by the system.

@@ -24,12 +24,13 @@ import aQute.bnd.annotation.component.Reference;
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.ose.shared.OSGiEventConstants;
 
-import org.apache.commons.lang.StringUtils;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Component will log {@link org.osgi.service.event.EventAdmin} activity.

@@ -500,7 +500,7 @@ public class ObservationMessageService implements MessageService //store message
      * @throws IllegalStateException
      *  if the asset uuid and asset type are both set
      */
-    private ObservationQuery createObservationQuery(final Query queryRequest) throws IllegalArgumentException, 
+    private ObservationQuery createObservationQuery(final Query queryRequest) throws IllegalArgumentException, // NOCHECKSTYLE: This logic is required until refactoring can be done
             IllegalStateException
     {
         final ObservationQuery obsQuery = m_ObservationStore.newQuery();

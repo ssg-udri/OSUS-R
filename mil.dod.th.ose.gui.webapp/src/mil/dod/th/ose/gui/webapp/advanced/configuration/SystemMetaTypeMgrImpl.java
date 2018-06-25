@@ -47,7 +47,6 @@ import mil.dod.th.ose.gui.webapp.general.RemoteEventRegistrationHandler;
 import mil.dod.th.ose.gui.webapp.remote.RemoteEvents;
 import mil.dod.th.ose.gui.webapp.utils.BundleContextUtil;
 
-import org.glassfish.osgicdi.OSGiService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.Event;
@@ -55,6 +54,8 @@ import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
 import org.osgi.service.log.LogService;
+
+import org.glassfish.osgicdi.OSGiService;
 
 /**
  * This bean is responsible for maintaining all meta type information stored on known controllers.

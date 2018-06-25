@@ -14,6 +14,7 @@ package mil.dod.th.ose.remote.encryption;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -48,6 +49,9 @@ import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestPayload;
 import mil.dod.th.ose.remote.api.EncryptionUtility;
 import mil.dod.th.ose.shared.SystemConfigurationConstants;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.service.log.LogService;
+
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
@@ -56,8 +60,6 @@ import org.bouncycastle.crypto.signers.DSADigestSigner;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.math.ec.ECPoint;
-import org.osgi.framework.BundleContext;
-import org.osgi.service.log.LogService;
 
 /**
  * Implementation of EncryptMessage Service.
@@ -215,15 +217,27 @@ public class EncryptMessageServiceImpl implements EncryptMessageService
         {
             m_PropAuthorized.load(inputStreamAuthorized);
         }
+        catch (final FileNotFoundException ex)
+        {
+            m_Logging.warning("authorized keys file not found");
+        }
         
         try (FileInputStream inputStreamPublic = new FileInputStream(m_PropFilePublic))
         {
             m_PropPublic.load(inputStreamPublic);
         }
+        catch (final FileNotFoundException ex)
+        {
+            m_Logging.warning("public key file not found");
+        }
         
         try (FileInputStream inputStreamPrivate = new FileInputStream(m_PropFilePrivate))
         {
             m_PropPrivate.load(inputStreamPrivate);
+        }
+        catch (final FileNotFoundException ex)
+        {
+            m_Logging.warning("private key file not found");
         }
     }
 

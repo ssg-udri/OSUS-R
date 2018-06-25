@@ -27,7 +27,7 @@ import aQute.bnd.annotation.component.ConfigurationPolicy;
 import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
-import example.message.SocketListener;
+
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.remote.RemoteConstants;
 import mil.dod.th.core.remote.proto.AssetDirectoryServiceMessages.AssetDirectoryServiceNamespace;
@@ -49,6 +49,8 @@ import org.osgi.service.component.ComponentInstance;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+
+import example.message.SocketListener;
 
 
 /**

@@ -101,7 +101,6 @@ import mil.dod.th.remote.lexicon.types.spatial.SpatialTypesGen.LatitudeWgsDegree
 import mil.dod.th.remote.lexicon.types.spatial.SpatialTypesGen.LongitudeWgsDegrees;
 import mil.dod.th.remote.lexicon.types.spatial.SpatialTypesGen.Orientation;
 
-import org.glassfish.osgicdi.OSGiService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.Event;
@@ -109,6 +108,8 @@ import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
 import org.osgi.service.log.LogService;
+
+import org.glassfish.osgicdi.OSGiService;
 
 /**
  * Implementation of the {@link AssetMgr}.

@@ -55,7 +55,7 @@ public class DataStreamStoreCommands
      * @param dataStreamService
      *      the m_DataStreamService to set
      */
-    @Reference
+    @Reference(optional = true)
     public void setDataStreamService(final DataStreamService dataStreamService)
     {
         m_DataStreamService = dataStreamService;
@@ -67,7 +67,7 @@ public class DataStreamStoreCommands
      * @param dataStreamStore
      *      the m_DataStreamStore to set
      */
-    @Reference
+    @Reference(optional = true)
     public void setDataStreamStore(final DataStreamStore dataStreamStore)
     {
         m_DataStreamStore = dataStreamStore;

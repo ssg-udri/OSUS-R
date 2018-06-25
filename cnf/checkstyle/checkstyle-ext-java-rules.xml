@@ -5,9 +5,9 @@
   <property name="severity" value="warning"/>
   <module name="TreeWalker">
     <module name="mil.dod.th.ose.checkstyle.ProductTypeAnnotationCheck" />
-  </module>
-  <module name="SuppressWithNearbyCommentFilter">
-    <property name="commentFormat" value="NOCHECKSTYLE"/>
+    <module name="SuppressWithNearbyCommentFilter">
+      <property name="commentFormat" value="NOCHECKSTYLE"/>
+    </module>
   </module>
   <module name="SuppressWarningsFilter"/>
 </module>

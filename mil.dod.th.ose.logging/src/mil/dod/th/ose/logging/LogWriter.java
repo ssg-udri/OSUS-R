@@ -37,13 +37,14 @@ import mil.dod.th.core.log.Logging;
 import mil.dod.th.ose.shared.LogLevel;
 import mil.dod.th.ose.utils.ConfigurationUtils;
 
-import org.apache.commons.lang.time.FastDateFormat;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogEntry;
 import org.osgi.service.log.LogListener;
 import org.osgi.service.log.LogReaderService;
 import org.osgi.service.log.LogService;
+
+import org.apache.commons.lang.time.FastDateFormat;
 
 /**
  * <code>LogWriter</code> implements {@link LogListener} and prints log entries to STDOUT and/or file.

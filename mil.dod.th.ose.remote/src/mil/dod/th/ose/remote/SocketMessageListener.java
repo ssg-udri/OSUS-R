@@ -34,9 +34,10 @@ import mil.dod.th.core.remote.messaging.MessageRouter;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage;
 import mil.dod.th.ose.remote.api.RemoteSettings;
 
-import org.apache.commons.io.HexDump;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
+
+import org.apache.commons.io.HexDump;
 
 /**
  * Reads in messages from a socket on a thread.  Will pass received message to a {@link MessageRouter} and sync with the
@@ -186,7 +187,7 @@ public class SocketMessageListener implements Runnable
         m_Running = false;
     }
     
-    @Override
+    @Override // NOCHECKSTYLE: This logic is required until refactoring can be done
     public void run()
     {
         // continuously read messages from socket

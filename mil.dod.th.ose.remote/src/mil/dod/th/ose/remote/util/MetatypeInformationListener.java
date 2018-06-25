@@ -46,6 +46,7 @@ import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
 import org.osgi.service.metatype.MetaTypeProvider;
+
 import org.xml.sax.SAXException;
 
 /**

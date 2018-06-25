@@ -31,8 +31,9 @@ import mil.dod.th.core.types.remote.RemoteChannelTypeEnum;
 import mil.dod.th.ose.gui.webapp.controller.ControllerStatus;
 import mil.dod.th.ose.gui.webapp.utils.GrowlMessageUtil;
 
-import org.glassfish.osgicdi.OSGiService;
 import org.osgi.service.component.ComponentException;
+
+import org.glassfish.osgicdi.OSGiService;
 
 /**
  * Implementation of the {@link ChannelMgr}.

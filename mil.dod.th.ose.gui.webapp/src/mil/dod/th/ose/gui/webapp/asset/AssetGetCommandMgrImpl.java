@@ -50,13 +50,14 @@ import mil.dod.th.ose.remote.api.CommandConverter;
 import mil.dod.th.ose.shared.SharedMessageUtils;
 import mil.dod.th.remote.converter.CommandResponseEnumConverter;
 
-import org.glassfish.osgicdi.OSGiService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+
+import org.glassfish.osgicdi.OSGiService;
 
 /**
  * Command manager that handles management of {@link AssetGetCommandModel}s and their command responses.

@@ -12,7 +12,9 @@
 //==============================================================================
 package mil.dod.th.ose.metatype.impl;
 
-import aQute.bnd.annotation.component.*;
+import aQute.bnd.annotation.component.Activate;
+import aQute.bnd.annotation.component.Component;
+
 import mil.dod.th.ose.metatype.MetaTypeProviderBundle;
 
 import org.osgi.framework.Bundle;

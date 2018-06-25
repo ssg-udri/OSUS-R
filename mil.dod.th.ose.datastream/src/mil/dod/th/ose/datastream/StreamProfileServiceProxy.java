@@ -18,6 +18,7 @@ import java.util.Map;
 
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.capability.BaseCapabilities;
 import mil.dod.th.core.datastream.StreamProfile;
 import mil.dod.th.core.datastream.StreamProfileFactory;

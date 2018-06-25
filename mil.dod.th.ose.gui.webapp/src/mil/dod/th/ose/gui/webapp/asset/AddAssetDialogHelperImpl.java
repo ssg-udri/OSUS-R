@@ -36,8 +36,9 @@ import mil.dod.th.ose.gui.webapp.advanced.configuration.UnmodifiablePropertyMode
 import mil.dod.th.ose.gui.webapp.controller.ActiveControllerImpl;
 import mil.dod.th.ose.shared.SharedMessageUtils;
 
-import org.glassfish.osgicdi.OSGiService;
 import org.osgi.service.log.LogService;
+
+import org.glassfish.osgicdi.OSGiService;
 
 /**
  * Implementation of the {@link AddAssetDialogHelper}.

@@ -22,15 +22,6 @@ import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
 
-import edu.udayton.udri.asset.novatel.connection.NovatelConnectionMgr;
-import edu.udayton.udri.asset.novatel.message.MessageReader;
-import edu.udayton.udri.asset.novatel.message.MessageReceiver;
-import edu.udayton.udri.asset.novatel.message.NovatelInsMessage;
-import edu.udayton.udri.asset.novatel.message.NovatelMessageException;
-import edu.udayton.udri.asset.novatel.message.NovatelMessageException.FormatProblem;
-import edu.udayton.udri.asset.novatel.message.NovatelMessageParser;
-import edu.udayton.udri.asset.novatel.timechanger.TimeChange;
-
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.AssetContext;
 import mil.dod.th.core.asset.AssetException;
@@ -57,6 +48,15 @@ import mil.dod.th.ose.shared.pm.CountingWakeLock;
 import mil.dod.th.ose.shared.pm.CountingWakeLock.CountingWakeLockHandle;
 
 import org.osgi.service.log.LogService;
+
+import edu.udayton.udri.asset.novatel.connection.NovatelConnectionMgr;
+import edu.udayton.udri.asset.novatel.message.MessageReader;
+import edu.udayton.udri.asset.novatel.message.MessageReceiver;
+import edu.udayton.udri.asset.novatel.message.NovatelInsMessage;
+import edu.udayton.udri.asset.novatel.message.NovatelMessageException;
+import edu.udayton.udri.asset.novatel.message.NovatelMessageException.FormatProblem;
+import edu.udayton.udri.asset.novatel.message.NovatelMessageParser;
+import edu.udayton.udri.asset.novatel.timechanger.TimeChange;
 
 /**
  * Novatel IMU/GPS Asset implementation. 

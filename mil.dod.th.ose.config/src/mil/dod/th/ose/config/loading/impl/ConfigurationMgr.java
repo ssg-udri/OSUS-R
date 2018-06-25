@@ -12,10 +12,14 @@
 //==============================================================================
 package mil.dod.th.ose.config.loading.impl;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -233,7 +237,7 @@ public class ConfigurationMgr
      * @throws UnmarshalException
      *  occurs if the file provided cannot be parsed into a JAXB object
      * @throws IOException 
-     *  occurs an error occurs while attempting to set configuration properties
+     *  occurs if an error occurs while attempting to set configuration properties
      */
     @Activate
     public void activate(final BundleContext context) throws UnmarshalException, IOException
@@ -241,11 +245,12 @@ public class ConfigurationMgr
         final String configDirectory = context.getProperty(SystemConfigurationConstants.DATA_DIR_PROPERTY);
         final File configParentFile = new File(configDirectory, "conf");
         final File configFile = new File(configParentFile, CONFIGURATION_FILE);
+        final URL defaultConfigUrl = context.getBundle().getEntry(CONFIGURATION_FILE);
 
         final Configurations configurations;
         try
         {
-            configurations = loadConfigurationFile(configFile);
+            configurations = loadConfigurationFile(configFile, defaultConfigUrl);
         }
         catch (final UnmarshalException | IOException e)
         {
@@ -253,7 +258,10 @@ public class ConfigurationMgr
             return;
         }
 
-        processConfigurations(configurations);
+        if (configurations != null)
+        {
+            processConfigurations(configurations);
+        }
     }
 
     /**
@@ -269,8 +277,10 @@ public class ConfigurationMgr
     
     /**
      * Load the configuration file.
-     * @param configFile 
+     * @param configFile
      *      reference to the configuration file
+     * @param defaultConfigUrl
+     *      reference to the default configuration file (from bundle)
      * @return
      *      loaded configurations object
      * @throws UnmarshalException
@@ -280,10 +290,10 @@ public class ConfigurationMgr
      * @throws IOException
      *      if unable to update the components configuration
      */
-    private Configurations loadConfigurationFile(final File configFile) throws UnmarshalException,
-            MalformedURLException, IOException
+    private Configurations loadConfigurationFile(final File configFile, final URL defaultConfigUrl)
+            throws UnmarshalException, MalformedURLException, IOException
     {
-        final Configurations configurations;
+        Configurations configurations = null;
         
         final Configuration configuration = 
                 m_ConfigAdmin.getConfiguration(ConfigurationMgr.class.getName());
@@ -308,9 +318,27 @@ public class ConfigurationMgr
         }
         else
         {
-            throw new FileNotFoundException(configFile.getAbsolutePath() + " could not be found");
+            final InputStream inputStream = defaultConfigUrl.openConnection().getInputStream();
+            final BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+            final FileWriter out = new FileWriter(configFile);
+
+            String inputLine;
+            while ((inputLine = in.readLine()) != null)
+            {
+                out.write(inputLine);
+                out.write(System.lineSeparator());
+            }
+
+            in.close();
+            out.close();
+
+            m_Log.info("%n"
+                    + "       ########%n"
+                    + "           Created %s, edit the file and restart controller%n"
+                    + "       ########",
+                    configFile.getPath());
         }
-        
+
         return configurations;
     }
 

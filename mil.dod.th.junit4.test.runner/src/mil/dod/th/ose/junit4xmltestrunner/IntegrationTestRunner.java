@@ -12,6 +12,9 @@
 //==============================================================================
 package mil.dod.th.ose.junit4xmltestrunner;
 
+import static org.hamcrest.MatcherAssert.assertThat; // NOCHECKSTYLE: avoid static import (used in context of testing)
+import static org.hamcrest.Matchers.*; // NOCHECKSTYLE: avoid static import (used in context of testing)
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -20,14 +23,12 @@ import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
 
-import org.apache.felix.service.command.CommandSession;
-import org.apache.felix.service.command.Descriptor;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
-import static org.hamcrest.MatcherAssert.assertThat; // NOCHECKSTYLE: avoid static import (used in context of testing)
-import static org.hamcrest.Matchers.*; // NOCHECKSTYLE: avoid static import (used in context of testing)
+import org.apache.felix.service.command.CommandSession;
+import org.apache.felix.service.command.Descriptor;
 
 /**
  * This is a test runner that can run within the OSGi framework.  A property must be set to tell this bundle

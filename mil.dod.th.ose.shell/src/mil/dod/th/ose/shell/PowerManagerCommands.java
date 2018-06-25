@@ -30,10 +30,11 @@ import mil.dod.th.core.pm.PowerManager;
 import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.pm.WakeLockState;
 
-import org.apache.felix.service.command.CommandSession;
-import org.apache.felix.service.command.Descriptor;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+
+import org.apache.felix.service.command.CommandSession;
+import org.apache.felix.service.command.Descriptor;
 
 /**
  * Power manager commands.

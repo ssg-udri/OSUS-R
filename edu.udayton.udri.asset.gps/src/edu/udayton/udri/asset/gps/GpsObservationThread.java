@@ -31,6 +31,8 @@ import mil.dod.th.core.types.spatial.LongitudeWgsDegrees;
 import mil.dod.th.core.types.status.SummaryStatusEnum;
 import mil.dod.th.core.validator.ValidationFailedException;
 
+import org.osgi.service.log.LogService;
+
 import net.sf.marineapi.nmea.parser.DataNotAvailableException;
 import net.sf.marineapi.nmea.parser.SentenceFactory;
 import net.sf.marineapi.nmea.sentence.GGASentence;
@@ -41,8 +43,6 @@ import net.sf.marineapi.nmea.sentence.RMCSentence;
 import net.sf.marineapi.nmea.sentence.Sentence;
 import net.sf.marineapi.nmea.sentence.SentenceValidator;
 import net.sf.marineapi.nmea.util.Position;
-
-import org.osgi.service.log.LogService;
 
 /**
  * Thread that reads from the GPS device over a physical link.

@@ -21,13 +21,14 @@ import mil.dod.th.core.asset.AssetDirectoryService;
 import mil.dod.th.core.asset.AssetException;
 import mil.dod.th.core.log.Logging;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.log.LogService;
+
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.json.JSONObject;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.log.LogService;
 
 /**
  * A class to handle incoming websocket connection data. New connections create a new client asset to return

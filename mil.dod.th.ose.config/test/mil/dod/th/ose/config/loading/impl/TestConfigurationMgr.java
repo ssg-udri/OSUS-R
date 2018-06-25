@@ -18,6 +18,7 @@ import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Dictionary;
@@ -48,6 +49,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
@@ -78,7 +81,7 @@ public class TestConfigurationMgr
      * Test setup.
      */
     @Before
-    public void setUp() throws UnmarshalException
+    public void setUp() throws UnmarshalException, MalformedURLException
     {
         m_SUT = new ConfigurationMgr();
         
@@ -110,6 +113,9 @@ public class TestConfigurationMgr
         when(m_FileService.doesFileExist(Mockito.any(File.class))).thenReturn(true);
         
         when(m_BundleContext.getProperty(Mockito.anyString())).thenReturn("resources");
+        Bundle bundle = mock(Bundle.class);
+        when(bundle.getEntry("configs.xml")).thenReturn(new URL("file:////resources/configs.xml"));
+        when(m_BundleContext.getBundle()).thenReturn(bundle);
         when(m_Unmarshaller.getXmlObject(
                 eq(Configurations.class), Mockito.any(URL.class))).thenReturn(m_XmlConfiguration);
     }

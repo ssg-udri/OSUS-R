@@ -25,13 +25,14 @@ import aQute.bnd.annotation.component.Deactivate;
 import mil.dod.th.core.log.Logging;
 import mil.dod.th.core.mp.EventHandlerHelper;
 
-import org.apache.felix.service.command.Descriptor;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
 import org.osgi.service.log.LogService;
+
+import org.apache.felix.service.command.Descriptor;
 
 /**
  * Implementation of the {@link EventHandlerHelper} interface.

@@ -22,6 +22,7 @@ import java.util.Hashtable;
 import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.persistence.ObservationStore;
 import mil.dod.th.core.remote.RemoteConstants;
 import mil.dod.th.core.remote.proto.AssetDirectoryServiceMessages.AssetDirectoryServiceNamespace;
@@ -44,13 +45,14 @@ import mil.dod.th.remote.client.generate.DataStreamServiceMessageGenerator;
 import mil.dod.th.remote.client.generate.EventAdminMessageGenerator;
 import mil.dod.th.remote.lexicon.types.remote.RemoteTypesGen.LexiconFormat;
 
-import org.apache.felix.service.command.CommandSession;
-import org.apache.felix.service.command.Descriptor;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+
+import org.apache.felix.service.command.CommandSession;
+import org.apache.felix.service.command.Descriptor;
 
 /**
  * Provides a set of commands that can be used from the Gogo shell to interact with the remote client API.

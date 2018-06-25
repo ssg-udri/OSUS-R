@@ -14,11 +14,12 @@ package edu.udayton.udri.smartphone;
 
 import java.net.InetSocketAddress;
 
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+
 import org.glassfish.grizzly.http.server.CLStaticHttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
 
 /**
  * The activator to start a SmartphoneSensorSocketServer for smartphone connections and a web server for hosting the

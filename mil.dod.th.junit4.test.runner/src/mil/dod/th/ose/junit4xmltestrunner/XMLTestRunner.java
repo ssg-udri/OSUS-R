@@ -22,9 +22,10 @@ import java.lang.management.MemoryPoolMXBean;
 import mil.dod.th.core.log.Logging;
 import mil.dod.th.ose.junit4xmltestrunner.ant.XMLJUnitResultFormatter;
 
+import org.osgi.service.log.LogService;
+
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
-import org.osgi.service.log.LogService;
 
 /**
  * Main class that handles running test cases and saving the results to an XML file.

@@ -13,6 +13,7 @@
 package mil.dod.th.remote.client.generate.impl;
 
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.remote.proto.DataStreamServiceMessages.DataStreamServiceNamespace;
 import mil.dod.th.core.remote.proto.RemoteBase.Namespace;
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestPayload;

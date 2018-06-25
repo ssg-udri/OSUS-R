@@ -40,14 +40,15 @@ import mil.dod.th.core.validator.Validator;
 import mil.dod.th.core.xml.XmlMarshalService;
 import mil.dod.th.core.xml.XmlUnmarshalService;
 
-import org.apache.felix.service.command.CommandSession;
-import org.apache.felix.service.command.Descriptor;
-import org.apache.felix.service.command.Parameter;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.log.LogService;
 import org.osgi.service.metatype.MetaTypeService;
+
+import org.apache.felix.service.command.CommandSession;
+import org.apache.felix.service.command.Descriptor;
+import org.apache.felix.service.command.Parameter;
 
 /**
  * Implements a command for the Felix Shell Service.

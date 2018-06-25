@@ -14,6 +14,7 @@ package mil.dod.th.core.ccomm.physical;
 
 import aQute.bnd.annotation.metatype.Meta.AD;
 import aQute.bnd.annotation.metatype.Meta.OCD;
+
 import mil.dod.th.core.ConfigurationConstants;
 import mil.dod.th.core.factory.FactoryObject;
 import mil.dod.th.core.types.ccomm.FlowControlEnum;

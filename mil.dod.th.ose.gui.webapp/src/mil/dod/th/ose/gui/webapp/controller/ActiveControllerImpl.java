@@ -24,9 +24,10 @@ import javax.inject.Inject;
 import mil.dod.th.ose.gui.api.SharedPropertyConstants;
 import mil.dod.th.ose.gui.webapp.utils.GrowlMessageUtil;
 
-import org.glassfish.osgicdi.OSGiService;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
+
+import org.glassfish.osgicdi.OSGiService;
 
 /**
  * Holds information for the 'active' selected controller. 

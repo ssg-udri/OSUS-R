@@ -16,11 +16,12 @@ import java.util.Locale;
 
 import mil.dod.th.ose.shared.LogLevel;
 
-import org.apache.commons.lang.time.FastDateFormat;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogService;
+
+import org.apache.commons.lang.time.FastDateFormat;
 
 /**
  * THOSE log writer service utilities.

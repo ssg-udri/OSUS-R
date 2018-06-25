@@ -22,8 +22,9 @@ import mil.dod.th.core.remote.RemoteSystemEncryption;
 import mil.dod.th.core.remote.messaging.MessageFactory;
 import mil.dod.th.core.remote.objectconverter.JaxbProtoObjectConverter;
 
-import org.apache.felix.service.command.Descriptor;
 import org.osgi.service.log.LogService;
+
+import org.apache.felix.service.command.Descriptor;
 
 /**
  * Provides commands to access remote interface services.

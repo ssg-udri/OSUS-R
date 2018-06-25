@@ -290,12 +290,12 @@ public class TestTerraHarvestControllerImpl
     @Test
     public void testDefaultId() throws IOException
     {
-        assertThat(m_SUT.getId(), is(-1));
+        assertThat(m_SUT.getId(), is(0));
         
         ArgumentCaptor<File> fileCaptor = ArgumentCaptor.forClass(File.class);
         verify(m_FileService, atLeastOnce()).createFileOutputStream(fileCaptor.capture());
         assertThat(fileCaptor.getValue().getPath(), is(EXPECTED_TH_SYSTEM_PROPERTIES_FILENAME));
-        assertThat(new String(m_OutputData.toByteArray()), containsString("id=0xffffffff"));
+        assertThat(new String(m_OutputData.toByteArray()), containsString("id=0x00000000"));
     }
     
     /**

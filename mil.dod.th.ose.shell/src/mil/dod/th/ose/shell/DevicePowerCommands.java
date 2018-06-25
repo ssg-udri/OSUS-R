@@ -45,7 +45,7 @@ public class DevicePowerCommands
      * @param devicePowerManager
      *            service to manage device power
      */
-    @Reference
+    @Reference(optional = true)
     public void setDevicePowerManager(final DevicePowerManager devicePowerManager)
     {
         m_DevicePowerManager = devicePowerManager;

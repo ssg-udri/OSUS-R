@@ -75,4 +75,16 @@ public class JUnitTestMethodCheck extends AbstractCheck
             throw e;
         }
     }
+
+    @Override
+    public int[] getAcceptableTokens()
+    {
+        return getDefaultTokens();
+    }
+
+    @Override
+    public int[] getRequiredTokens()
+    {
+        return getDefaultTokens();
+    }
 }

@@ -14,10 +14,10 @@ package edu.udayton.udri.asset.novatel.timechanger;
 
 import java.io.IOException;
 
-import edu.udayton.udri.asset.novatel.StatusHandler;
-
 import mil.dod.th.core.asset.AssetException;
 import mil.dod.th.core.types.status.ComponentStatus;
+
+import edu.udayton.udri.asset.novatel.StatusHandler;
 
 /**
  * Interface for sending time in milliseconds to a system service that sets the system 

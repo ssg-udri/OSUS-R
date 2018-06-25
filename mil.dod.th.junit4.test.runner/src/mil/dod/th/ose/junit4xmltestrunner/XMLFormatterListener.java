@@ -15,10 +15,11 @@ package mil.dod.th.ose.junit4xmltestrunner;
 import mil.dod.th.core.log.Logging;
 import mil.dod.th.ose.junit4xmltestrunner.ant.XMLJUnitResultFormatter;
 
+import org.osgi.service.log.LogService;
+
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
-import org.osgi.service.log.LogService;
 
 /**
  * Class listens to JUnit runs and logs the information to the given formatter.

@@ -91,4 +91,16 @@ public class ProductTypeAnnotationCheck extends AbstractCheck
         log(identToken.getLineNo(), 
                 implementationType + " implementation class without @ProductType annotation");
     }
+
+    @Override
+    public int[] getAcceptableTokens()
+    {
+        return getDefaultTokens();
+    }
+
+    @Override
+    public int[] getRequiredTokens()
+    {
+        return getDefaultTokens();
+    }
 }

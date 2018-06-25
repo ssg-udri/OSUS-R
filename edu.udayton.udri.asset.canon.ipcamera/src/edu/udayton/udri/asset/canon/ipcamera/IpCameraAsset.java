@@ -27,6 +27,7 @@ import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
+
 import mil.dod.th.core.asset.Asset;
 import mil.dod.th.core.asset.Asset.AssetActiveStatus;
 import mil.dod.th.core.asset.AssetContext;

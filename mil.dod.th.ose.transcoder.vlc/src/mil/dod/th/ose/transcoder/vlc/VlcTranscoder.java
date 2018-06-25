@@ -21,11 +21,13 @@ import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.pm.PowerManager;
 import mil.dod.th.core.pm.WakeLock;
 import mil.dod.th.core.transcoder.TranscoderException;
 import mil.dod.th.core.transcoder.TranscoderService;
+
 import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
 
 

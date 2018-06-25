@@ -30,13 +30,14 @@ import mil.dod.th.ose.gui.webapp.utils.BundleContextUtil;
 import mil.dod.th.ose.gui.webapp.utils.GrowlMessageUtil;
 import mil.dod.th.ose.remote.api.RemoteEventConstants;
 
-import org.glassfish.osgicdi.OSGiService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+
+import org.glassfish.osgicdi.OSGiService;
 
 /**
  * Class responsible for listening to remote requests to retrieve observations and updates the observation

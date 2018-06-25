@@ -15,6 +15,7 @@ package edu.udayton.udri.asset.hikvision;
 import java.io.IOException;
 
 import aQute.bnd.annotation.component.Component;
+
 import mil.dod.th.core.asset.commands.SetCameraSettingsCommand;
 import mil.dod.th.core.asset.commands.SetPanTiltCommand;
 

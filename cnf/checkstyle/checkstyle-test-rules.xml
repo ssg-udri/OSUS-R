@@ -7,10 +7,12 @@
 <module name="Checker">
   <property name="severity" value="warning"/>
   <module name="TreeWalker">
-    <module name="FileContentsHolder"/>
     <module name="ConstantName"/>
     <module name="MethodName">
       <property name="format" value="^[a-z][a-zA-Z0-9_]*$"/>
+    </module>
+    <module name="SuppressWithNearbyCommentFilter">
+      <property name="commentFormat" value="NOCHECKSTYLE"/>
     </module>
     <module name="AvoidStaticImport">
       <property name="excludes" value="org.junit.Assert.*, org.mockito.Mockito.*, org.hamcrest.Matchers.*, org.hamcrest.MatcherAssert.*, org.mockito.Matchers.*, org.powermock.api.mockito.PowerMockito.*, org.hamcrest.CoreMatchers.*, org.hamcrest.text.IsEmptyString.*, mil.dod.th.ose.test.matchers.Matchers.*"/>
@@ -56,8 +58,5 @@
     <module name="VisibilityModifier">
       <property name="protectedAllowed" value="true"/>
     </module>
-  </module>
-  <module name="SuppressWithNearbyCommentFilter">
-    <property name="commentFormat" value="NOCHECKSTYLE"/>
   </module>
 </module>

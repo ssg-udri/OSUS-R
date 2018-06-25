@@ -21,6 +21,7 @@ import java.util.Properties;
 import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
+
 import mil.dod.th.ose.controller.api.ThoseVersionProvider;
 import mil.dod.th.ose.utils.PropertyRetriever;
 

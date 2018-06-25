@@ -142,10 +142,21 @@ public class DataStreamStoreMessageService implements MessageService
      * @param dataStreamService
      *      service for managing StreamProfile instances locally
      */
-    @Reference
+    @Reference(optional = true, dynamic = true)
     public void setDataStreamService(final DataStreamService dataStreamService)
     {
         m_DataStreamService = dataStreamService;
+    }
+
+    /**
+     * Unbind the DataStreamService.
+     * 
+     * @param dataStreamService
+     *      service for managing StreamProfile instances locally
+     */
+    public void unsetDataStreamService(final DataStreamService dataStreamService)
+    {
+        m_DataStreamService = null; // NOPMD: NullAssignment, Must assign to null if no longer available
     }
     
     /**
@@ -154,12 +165,23 @@ public class DataStreamStoreMessageService implements MessageService
      * @param dataStreamStore
      *      service for storing and retrieving streaming data locally
      */
-    @Reference
+    @Reference(optional = true, dynamic = true)
     public void setDataStreamStore(final DataStreamStore dataStreamStore)
     {
         m_DataStreamStore = dataStreamStore;
     }
     
+    /**
+     * Unbind the DataStreamStore.
+     * 
+     * @param dataStreamStore
+     *      service for storing and retrieving streaming data locally
+     */
+    public void unsetDataStreamStore(final DataStreamStore dataStreamStore)
+    {
+        m_DataStreamStore = null; // NOPMD: NullAssignment, Must assign to null if no longer available
+    }
+
     /**
      * Bind to the service for creating remote messages.
      * 

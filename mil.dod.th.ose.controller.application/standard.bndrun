@@ -16,4 +16,7 @@
     ${osusr.ext.bundles}
 
 # need to keep workding dir to preserve config admin settings
--runkeep
+-runkeep: true
+
+# disable runtime trace information by default
+-runtrace: false

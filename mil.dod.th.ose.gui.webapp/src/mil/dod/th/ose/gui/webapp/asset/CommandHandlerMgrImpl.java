@@ -52,13 +52,13 @@ import mil.dod.th.ose.shared.SharedMessageUtils;
 import mil.dod.th.remote.converter.CommandResponseEnumConverter;
 import mil.dod.th.remote.converter.CommandTypeEnumConverter;
 
-import org.glassfish.osgicdi.OSGiService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
 
+import org.glassfish.osgicdi.OSGiService;
 
 /**
  * Class which handles sending commands and listens for their responses. 

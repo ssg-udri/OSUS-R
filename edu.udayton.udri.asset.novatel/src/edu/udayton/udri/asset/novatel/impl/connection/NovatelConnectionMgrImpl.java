@@ -18,9 +18,6 @@ import java.util.UUID;
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
 
-import edu.udayton.udri.asset.novatel.NovatelConstants;
-import edu.udayton.udri.asset.novatel.connection.NovatelConnectionMgr;
-
 import mil.dod.th.core.asset.AssetException;
 import mil.dod.th.core.ccomm.CCommException;
 import mil.dod.th.core.ccomm.CustomCommsService;
@@ -33,6 +30,9 @@ import mil.dod.th.core.log.Logging;
 import mil.dod.th.core.types.ccomm.PhysicalLinkTypeEnum;
 
 import org.osgi.service.log.LogService;
+
+import edu.udayton.udri.asset.novatel.NovatelConstants;
+import edu.udayton.udri.asset.novatel.connection.NovatelConnectionMgr;
 
 /**
  * Implementation of the {@link NovatelConnectionMgr} class.
@@ -96,7 +96,7 @@ public class NovatelConnectionMgrImpl implements NovatelConnectionMgr
         // do nothing
     }
     
-    @Override
+    @Override // NOCHECKSTYLE: This logic is required until refactoring can be done
     public void startProcessing(final String physPort, final int baudRate) throws AssetException
     {
         if (isProcessing())

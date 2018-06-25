@@ -20,9 +20,12 @@
     example.asset.main;version=latest,\
     example.asset.lexicon;version=latest,\
     example.ccomm.main;version=latest
-    
+
 -runproperties.webconsole: \
     org.apache.felix.http.jettyEnabled=true
 
 # need to keep workding dir to preserve config admin settings
 -runkeep: true
+
+# disable runtime trace information by default
+-runtrace: false

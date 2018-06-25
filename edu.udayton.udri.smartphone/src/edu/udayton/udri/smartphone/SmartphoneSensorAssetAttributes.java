@@ -13,6 +13,7 @@
 package edu.udayton.udri.smartphone;
 
 import aQute.bnd.annotation.metatype.Meta.OCD;
+
 import mil.dod.th.core.ConfigurationConstants;
 import mil.dod.th.core.asset.AssetAttributes;
 

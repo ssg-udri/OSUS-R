@@ -408,7 +408,7 @@ public class TerraHarvestControllerImpl implements TerraHarvestController, Terra
         if (id == null)
         {
             m_Logging.warning("Controller id not set, initializing to default");
-            setId(-1);
+            setId(0);
         }
         else
         {

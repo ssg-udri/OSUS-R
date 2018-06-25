@@ -29,8 +29,9 @@ import mil.dod.th.core.remote.proto.CustomCommsMessages.CustomCommsNamespace.Cus
 import mil.dod.th.ose.shared.SharedMessageUtils;
 import mil.dod.th.remote.converter.PhysicalLinkTypeEnumConverter;
 
-import org.glassfish.osgicdi.OSGiService;
 import org.osgi.service.log.LogService;
+
+import org.glassfish.osgicdi.OSGiService;
 
 /**
  * Implementation of the {@link AddCommsMessageController}.

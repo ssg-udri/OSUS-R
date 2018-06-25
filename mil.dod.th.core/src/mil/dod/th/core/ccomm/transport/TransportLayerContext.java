@@ -13,6 +13,7 @@
 package mil.dod.th.core.ccomm.transport;
 
 import aQute.bnd.annotation.ProviderType;
+
 import mil.dod.th.core.ccomm.Address;
 import mil.dod.th.core.factory.FactoryObjectContext;
 

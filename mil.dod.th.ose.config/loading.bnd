@@ -18,3 +18,5 @@ Bundle-Vendor: UDRI
 Private-Package: mil.dod.th.ose.config.loading.*
 Service-Component: mil.dod.th.ose.config.loading.*
 Export-Package: mil.dod.th.ose.config.loading.api.*
+
+-includeresource: resources/configs.xml

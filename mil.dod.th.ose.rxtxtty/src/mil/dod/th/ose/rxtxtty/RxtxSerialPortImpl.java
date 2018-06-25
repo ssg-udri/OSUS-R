@@ -31,11 +31,6 @@ import aQute.bnd.annotation.metatype.Configurable;
 
 import com.google.common.base.Preconditions;
 
-import gnu.io.CommPortIdentifier;
-import gnu.io.NoSuchPortException;
-import gnu.io.PortInUseException;
-import gnu.io.UnsupportedCommOperationException;
-
 import mil.dod.th.core.ccomm.physical.PhysicalLink;
 import mil.dod.th.core.ccomm.physical.PhysicalLinkContext;
 import mil.dod.th.core.ccomm.physical.PhysicalLinkException;
@@ -49,6 +44,11 @@ import mil.dod.th.core.types.ccomm.StopBitsEnum;
 
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.log.LogService;
+
+import gnu.io.CommPortIdentifier;
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.UnsupportedCommOperationException;
 
 // Note: There is a SerialPort in mil.dod.th.core.ccomm.physical
 // and a SerialPort in gnu.io. We are using both of them (@!#%$@#%!!) so we

@@ -371,7 +371,7 @@
                 <include name="**/lib/**"/>
                 <exclude name="**/ant-contrib/**"/>
                 <exclude name="**/apache-ant-1.8.4/**"/>
-                <exclude name="**/checkstyle-7.6.1/**"/>
+                <exclude name="**/checkstyle-8.5/**"/>
                 <exclude name="**/cobertura/**"/>
                 <exclude name="**/confluence-cli/**"/>
                 <exclude name="**/eclipse-plug-ins/**"/>

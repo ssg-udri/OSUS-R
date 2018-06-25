@@ -48,8 +48,9 @@ import mil.dod.th.ose.gui.webapp.utils.DateTimeConverterUtil;
 import mil.dod.th.ose.gui.webapp.utils.FacesContextUtil;
 import mil.dod.th.ose.shared.JdoDataStore;
 
-import org.glassfish.osgicdi.OSGiService;
 import org.osgi.service.log.LogService;
+
+import org.glassfish.osgicdi.OSGiService;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 

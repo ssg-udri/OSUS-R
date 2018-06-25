@@ -31,13 +31,15 @@ import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Modified;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.annotation.metatype.Configurable;
-import example.message.SocketListener;
+
 import mil.dod.th.core.log.LoggingService;
 import mil.dod.th.core.system.TerraHarvestSystem;
 
 import org.osgi.service.component.ComponentConstants;
 import org.osgi.service.component.ComponentFactory;
 import org.osgi.service.component.ComponentInstance;
+
+import example.message.SocketListener;
 
 /**
  * Example of a service using the message routing events to handle message routing to networked controllers.

@@ -15,7 +15,6 @@
     aQute.bnd.deployer.repository.LocalIndexedRepo;name=Release;local="${workspace}/../release-bundle-repo",\
     aQute.bnd.deployer.repository.LocalIndexedRepo;name=Local;local="${workspace}/cnf/localrepo";phase=any,\
     aQute.bnd.deployer.repository.LocalIndexedRepo;name=Build;local="${workspace}/cnf/buildrepo";phase=build,\
-    aQute.bnd.deployer.repository.LocalIndexedRepo;name=Runtime;local="${workspace}/cnf/runrepo";phase=runtime,\
-    aQute.bnd.jpm.Repository;includeStaged=true;name=JPM4J;index=${build}/jpm-index.json
-    
+    aQute.bnd.deployer.repository.LocalIndexedRepo;name=Runtime;local="${workspace}/cnf/runrepo";phase=runtime
+
 -releaserepo: Release

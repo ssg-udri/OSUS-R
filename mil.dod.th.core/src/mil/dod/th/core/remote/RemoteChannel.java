@@ -16,6 +16,7 @@ package mil.dod.th.core.remote;
 import java.util.Map;
 
 import aQute.bnd.annotation.ProviderType;
+
 import mil.dod.th.core.remote.proto.RemoteBase.TerraHarvestMessage;
 import mil.dod.th.core.types.remote.RemoteChannelTypeEnum;
 

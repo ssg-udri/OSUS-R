@@ -238,7 +238,7 @@ public class HikVisionAsset implements AssetProxy
             new UnsupportedOperationException("HikVisionAsset does not support capturing data by sensorId."));
     }
 
-    @Override
+    @Override // NOCHECKSTYLE: This logic is required until refactoring can be done
     public Status onPerformBit()
     {
         try (CountingWakeLockHandle wakeHandle = m_CountingLock.activateWithHandle())

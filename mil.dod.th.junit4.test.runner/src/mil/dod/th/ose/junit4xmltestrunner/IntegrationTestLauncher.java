@@ -26,8 +26,6 @@ import aQute.bnd.annotation.component.Reference;
 
 import mil.dod.th.ose.config.loading.api.ConfigLoadingConstants;
 
-import org.apache.felix.service.command.CommandProcessor;
-import org.apache.felix.service.command.CommandSession;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -41,6 +39,8 @@ import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.osgi.util.tracker.ServiceTracker;
 
+import org.apache.felix.service.command.CommandProcessor;
+import org.apache.felix.service.command.CommandSession;
 
 /**
  * This is the test runner component that ensures the test runner component activates and then runs the tests provided
