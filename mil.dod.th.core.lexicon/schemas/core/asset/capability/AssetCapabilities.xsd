@@ -465,6 +465,7 @@
         <xs:attribute name="analogMagVoltageAvailable" type="xs:boolean" use="optional" default="false" />
         <xs:attribute name="internalArchiveStatusAvailable" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="algorithmStatusAvailable" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="nextStatusDurationAvailable" type="xs:boolean" use="optional" default="false" />
     </xs:complexType>
 
     <xs:complexType name="DetectionCapabilities">
@@ -613,6 +614,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="targetName" type="xs:boolean" use="optional" />
     </xs:complexType>
 
     <xs:complexType name="DigitalMediaCapabilities">
@@ -651,8 +653,29 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="availableImageCaptureReasons" type="image:ImageCaptureReasonEnum" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <!-- Override the generated proto index. -->
+                    <xs:appinfo>index=5</xs:appinfo>
+                    <xs:documentation>
+                        Image capture methods supported by the asset.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="availableWhiteBalanceTypes" type="image:WhiteBalanceEnum" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <!-- Override the generated proto index. -->
+                    <xs:appinfo>index=6</xs:appinfo>
+                    <xs:documentation>
+                        White balance methods supported by the asset.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:sequence>
-        <xs:attribute name="colorAvailable" type="xs:boolean" use="required" />  
+        <xs:attribute name="colorAvailable" type="xs:boolean" use="required" />
+        <xs:attribute name="focusAvailable" type="xs:boolean" use="optional" />
+        <xs:attribute name="imageGeographicLocationAvailable" type="xs:boolean" use="optional" />
+        <xs:attribute name="zoomAvailable" type="xs:boolean" use="optional" />
     </xs:complexType>
     
     <xs:complexType name="VideoCapabilities">

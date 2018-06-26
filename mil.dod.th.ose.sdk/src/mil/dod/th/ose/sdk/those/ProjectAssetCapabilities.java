@@ -54,8 +54,10 @@ import mil.dod.th.core.types.detection.TargetClassificationTypeEnum;
 import mil.dod.th.core.types.factory.SpatialTypesFactory;
 import mil.dod.th.core.types.image.Camera;
 import mil.dod.th.core.types.image.CameraTypeEnum;
+import mil.dod.th.core.types.image.ImageCaptureReasonEnum;
 import mil.dod.th.core.types.image.PictureTypeEnum;
 import mil.dod.th.core.types.image.PixelResolution;
+import mil.dod.th.core.types.image.WhiteBalanceEnum;
 import mil.dod.th.core.types.spatial.AzimuthDegrees;
 import mil.dod.th.core.types.spatial.BankDegrees;
 import mil.dod.th.core.types.spatial.DistanceMeters;
@@ -227,11 +229,13 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
         final Boolean analogMagVoltageAvailable = false;
         final Boolean internalArchiveStatusAvailable = false;
         final Boolean algorithmStatusAvailable = false;
+        final Boolean nextStatusDurationAvailable = false;
         
         return new StatusCapabilities(availableComponentStatuses, sensorRangeAvailable, sensorFovAvailable,
                 batteryChargeLevelAvailable, batteryVoltageAvailable, assetOnTimeAvailable, temperatureAvailable,
                 powerConsumptionAvailable, analogAnalogVoltageAvailable, analogDigitalVoltargeAvailable,
-                analogMagVoltageAvailable, internalArchiveStatusAvailable, algorithmStatusAvailable);
+                analogMagVoltageAvailable, internalArchiveStatusAvailable, algorithmStatusAvailable,
+                nextStatusDurationAvailable);
     }
     
     /**
@@ -299,11 +303,12 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
         final boolean seismicSignature = false;
         final boolean magneticSignature = false;
         final boolean imagerSignature = false;
+        final boolean targetName = false;
         return new DetectionCapabilities(typesAvailable, classifications, null, targetLocation, targetSpeed,
                 targetRange, targetOrientation, targetLOB, targetFrequency, trackHistory, directionOfTravel, targetId,
                 algorithmId, targetCount, detectionProbability, targetLobGlobal, targetLobLocal, detectionLength,
                 targetAngularVelocity, targetRadialVelocityNormalized, acousticSignature, seismicSignature,
-                magneticSignature, imagerSignature);
+                magneticSignature, imagerSignature, targetName);
     }
     
     /**
@@ -354,9 +359,16 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
         final PixelResolution maxResolution = new PixelResolution();
                 
         final List<Integer> availableCameraIDs = Arrays.asList(0, 1, 2);
+        final List<ImageCaptureReasonEnum> availableImageCaptureReasons = Arrays.asList(ImageCaptureReasonEnum.MANUAL);
+        final List<WhiteBalanceEnum> availableWhiteBalanceTypes = Arrays.asList(WhiteBalanceEnum.AUTO);
         
         final boolean colorAvailable = false;
-        return new ImageCapabilities(minResolution, maxResolution, availableCameraIDs, colorAvailable);
+        final boolean focusAvailable = false;
+        final boolean imageGeographicLocationAvailable = false;
+        final boolean zoomAvailable = false;
+        return new ImageCapabilities(minResolution, maxResolution, availableCameraIDs, availableImageCaptureReasons,
+                availableWhiteBalanceTypes, colorAvailable, focusAvailable, imageGeographicLocationAvailable,
+                zoomAvailable);
     }
     
     /**
@@ -376,9 +388,16 @@ public final class ProjectAssetCapabilities //NOCHECKSTYLE: class fan-out comple
         framesPerSecond.add((float)0.0);
         
         final List<Integer> availableCameraIDs = Arrays.asList(0, 1, 2);
+        final List<ImageCaptureReasonEnum> availableImageCaptureReasons = Arrays.asList(ImageCaptureReasonEnum.MANUAL);
+        final List<WhiteBalanceEnum> availableWhiteBalanceTypes = Arrays.asList(WhiteBalanceEnum.AUTO);
         
         final boolean colorAvailable = false;
-        return new VideoCapabilities(minResolution, maxResolution, availableCameraIDs, colorAvailable, framesPerSecond);
+        final boolean focusAvailable = false;
+        final boolean imageGeographicLocationAvailable = false;
+        final boolean zoomAvailable = false;
+        return new VideoCapabilities(minResolution, maxResolution, availableCameraIDs, availableImageCaptureReasons,
+                availableWhiteBalanceTypes, colorAvailable, focusAvailable, imageGeographicLocationAvailable,
+                zoomAvailable, framesPerSecond);
     }
     
     /**
