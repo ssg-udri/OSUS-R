@@ -31,7 +31,7 @@
 # classes.
 #
 
-Bundle-Version: 2.0.0.${tstamp}
+Bundle-Version: 2.0.1.${tstamp}
 Bundle-Name: Terra Harvest Open Software Environment (THOSE) Core
 Bundle-Description:  Contains a standard reference implementation for the Terra Harvest standard.
 Bundle-Vendor: UDRI

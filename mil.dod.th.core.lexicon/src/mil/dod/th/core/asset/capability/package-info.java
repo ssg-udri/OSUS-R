@@ -15,5 +15,5 @@
  * Contains the abstract base class for asset/sensor capability commands and responses, as well as a capability command
  * execution exception.
  */
-@aQute.bnd.annotation.Version("4.3.0")
+@aQute.bnd.annotation.Version("4.4.0")
 package mil.dod.th.core.asset.capability;

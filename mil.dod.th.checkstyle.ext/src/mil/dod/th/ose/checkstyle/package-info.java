@@ -14,5 +14,5 @@
 /**
  * Custom checkstyle checks.
  */
-@aQute.bnd.annotation.Version("2.0.0")
+@aQute.bnd.annotation.Version("2.1.0")
 package mil.dod.th.ose.checkstyle;

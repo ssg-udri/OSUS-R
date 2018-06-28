@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 3.2.0.${tstamp}
+Bundle-Version: 3.2.1.${tstamp}
 Bundle-Name: THOSE Shared
 Bundle-Description: Contains shared classes that are used by THOSE bundles
 Bundle-Vendor: UDRI

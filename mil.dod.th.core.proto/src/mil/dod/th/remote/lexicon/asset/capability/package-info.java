@@ -16,5 +16,5 @@
  * 
  * @author dhumeniuk
  */
-@aQute.bnd.annotation.Version("6.3.0")
+@aQute.bnd.annotation.Version("6.4.0")
 package mil.dod.th.remote.lexicon.asset.capability;
