@@ -24,12 +24,15 @@
               table="PersistentDataStore">
             <field
                   name="timestamp"
-                  persistence-modifier="persistent"/>
+                  persistence-modifier="persistent">
+                  <index name="TIMESTAMP_INDEX" />
+            </field>
             <field
                   name="uuid"
                   persistence-modifier="persistent"
                   default-fetch-group="true">
                   <unique name="UUID_CONSTRAINT" />
+                  <index name="UUID_INDEX" />
             </field>
             <field
                   name="entity"
@@ -39,10 +42,14 @@
                   default-fetch-group="true"/>
             <field
                   name="description"
-                  persistence-modifier="persistent"/>
+                  persistence-modifier="persistent">
+                  <index name="DESCRIPTION_INDEX" />
+            </field>
             <field
                   name="context"
-                  persistence-modifier="persistent"/>
+                  persistence-modifier="persistent">
+                  <index name="CONTEXT_INDEX" />
+            </field>
         </class>
     </package>
 </jdo>
