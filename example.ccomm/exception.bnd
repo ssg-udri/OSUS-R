@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 1.0.5.${tstamp}
+Bundle-Version: 1.0.6.${tstamp}
 Bundle-Name: Example Dupliate Custom Comm Bundle
 Bundle-Description: Plug-in example for ccomms that are malformed, used to verify core can handle exceptions thrown
 Bundle-Vendor: UDRI

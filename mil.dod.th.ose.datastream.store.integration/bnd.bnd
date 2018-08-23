@@ -10,7 +10,7 @@
 # with this software. If not, see
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
-Bundle-Version: 1.0.3.${tstamp}
+Bundle-Version: 1.0.4.${tstamp}
 Private-Package: mil.dod.th.ose.datastream.store.integration
 
 Test-Cases: ${classes;CONCRETE;EXTENDS;junit.framework.TestCase}

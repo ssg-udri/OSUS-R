@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 
-Bundle-Version: 2.1.0.${tstamp}
+Bundle-Version: 2.1.1.${tstamp}
 Bundle-Description: Extensions for the Checkstyle static analysis tool
 Bundle-Name: Checkstyle Extensions
 Bundle-Vendor: UDRI

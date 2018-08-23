@@ -13,7 +13,7 @@
 #
 # OSUS Plug-in BND Specification
 #
-Bundle-Version: 1.0.4.${tstamp}
+Bundle-Version: 1.0.5.${tstamp}
 Bundle-Description: Hikvision IP camera asset
 Bundle-Name: Hikvision IP camera asset
 Bundle-SymbolicName: edu.udayton.udri.asset.hikvision

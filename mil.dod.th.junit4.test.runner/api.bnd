@@ -14,7 +14,7 @@
 Bundle-Name: JUnit4 XML Test Runner API
 Bundle-Description: \
     Junit4 XML Test Runner API. Should not be used during runtime.
-Bundle-Version: 1.0.6.${tstamp}
+Bundle-Version: 1.0.7.${tstamp}
 Bundle-Vendor: UDRI
 Export-Package: \
     mil.dod.th.ose.junit4xmltestrunner.*

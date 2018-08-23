@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 1.0.4.${tstamp}
+Bundle-Version: 1.0.5.${tstamp}
 Bundle-Description: Raspberry Pi PIR Asset Plug-In
 Bundle-Name: Raspberry Pi PIR Asset Plug-In
 Bundle-SymbolicName: edu.udayton.udri.asset.raspi.pir

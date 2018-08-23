@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 2.5.0.${tstamp}
+Bundle-Version: 2.5.1.${tstamp}
 Bundle-Name: Terra Harvest Lexicon API
 Bundle-Description: Contains JAXB classes based on the TH lexicon
 Bundle-Vendor: UDRI

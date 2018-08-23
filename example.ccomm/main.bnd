@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 #
-Bundle-Version: 1.2.2.${tstamp}
+Bundle-Version: 1.2.3.${tstamp}
 Bundle-Description: Plug-in example for ccomms
 Bundle-Name: Example Custom Comm Bundle
 Bundle-Vendor: UDRI

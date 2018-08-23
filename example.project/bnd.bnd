@@ -15,7 +15,7 @@
     osgi.core,\
     osgi.cmpn,\
     biz.aQute.bnd.annotation
-Bundle-Version: 1.0.5.${tstamp}
+Bundle-Version: 1.0.6.${tstamp}
 Private-Package:  \
     example.project
 Service-Component:  \

@@ -11,7 +11,7 @@
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 #==============================================================================
 
-Bundle-Version: 1.0.7.${tstamp}
+Bundle-Version: 1.0.8.${tstamp}
 Private-Package:  \
     mil.dod.th.ose.core.integration
 
