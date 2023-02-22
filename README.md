@@ -53,3 +53,7 @@ Follow the instructions to install and run an OSUS-R controller.
 ## Create a Plug-in
 Download sdk-app-generic.zip and the OSUS Plug-in Guide document from [releases](https://github.com/ssg-udri/OSUS-R/releases).
 Follow the guide to create an OSUS plug-in and deploy on an OSUS-R controller.
+
+## Versions
+1.x Used by international customers in the Technical Cooperation Program's (TTCP) Contested Urban Environment Strategic (CUE).
+2.x This is not backward compatiable with version 1.x
